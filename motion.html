@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Motion Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Motion Tracking</h1>
+  </header>
+
+  <main>
+    <canvas id="motionCanvas" width="300" height="300" style="border:1px solid #000;"></canvas>
+    <p id="info">Move your phone to see the motion path.</p>
+  </main>
+
+  <footer>
+    <p>Created by Kuldeep Gosai</p>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('motionCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
+
+    window.addEventListener('deviceorientation', (event) => {
+      const gamma = event.gamma; // Left/Right
+      const beta = event.beta;   // Front/Back
+
+      if (gamma && beta) {
+        x += gamma * 0.5;
+        y += beta * 0.5;
+
+        // Keep inside canvas
+        x = Math.max(0, Math.min(canvas.width, x));
+        y = Math.max(0, Math.min(canvas.height, y));
+
+        ctx.fillStyle = 'blue';
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    });
+  </script>
+</body>
+</html>
