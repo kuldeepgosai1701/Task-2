@@ -18,7 +18,6 @@
       flex-direction: column;
       min-height: 100vh;
       overflow: hidden;
-      position: relative;
     }
 
     header {
@@ -26,16 +25,30 @@
       color: white;
       text-align: center;
       padding: 15px;
+      font-size: 1.5rem;
     }
 
     main {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
       position: relative;
+      overflow: hidden;
+    }
+
+    .info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.9);
+      padding: 10px;
+      border-radius: 8px;
+      z-index: 10;
+      font-size: 0.95rem;
+    }
+
+    button {
+      margin-top: 8px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
     }
 
     #dot {
@@ -44,7 +57,7 @@
       background: blue;
       border-radius: 50%;
       position: absolute;
-      z-index: 1;
+      z-index: 5;
     }
 
     .trail {
@@ -53,30 +66,35 @@
       background: blue;
       position: absolute;
       border-radius: 50%;
-      z-index: 0;
-    }
-
-    .info {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background: rgba(255,255,255,0.8);
-      padding: 10px;
-      border-radius: 8px;
+      z-index: 2;
     }
 
     footer {
-      background: #f0f0f0;
+      background: #eee;
       text-align: center;
       padding: 10px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      .info {
+        font-size: 0.85rem;
+      }
+
+      header {
+        font-size: 1.2rem;
+      }
+
+      button {
+        font-size: 0.8rem;
+      }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Motion Tracking</h1>
+    Motion Tracking
   </header>
 
   <main id="mainArea">
@@ -85,7 +103,6 @@
       <p id="direction">Direction: Center</p>
       <button onclick="location.reload()">Reset</button>
     </div>
-
     <div id="dot"></div>
   </main>
 
@@ -95,21 +112,11 @@
 
   <script>
     const dot = document.getElementById('dot');
-    const directionText = document.getElementById('direction');
     const main = document.getElementById('mainArea');
+    const directionText = document.getElementById('direction');
 
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
-
-    function updateDirection(gamma, beta) {
-      let dir = '';
-      if (beta > 5) dir += 'South ';
-      else if (beta < -5) dir += 'North ';
-      if (gamma > 5) dir += 'East';
-      else if (gamma < -5) dir += 'West';
-      if (dir === '') dir = 'Center';
-      directionText.textContent = `Direction: ${dir}`;
-    }
 
     function placeDot(x, y) {
       dot.style.left = `${x}px`;
@@ -122,7 +129,17 @@
       main.appendChild(trail);
     }
 
-    placeDot(x, y); // initial placement
+    function updateDirection(gamma, beta) {
+      let dir = '';
+      if (beta > 5) dir += 'South ';
+      else if (beta < -5) dir += 'North ';
+      if (gamma > 5) dir += 'East';
+      else if (gamma < -5) dir += 'West';
+      if (dir === '') dir = 'Center';
+      directionText.textContent = `Direction: ${dir}`;
+    }
+
+    placeDot(x, y); // Initial position
 
     window.addEventListener('deviceorientation', (event) => {
       const gamma = event.gamma;
@@ -132,17 +149,28 @@
         x += gamma * 0.6;
         y += beta * 0.6;
 
-        x = Math.max(0, Math.min(window.innerWidth - 20, x));
-        y = Math.max(0, Math.min(window.innerHeight - 20, y));
+        const maxX = window.innerWidth - 20;
+        const maxY = window.innerHeight - 20;
+
+        x = Math.max(0, Math.min(maxX, x));
+        y = Math.max(0, Math.min(maxY, y));
 
         placeDot(x, y);
         updateDirection(gamma, beta);
       }
     });
+
+    // Handle screen rotation
+    window.addEventListener('resize', () => {
+      x = window.innerWidth / 2;
+      y = window.innerHeight / 2;
+      placeDot(x, y);
+    });
   </script>
 
 </body>
 </html>
+
 
 
 
