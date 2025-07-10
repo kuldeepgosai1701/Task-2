@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motion Tracker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background: #333;
+      color: white;
+      padding: 15px;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    #tracker {
+      width: 300px;
+      height: 300px;
+      background: #eee;
+      border: 2px solid black;
+      position: relative;
+      margin-top: 20px;
+    }
+
+    #motionCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    #dot {
+      width: 20px;
+      height: 20px;
+      background: blue;
+      border-radius: 50%;
+      position: absolute;
+      z-index: 1;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #north {
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    footer {
+      background: #f0f0f0;
+      padding: 10px;
+      margin-top: 40px;
+    }
+
+    @media (min-width: 600px) {
+      main {
+        flex-direction: row;
+        justify-content: center;
+        gap: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Motion Tracking</h1>
+  </header>
+
+  <main>
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+      <p>Move your phone to see the motion path.</p>
+      <p id="direction">Direction: Center</p>
+      <button onclick="location.reload()">Reset</button>
+    </div>
+
+    <div id="tracker">
+      <canvas id="motionCanvas" width="300" height="300"></canvas>
+      <div id="dot"></div>
+      <p id="north">N</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>Created by Kuldeep Gosai</p>
+  </footer>
+
+  <script>
+    const dot = document.getElementById('dot');
+    const tracker = document.getElementById('tracker');
+    const directionText = document.getElementById('direction');
+    const canvas = document.getElementById('motionCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let x = tracker.offsetWidth / 2;
+    let y = tracker.offsetHeight / 2;
+
+    canvas.width = tracker.offsetWidth;
+    canvas.height = tracker.offsetHeight;
+
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+
+    function updateDirection(gamma, beta) {
+      let dir = '';
+      if (beta > 5) dir += 'South ';
+      else if (beta < -5) dir += 'North ';
+      if (gamma > 5) dir += 'East';
+      else if (gamma < -5) dir += 'West';
+      if (dir === '') dir = 'Center';
+      directionText.textContent = `Direction: ${dir}`;
+    }
+
+    window.addEventListener('deviceorientation', (event) => {
+      const gamma = event.gamma;
+      const beta = event.beta;
+
+      if (gamma !== null && beta !== null) {
+        x += gamma * 0.5;
+        y += beta * 0.5;
+
+        x = Math.max(0, Math.min(tracker.offsetWidth, x));
+        y = Math.max(0, Math.min(tracker.offsetHeight, y));
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        dot.style.left = `${x}px`;
+        dot.style.top = `${y}px`;
+
+        updateDirection(gamma, beta);
+      }
+    });
+  </script>
+</body>
+</html>
