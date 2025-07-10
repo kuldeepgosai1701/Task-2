@@ -144,8 +144,8 @@
       const beta = event.beta;   // front-back
 
       if (gamma !== null && beta !== null) {
-        x += gamma * 0.1;
-        y += beta * 0.1;
+        x += gamma * 0.05;
+        y += beta * 0.005;
 
         // Keep dot inside screen
         x = Math.max(0, Math.min(window.innerWidth - 20, x));
