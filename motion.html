@@ -11,8 +11,13 @@
   </header>
 
   <main>
-    <canvas id="motionCanvas" width="300" height="300" style="border:1px solid #000;"></canvas>
-    <p id="info">Move your phone to see the motion path.</p>
+  
+    <div id="dot" style="width:20px; height: 20px; background:blue; border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);"></div>
+  </div>
+  
+  
+</main>
+
   </main>
 
   <footer>
@@ -20,30 +25,49 @@
   </footer>
 
   <script>
-    const canvas = document.getElementById('motionCanvas');
-    const ctx = canvas.getContext('2d');
+  const dot = document.getElementById('dot');
+  const tracker = document.getElementById('tracker');
+  const directionText = document.getElementById('direction');
 
-    let x = canvas.width / 2;
-    let y = canvas.height / 2;
+  let x = tracker.offsetWidth / 2;
+  let y = tracker.offsetHeight / 2;
 
-    window.addEventListener('deviceorientation', (event) => {
-      const gamma = event.gamma; // Left/Right
-      const beta = event.beta;   // Front/Back
+  function updateDirection(gamma, beta) {
+    let dir = '';
+    if (beta > 5) dir += 'South ';
+    else if (beta < -5) dir += 'North ';
+    if (gamma > 5) dir += 'East';
+    else if (gamma < -5) dir += 'West';
+    if (dir === '') dir = 'Center';
+    directionText.textContent = `Direction: ${dir}`;
+  }
 
-      if (gamma && beta) {
-        x += gamma * 0.5;
-        y += beta * 0.5;
+  window.addEventListener('deviceorientation', (event) => {
+    const gamma = event.gamma;
+    const beta = event.beta;
 
-        // Keep inside canvas
-        x = Math.max(0, Math.min(canvas.width, x));
-        y = Math.max(0, Math.min(canvas.height, y));
+    if (gamma && beta) {
+      x += gamma * 0.5;
+      y += beta * 0.5;
 
-        ctx.fillStyle = 'blue';
-        ctx.beginPath();
-        ctx.arc(x, y, 2, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-    });
+      x = Math.max(0, Math.min(tracker.offsetWidth - 6, x));
+      y = Math.max(0, Math.min(tracker.offsetHeight - 6, y));
+
+      const trail = document.createElement('div');
+      trail.style.width = '2px';
+      trail.style.height = '2px';
+      trail.style.background = 'blue';
+      trail.style.position = 'absolute';
+      trail.style.left = `${x + 2}px`;
+      trail.style.top = `${y + 2}px`;
+      tracker.appendChild(trail);
+
+      dot.style.left = `${x}px`;
+      dot.style.top = `${y}px`;
+
+      updateDirection(gamma, beta);
+    }
+  });
   </script>
 </body>
 </html>
