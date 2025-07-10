@@ -3,105 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Motion Tracker</title>
+  <title>Gyroscope Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: sans-serif;
+      font-family: 'Poppins', sans-serif;
       margin: 0;
-      padding: 0;
-      text-align: center;
+      background: #f4f6fa;
+      color: #333;
     }
-
     header {
-      background: #333;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
       color: white;
-      padding: 15px;
+      padding: 20px 0;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
-
     main {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      padding: 30px 20px;
+      gap: 30px;
     }
-
+    .info-section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 300px;
+      text-align: left;
+    }
+    .info-section p {
+      margin: 10px 0;
+    }
+    .info-section button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background-color: #1e90ff;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .info-section button:hover {
+      background-color: #136bd8;
+    }
     #tracker {
       width: 300px;
       height: 300px;
-      background: #eee;
-      border: 2px solid black;
+      background: #e9ecef;
+      border: 3px solid #333;
+      border-radius: 16px;
       position: relative;
-      margin-top: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     }
-
     #motionCanvas {
       position: absolute;
       top: 0;
       left: 0;
       z-index: 0;
+      border-radius: 16px;
     }
-
     #dot {
       width: 20px;
       height: 20px;
-      background: blue;
+      background: #007bff;
       border-radius: 50%;
       position: absolute;
       z-index: 1;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
     }
-
     #north {
       position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 10px;
+      right: 10px;
       font-weight: bold;
-      font-size: 24px;
+      font-size: 20px;
+      color: #000;
     }
-
     footer {
-      background: #f0f0f0;
-      padding: 10px;
+      background: #343a40;
+      color: white;
+      padding: 15px;
+      text-align: center;
       margin-top: 40px;
+      font-size: 16px;
+      border-top: 4px solid #007bff;
     }
-
-    @media (min-width: 600px) {
+    @media (min-width: 700px) {
       main {
         flex-direction: row;
         justify-content: center;
-        gap: 40px;
       }
     }
   </style>
 </head>
 <body>
-
   <header>
-    <h1>Motion Tracking</h1>
+    GYROSCOPE EXPLORER
   </header>
 
   <main>
-    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+    <div class="info-section">
       <p>Move your phone to see the motion path.</p>
       <p id="direction">Direction: Center</p>
       <button onclick="location.reload()">Reset</button>
-    </div>
-       
-    <div style="text-align: center; margin-bottom: 5px;">
-  <span style="font-size: 24px; font-weight: bold;">N</span>
     </div>
 
     <div id="tracker">
       <canvas id="motionCanvas" width="300" height="300"></canvas>
       <div id="dot"></div>
+      <p id="north">N</p>
     </div>
   </main>
 
   <footer>
-    <p>Created by Kuldeep Gosai</p>
+    Created by Kuldeep Gosai
   </footer>
 
   <script>
@@ -117,7 +146,7 @@
     canvas.width = tracker.offsetWidth;
     canvas.height = tracker.offsetHeight;
 
-    ctx.strokeStyle = 'blue';
+    ctx.strokeStyle = '#007bff';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x, y);
