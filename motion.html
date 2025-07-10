@@ -145,7 +145,7 @@
 
       if (gamma !== null && beta !== null) {
         x += gamma * 0.05;
-        y += beta * 0.005;
+        y += beta * 0.05;
 
         // Keep dot inside screen
         x = Math.max(0, Math.min(window.innerWidth - 20, x));
@@ -155,8 +155,22 @@
         updateDirection(gamma, beta);
       }
     });
-  </script>
 
+// Optional: Track movement due to vibration or shake
+window.addEventListener("devicemotion", (event) => {
+  const acc = event.acceleration;
+
+  if (acc && acc.x !== null && acc.y !== null) {
+    x += acc.x * 2;
+    y += acc.y * 2;
+
+    x = Math.max(0, Math.min(window.innerWidth - 20, x));
+    y = Math.max(0, Math.min(window.innerHeight - 20, y));
+
+    moveDot(x, y);
+  }
+});
+  </script>
 </body>
 </html>
 
