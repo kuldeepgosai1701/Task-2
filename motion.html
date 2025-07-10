@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Motion Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gyroscope Motion Tracker</title>
   <style>
     * {
       margin: 0;
@@ -11,18 +11,18 @@
       box-sizing: border-box;
     }
 
-    body {
-      font-family: sans-serif;
-      background: #f2f2f2;
+    body, html {
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
-      overflow: hidden;
     }
 
     header {
-      background: #333;
-      color: white;
+      background: #222;
+      color: #fff;
       text-align: center;
       padding: 15px;
       font-size: 1.5rem;
@@ -38,22 +38,25 @@
       position: absolute;
       top: 10px;
       left: 10px;
-      background: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.95);
       padding: 10px;
       border-radius: 8px;
       z-index: 10;
-      font-size: 0.95rem;
     }
 
     button {
-      margin-top: 8px;
-      padding: 6px 12px;
+      margin-top: 5px;
+      padding: 5px 12px;
       font-size: 0.9rem;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 4px;
     }
 
     #dot {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       background: blue;
       border-radius: 50%;
       position: absolute;
@@ -61,43 +64,27 @@
     }
 
     .trail {
-      width: 4px;
-      height: 4px;
-      background: blue;
-      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: rgba(0, 0, 255, 0.5);
       border-radius: 50%;
-      z-index: 2;
+      position: absolute;
+      z-index: 1;
     }
 
     footer {
-      background: #eee;
+      background: #ddd;
       text-align: center;
       padding: 10px;
       font-size: 0.9rem;
-    }
-
-    @media (max-width: 600px) {
-      .info {
-        font-size: 0.85rem;
-      }
-
-      header {
-        font-size: 1.2rem;
-      }
-
-      button {
-        font-size: 0.8rem;
-      }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    Motion Tracking
-  </header>
+  <header>Motion Tracker</header>
 
-  <main id="mainArea">
+  <main id="main">
     <div class="info">
       <p>Move your phone to see the motion path.</p>
       <p id="direction">Direction: Center</p>
@@ -106,70 +93,63 @@
     <div id="dot"></div>
   </main>
 
-  <footer>
-    Created by Kuldeep Gosai
-  </footer>
+  <footer>Created by Kuldeep Gosai</footer>
 
   <script>
-    const dot = document.getElementById('dot');
-    const main = document.getElementById('mainArea');
-    const directionText = document.getElementById('direction');
+    const dot = document.getElementById("dot");
+    const main = document.getElementById("main");
+    const directionText = document.getElementById("direction");
 
+    // Start dot at center of screen
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
 
-    function placeDot(x, y) {
-      dot.style.left = `${x}px`;
-      dot.style.top = `${y}px`;
+    function moveDot(newX, newY) {
+      dot.style.left = `${newX}px`;
+      dot.style.top = `${newY}px`;
 
-      const trail = document.createElement('div');
-      trail.className = 'trail';
-      trail.style.left = `${x + 8}px`;
-      trail.style.top = `${y + 8}px`;
+      const trail = document.createElement("div");
+      trail.className = "trail";
+      trail.style.left = `${newX + 6}px`;
+      trail.style.top = `${newY + 6}px`;
       main.appendChild(trail);
     }
 
     function updateDirection(gamma, beta) {
-      let dir = '';
-      if (beta > 5) dir += 'South ';
-      else if (beta < -5) dir += 'North ';
-      if (gamma > 5) dir += 'East';
-      else if (gamma < -5) dir += 'West';
-      if (dir === '') dir = 'Center';
+      let dir = "";
+      if (beta > 5) dir += "South ";
+      else if (beta < -5) dir += "North ";
+      if (gamma > 5) dir += "East";
+      else if (gamma < -5) dir += "West";
+      if (dir === "") dir = "Center";
       directionText.textContent = `Direction: ${dir}`;
     }
 
-    placeDot(x, y); // Initial position
+    // Initial dot
+    moveDot(x, y);
 
-    window.addEventListener('deviceorientation', (event) => {
-      const gamma = event.gamma;
-      const beta = event.beta;
+    // Mobile device gyroscope tracking
+    window.addEventListener("deviceorientation", (event) => {
+      const gamma = event.gamma; // left-right
+      const beta = event.beta;   // front-back
 
       if (gamma !== null && beta !== null) {
-        x += gamma * 0.6;
-        y += beta * 0.6;
+        x += gamma * 0.7;
+        y += beta * 0.7;
 
-        const maxX = window.innerWidth - 20;
-        const maxY = window.innerHeight - 20;
+        // Keep dot inside screen
+        x = Math.max(0, Math.min(window.innerWidth - 20, x));
+        y = Math.max(0, Math.min(window.innerHeight - 20, y));
 
-        x = Math.max(0, Math.min(maxX, x));
-        y = Math.max(0, Math.min(maxY, y));
-
-        placeDot(x, y);
+        moveDot(x, y);
         updateDirection(gamma, beta);
       }
-    });
-
-    // Handle screen rotation
-    window.addEventListener('resize', () => {
-      x = window.innerWidth / 2;
-      y = window.innerHeight / 2;
-      placeDot(x, y);
     });
   </script>
 
 </body>
 </html>
+
 
 
 
