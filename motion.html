@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Motion Tracker</title>
   <style>
-    body {
-      font-family: sans-serif;
+    * {
       margin: 0;
       padding: 0;
-      text-align: center;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
     header {
       background: #333;
       color: white;
+      text-align: center;
       padding: 15px;
     }
 
     main {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -34,38 +43,31 @@
       margin-top: 20px;
     }
 
-    #motionCanvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 0;
-    }
-
     #dot {
       width: 20px;
       height: 20px;
       background: blue;
       border-radius: 50%;
       position: absolute;
-      z-index: 1;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      z-index: 1;
     }
 
-    #north {
+    .trail {
+      width: 4px;
+      height: 4px;
+      background: blue;
       position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-weight: bold;
-      font-size: 24px;
+      border-radius: 50%;
+      z-index: 0;
     }
 
     footer {
       background: #f0f0f0;
+      text-align: center;
       padding: 10px;
-      margin-top: 40px;
     }
 
     @media (min-width: 600px) {
@@ -89,13 +91,8 @@
       <p id="direction">Direction: Center</p>
       <button onclick="location.reload()">Reset</button>
     </div>
-       
-    <div style="text-align: center; margin-bottom: 5px;">
-  <span style="font-size: 24px; font-weight: bold;">N</span>
-    </div>
 
     <div id="tracker">
-      <canvas id="motionCanvas" width="300" height="300"></canvas>
       <div id="dot"></div>
     </div>
   </main>
@@ -108,19 +105,9 @@
     const dot = document.getElementById('dot');
     const tracker = document.getElementById('tracker');
     const directionText = document.getElementById('direction');
-    const canvas = document.getElementById('motionCanvas');
-    const ctx = canvas.getContext('2d');
 
     let x = tracker.offsetWidth / 2;
     let y = tracker.offsetHeight / 2;
-
-    canvas.width = tracker.offsetWidth;
-    canvas.height = tracker.offsetHeight;
-
-    ctx.strokeStyle = 'blue';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
 
     function updateDirection(gamma, beta) {
       let dir = '';
@@ -137,14 +124,18 @@
       const beta = event.beta;
 
       if (gamma !== null && beta !== null) {
-        x += gamma * 0.05;
-        y += beta * 0.05;
+        x += gamma * 0.3;  // Adjust sensitivity here
+        y += beta * 0.3;
 
         x = Math.max(0, Math.min(tracker.offsetWidth, x));
         y = Math.max(0, Math.min(tracker.offsetHeight, y));
 
-        ctx.lineTo(x, y);
-        ctx.stroke();
+        // Create small trail dot
+        const trail = document.createElement('div');
+        trail.className = 'trail';
+        trail.style.left = `${x}px`;
+        trail.style.top = `${y}px`;
+        tracker.appendChild(trail);
 
         dot.style.left = `${x}px`;
         dot.style.top = `${y}px`;
@@ -155,3 +146,4 @@
   </script>
 </body>
 </html>
+
