@@ -7,7 +7,7 @@
 body {
   height: 100vh;
   background: linear-gradient(145deg, #0a0a0a, #111);
-  background-image: url('https://www.transparenttextures.com/patterns/circles.png'); /* Optional */
+  background-image: url('background image.png'); /* Optional */
   color: white;
   font-family: 'Poppins', sans-serif;
   display: flex;
