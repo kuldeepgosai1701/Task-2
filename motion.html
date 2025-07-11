@@ -182,11 +182,7 @@
         const screenW = window.innerWidth;
         const screenH = window.innerHeight;
 
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
-
+      if (x >= 0 && x <= screenW && y >= 0 && y <= screenH) {
         moveDot(x, y);
         updateDirection(gamma, beta);
       }
@@ -203,11 +199,7 @@ window.addEventListener("devicemotion", (event) => {
    const screenW = window.innerWidth;
    const screenH = window.innerHeight;
 
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
-
+  if (x >= 0 && x <= screenW && y >= 0 && y <= screenH) {
     moveDot(x, y);
   }
 });
