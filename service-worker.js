@@ -1,25 +1,23 @@
-self.addEventListener('install', function(event) {
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open('gyro-cache-v1').then(function(cache) {
+    caches.open("v1").then(cache => {
       return cache.addAll([
-        '/',
-        '/index.html',
-        '/motion.html',
-        '/manifest.json',
-        '/icon-192.png',
-        '/icon-512.png',
-        '/style.css',
-        // Add other files here
+        "index.html",
+        "style.css",
+        "script.js",
+        "manifest.json",
+        "icon-192.png",
+        "icon-512.png"
       ]);
     })
   );
 });
 
-self.addEventListener('fetch', function(event) {
+self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        return response || fetch(event.request);
-      })
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
   );
 });
+
