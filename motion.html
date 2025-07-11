@@ -97,7 +97,8 @@
     <div class="info">
       <p>Move your phone to see the motion path.</p>
       <p id="direction">Direction: Center</p>
-      <button onclick="location.reload()">Reset</button>
+      <p id="location">Location: Fetching...</p>
+       <button onclick="location.reload()">Reset</button>
         <div class="compass">N</div>
     </div>
     <div id="dot"></div>
@@ -137,6 +138,37 @@
 
     // Initial dot
     moveDot(x, y);
+
+    // ✅ GPS Code Starts Here
+  function showLocation(position) {
+    const latitude = position.coords.latitude.toFixed(5);
+    const longitude = position.coords.longitude.toFixed(5);
+    document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
+  }
+
+  function showError(error) {
+    const locationText = document.getElementById("location");
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+        locationText.textContent = "Location: Permission denied.";
+        break;
+      case error.POSITION_UNAVAILABLE:
+        locationText.textContent = "Location: Not available.";
+        break;
+      case error.TIMEOUT:
+        locationText.textContent = "Location: Timeout.";
+        break;
+      default:
+        locationText.textContent = "Location: Unknown error.";
+    }
+  }
+
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(showLocation, showError);
+  } else {
+    document.getElementById("location").textContent = "Location: Not supported.";
+  }
+  // ✅ GPS Code Ends Here
 
     // Mobile device gyroscope tracking
     window.addEventListener("deviceorientation", (event) => {
