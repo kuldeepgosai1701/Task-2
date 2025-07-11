@@ -13,11 +13,10 @@
 
     body, html {
       height: 100%;
+      width: 100%
       font-family: Arial, sans-serif;
       background: #f0f0f0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      overflow: auto;
     }
 
     header {
@@ -29,9 +28,10 @@
     }
 
     main {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
+     position: relative;
+     width: 200vw;  /* ✅ wider than screen */
+     height: 200vh; /* ✅ taller than screen */
+     background: #f0f0f0;
     }
 
     .info {
@@ -112,21 +112,27 @@
     const directionText = document.getElementById("direction");
 
     // Start dot at center of screen
-    let x = window.innerWidth / 2;
-    let y = window.innerHeight / 2;
+    let x = window.innerWidth ;
+    let y = window.innerHeight ;
 
     function moveDot(newX, newY) {
-      dot.style.left = `${newX}px`;
-      dot.style.top = `${newY}px`;
+  dot.style.left = `${newX}px`;
+  dot.style.top = `${newY}px`;
 
-      const trail = document.createElement("div");
-      trail.className = "trail";
-      trail.style.left = `${newX + 6}px`;
-      trail.style.top = `${newY + 6}px`;
-      main.appendChild(trail);
-    }
+  const trail = document.createElement("div");
+  trail.className = "trail";
+  trail.style.left = `${newX + 6}px`;
+  trail.style.top = `${newY + 6}px`;
+  main.appendChild(trail);
 
-    function updateDirection(gamma, beta) {
+  // ✅ This scrolls the screen to center the dot
+  window.scrollTo({
+    top: newY - window.innerHeight / 2,
+    left: newX - window.innerWidth / 2,
+    behavior: "smooth"
+  });
+}
+  function updateDirection(gamma, beta) {
       let dir = "";
       if (beta > 5) dir += "South ";
       else if (beta < -5) dir += "North ";
