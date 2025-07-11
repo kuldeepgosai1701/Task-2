@@ -112,8 +112,17 @@
     const directionText = document.getElementById("direction");
 
     // Start dot at center of screen
-    let x = window.innerWidth / 2;
-    let y = window.innerHeight / 2;
+    let x = window.innerWidth / 2 + window.scrollX;
+    let y = window.innerHeight / 2 + window.scrollY;
+
+// ✅ Scroll screen to center the dot
+window.scrollTo({
+  top: y - window.innerHeight / 2,
+  left: x - window.innerWidth / 2,
+  behavior: "auto"
+});
+
+moveDot(x, y);
 
     function moveDot(newX, newY) {
       dot.style.left = `${newX}px`;
