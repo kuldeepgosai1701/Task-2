@@ -29,9 +29,10 @@
     }
 
     main {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
+         width: 3000px;
+         height: 3000px;
+         position: relative;
+         overflow: visible;
     }
 
     .info {
@@ -112,8 +113,8 @@
     const directionText = document.getElementById("direction");
 
     // Start dot at center of screen
-    let x = window.innerWidth / 2;
-    let y = window.innerHeight / 2;
+    let x = 1500;
+    let y = 1500;
 
     function moveDot(newX, newY) {
       dot.style.left = `${newX}px`;
@@ -135,11 +136,25 @@
       if (dir === "") dir = "Center";
       directionText.textContent = `Direction: ${dir}`;
     }
+ 
+ window.addEventListener("deviceorientation", (event) => {
+  const gamma = event.gamma;
+  const beta = event.beta;
 
-    // Initial dot
+  if (gamma && beta) {
+    x += gamma * 1;
+    y += beta * 1;
+
+    // Prevent going outside scrollable area
+    x = Math.max(0, Math.min(x, 3000));
+    y = Math.max(0, Math.min(y, 3000));
+
     moveDot(x, y);
-
-    // ✅ GPS Code Starts Here
+    updateDirection(gamma, beta);
+  }
+});
+    ;
+      // ✅ GPS Code Starts Here
   function showLocation(position) {
     const latitude = position.coords.latitude.toFixed(5);
     const longitude = position.coords.longitude.toFixed(5);
@@ -182,10 +197,7 @@
         const screenW = window.innerWidth;
         const screenH = window.innerHeight;
 
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
+   
 
         moveDot(x, y);
         updateDirection(gamma, beta);
@@ -203,10 +215,7 @@ window.addEventListener("devicemotion", (event) => {
    const screenW = window.innerWidth;
    const screenH = window.innerHeight;
 
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
+   
 
     moveDot(x, y);
   }
