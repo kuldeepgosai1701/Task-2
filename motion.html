@@ -13,51 +13,54 @@
 
     html, body {
       height: 100%;
-      overflow: auto; /* ✅ Allow scrolling */
+      width: 100%;
+      overflow: scroll;
       font-family: Arial, sans-serif;
     }
 
-    header {
+    body {
+      position: relative;
+    }
+
+    header, footer {
+      position: fixed;
+      width: 100%;
       background: #222;
-      color: #fff;
+      color: white;
       text-align: center;
-      padding: 15px;
-      font-size: 1.5rem;
-      position: sticky;
-      top: 0;
+      padding: 10px;
       z-index: 1000;
     }
 
-    main {
-      width: 3000px;
-      height: 3000px;
-      position: relative;
-      background: #f0f0f0;
+    header {
+      top: 0;
+    }
+
+    footer {
+      bottom: 0;
+      background: #ccc;
+      color: black;
+    }
+
+    #world {
+      position: absolute;
+      top: 0;
+      left: 0;
     }
 
     .info {
       position: fixed;
       top: 60px;
       left: 10px;
-      background: rgba(255, 255, 255, 0.95);
+      background: white;
       padding: 10px;
-      border-radius: 8px;
-      z-index: 999;
-    }
-
-    button {
-      margin-top: 5px;
-      padding: 5px 12px;
-      font-size: 0.9rem;
-      border: none;
-      background: #007bff;
-      color: white;
-      border-radius: 4px;
+      border-radius: 5px;
+      z-index: 1000;
     }
 
     #dot {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       background: blue;
       border-radius: 50%;
       position: absolute;
@@ -65,30 +68,12 @@
     }
 
     .trail {
-      width: 5px;
-      height: 5px;
-      background: rgba(0, 0, 255, 0.5);
+      width: 6px;
+      height: 6px;
+      background: rgba(0, 0, 255, 0.4);
       border-radius: 50%;
       position: absolute;
       z-index: 1;
-    }
-
-    footer {
-      background: #ddd;
-      text-align: center;
-      padding: 10px;
-      font-size: 0.9rem;
-      position: sticky;
-      bottom: 0;
-      z-index: 1000;
-    }
-
-    .compass {
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      margin-top: 10px;
-      color: #333;
     }
   </style>
 </head>
@@ -96,45 +81,46 @@
 
   <header>Motion Tracker</header>
 
-  <main id="main">
-    <div class="info">
-      <p>Move your phone to see the motion path.</p>
-      <p id="direction">Direction: Center</p>
-      <p id="location">Location: Fetching...</p>
-      <button onclick="location.reload()">Reset</button>
-      <div class="compass">N</div>
-    </div>
+  <div class="info">
+    <p>Move your phone to see the motion path.</p>
+    <p id="direction">Direction: Center</p>
+    <p id="location">Location: Fetching...</p>
+    <button onclick="location.reload()">Reset</button>
+  </div>
+
+  <div id="world">
     <div id="dot"></div>
-  </main>
+  </div>
 
   <footer>Created by Kuldeep Gosai</footer>
 
   <script>
     const dot = document.getElementById("dot");
-    const main = document.getElementById("main");
+    const world = document.getElementById("world");
     const directionText = document.getElementById("direction");
 
-    let x = 1500;
-    let y = 1500;
+    // Start at center of screen
+    let x = window.innerWidth / 2 + window.scrollX;
+    let y = window.innerHeight / 2 + window.scrollY;
 
-    // Scroll to center dot at start
-    window.scrollTo(x - window.innerWidth / 2, y - window.innerHeight / 2);
+    moveDot(x, y);
 
     function moveDot(newX, newY) {
-      dot.style.left = `${newX}px`;
-      dot.style.top = `${newY}px`;
+      dot.style.left = newX + "px";
+      dot.style.top = newY + "px";
 
+      // Add trail
       const trail = document.createElement("div");
       trail.className = "trail";
-      trail.style.left = `${newX + 6}px`;
-      trail.style.top = `${newY + 6}px`;
-      main.appendChild(trail);
+      trail.style.left = newX + 7 + "px";
+      trail.style.top = newY + 7 + "px";
+      world.appendChild(trail);
 
-      // Scroll screen to keep dot in center
+      // Scroll screen to follow dot
       window.scrollTo({
         top: newY - window.innerHeight / 2,
         left: newX - window.innerWidth / 2,
-        behavior: "auto"
+        behavior: "smooth"
       });
     }
 
@@ -148,46 +134,30 @@
       directionText.textContent = `Direction: ${dir}`;
     }
 
-    // ✅ Gyroscope tracking
+    // Gyroscope motion tracking
     window.addEventListener("deviceorientation", (event) => {
       const gamma = event.gamma;
       const beta = event.beta;
 
-      if (gamma !== null && beta !== null) {
-        x += gamma * 1;
-        y += beta * 1;
-
-        // Prevent going outside bounds
-        x = Math.max(0, Math.min(x, 3000));
-        y = Math.max(0, Math.min(y, 3000));
+      if (gamma && beta) {
+        x += gamma * 2;
+        y += beta * 2;
 
         moveDot(x, y);
         updateDirection(gamma, beta);
       }
     });
 
-    // ✅ GPS Location
+    // ✅ GPS Location Display
     function showLocation(position) {
-      const latitude = position.coords.latitude.toFixed(5);
-      const longitude = position.coords.longitude.toFixed(5);
-      document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
+      const lat = position.coords.latitude.toFixed(5);
+      const lon = position.coords.longitude.toFixed(5);
+      document.getElementById("location").textContent = `Location: ${lat}, ${lon}`;
     }
 
-    function showError(error) {
-      const locationText = document.getElementById("location");
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          locationText.textContent = "Location: Permission denied.";
-          break;
-        case error.POSITION_UNAVAILABLE:
-          locationText.textContent = "Location: Not available.";
-          break;
-        case error.TIMEOUT:
-          locationText.textContent = "Location: Timeout.";
-          break;
-        default:
-          locationText.textContent = "Location: Unknown error.";
-      }
+    function showError(err) {
+      const text = document.getElementById("location");
+      text.textContent = "Location: Not available.";
     }
 
     if ("geolocation" in navigator) {
@@ -195,21 +165,10 @@
     } else {
       document.getElementById("location").textContent = "Location: Not supported.";
     }
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Page load hote hi screen ko center pe le aao
-  window.scrollTo({
-    top: y - window.innerHeight / 2,
-    left: x - window.innerWidth / 2,
-    behavior: "auto"
-  });
-
-  moveDot(x, y); // dot ko bhi wahi pe dikhao
-});
-
   </script>
 </body>
 </html>
+
 
 
 
