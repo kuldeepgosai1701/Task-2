@@ -179,9 +179,13 @@
         x += gamma * 0.05;
         y += beta * 0.05;
 
-        // Keep dot inside screen
-        x = Math.max(0, Math.min(window.innerWidth - 20, x));
-        y = Math.max(0, Math.min(window.innerHeight - 20, y));
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+
+    if (x < 0) x = screenW;
+    if (x > screenW) x = 0;
+    if (y < 0) y = screenH;
+    if (y > screenH) y = 0;
 
         moveDot(x, y);
         updateDirection(gamma, beta);
@@ -196,8 +200,13 @@ window.addEventListener("devicemotion", (event) => {
     x += acc.x * 2;
     y += acc.y * 2;
 
-    x = Math.max(0, Math.min(window.innerWidth - 20, x));
-    y = Math.max(0, Math.min(window.innerHeight - 20, y));
+   const screenW = window.innerWidth;
+   const screenH = window.innerHeight;
+
+    if (x < 0) x = screenW;
+    if (x > screenW) x = 0;
+    if (y < 0) y = screenH;
+    if (y > screenH) y = 0;
 
     moveDot(x, y);
   }
