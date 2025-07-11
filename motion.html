@@ -11,17 +11,36 @@
       box-sizing: border-box;
     }
 
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
       font-family: Arial, sans-serif;
       background: #f0f0f0;
-      overflow: scroll;
-      height: 100vh;
     }
 
-    #world {
+    main {
       position: relative;
-      width: 100vw;
-      height: 100vh;
+      min-width: 100vw;
+      min-height: 100vh;
+    }
+
+    #dot {
+      width: 20px;
+      height: 20px;
+      background: blue;
+      border-radius: 50%;
+      position: absolute;
+      z-index: 10;
+    }
+
+    .trail {
+      width: 6px;
+      height: 6px;
+      background: rgba(0, 0, 255, 0.4);
+      border-radius: 50%;
+      position: absolute;
+      z-index: 1;
     }
 
     .info {
@@ -32,68 +51,66 @@
       padding: 10px;
       border-radius: 8px;
       z-index: 100;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
     }
 
-    #dot {
-      width: 18px;
-      height: 18px;
-      background: blue;
-      border-radius: 50%;
-      position: absolute;
-      z-index: 10;
-    }
-
-    .trail {
-      width: 5px;
-      height: 5px;
-      background: rgba(0, 0, 255, 0.5);
-      border-radius: 50%;
-      position: absolute;
-      z-index: 1;
+    button {
+      margin-top: 5px;
+      padding: 6px 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
 
   <div class="info">
-    <p id="direction">Direction: Center</p>
-    <p id="location">Location: Fetching...</p>
+    <p>Direction: <span id="direction">Center</span></p>
+    <p>Location: <span id="location">Fetching...</span></p>
     <button onclick="location.reload()">Reset</button>
   </div>
 
-  <div id="world">
+  <main id="main">
     <div id="dot"></div>
-  </div>
+  </main>
 
   <script>
     const dot = document.getElementById("dot");
-    const world = document.getElementById("world");
+    const main = document.getElementById("main");
     const directionText = document.getElementById("direction");
 
-    // Create an expanding world dynamically
+    // Start position: center of screen
     let x = window.innerWidth / 2 + window.scrollX;
     let y = window.innerHeight / 2 + window.scrollY;
 
-    function moveDot(newX, newY) {
-      dot.style.left = `${newX}px`;
-      dot.style.top = `${newY}px`;
+    // Scroll page so dot is centered
+    window.scrollTo(x - window.innerWidth / 2, y - window.innerHeight / 2);
+    moveDot(x, y);
 
+    function moveDot(newX, newY) {
+      // Move dot
+      dot.style.left = newX + "px";
+      dot.style.top = newY + "px";
+
+      // Draw trail
       const trail = document.createElement("div");
       trail.className = "trail";
-      trail.style.left = `${newX + 6}px`;
-      trail.style.top = `${newY + 6}px`;
-      world.appendChild(trail);
+      trail.style.left = (newX + 7) + "px";
+      trail.style.top = (newY + 7) + "px";
+      main.appendChild(trail);
 
-      // Auto-scroll to follow dot
+      // Auto-scroll screen with dot
       window.scrollTo({
-        top: newY - window.innerHeight / 2,
         left: newX - window.innerWidth / 2,
-        behavior: "smooth"
+        top: newY - window.innerHeight / 2,
+        behavior: "auto"
       });
 
-      // Expand world if needed
-      world.style.width = Math.max(world.offsetWidth, newX + 100) + "px";
-      world.style.height = Math.max(world.offsetHeight, newY + 100) + "px";
+      // Dynamically expand world if dot moves further
+      main.style.width = Math.max(main.offsetWidth, newX + 100) + "px";
+      main.style.height = Math.max(main.offsetHeight, newY + 100) + "px";
     }
 
     function updateDirection(gamma, beta) {
@@ -103,39 +120,38 @@
       if (gamma > 5) dir += "East";
       else if (gamma < -5) dir += "West";
       if (dir === "") dir = "Center";
-      directionText.textContent = `Direction: ${dir}`;
+      directionText.textContent = dir;
     }
 
-    // Initial dot
-    moveDot(x, y);
-
-    // ✅ Gyroscope Movement
+    // Gyroscope motion
     window.addEventListener("deviceorientation", (event) => {
       const gamma = event.gamma;
       const beta = event.beta;
 
       if (gamma && beta) {
-        x += gamma * 1;
-        y += beta * 1;
+        x += gamma * 1.2;
+        y += beta * 1.2;
+
         moveDot(x, y);
         updateDirection(gamma, beta);
       }
     });
 
-    // ✅ GPS
+    // Optional: Use GPS
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const lat = pos.coords.latitude.toFixed(5);
         const lon = pos.coords.longitude.toFixed(5);
-        document.getElementById("location").textContent = `Location: ${lat}, ${lon}`;
+        document.getElementById("location").textContent = `${lat}, ${lon}`;
       },
       () => {
-        document.getElementById("location").textContent = "Location: Not Available";
+        document.getElementById("location").textContent = "Not Available";
       }
     );
   </script>
 </body>
 </html>
+
 
 
 
