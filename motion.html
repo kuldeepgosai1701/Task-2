@@ -195,6 +195,18 @@
     } else {
       document.getElementById("location").textContent = "Location: Not supported.";
     }
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Page load hote hi screen ko center pe le aao
+  window.scrollTo({
+    top: y - window.innerHeight / 2,
+    left: x - window.innerWidth / 2,
+    behavior: "auto"
+  });
+
+  moveDot(x, y); // dot ko bhi wahi pe dikhao
+});
+
   </script>
 </body>
 </html>
