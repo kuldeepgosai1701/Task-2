@@ -329,6 +329,7 @@ function downloadGPS() {
 
 // ✅ Refresh Firebase Table (without clearing Firebase data)
 function refreshTable() {
+   console.log("🔄 Refreshing table...");
   tableBody.innerHTML = ""; // clear table
   db.ref("motionData").limitToLast(30).once("value", (snapshot) => {
     snapshot.forEach((child) => {
