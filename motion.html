@@ -168,8 +168,9 @@ function saveToDatabase(axisX, axisY, direction, vibration) {
     db.ref("motionData").push(data);
     console.log("Saved to Firebase:", data);
     lastSaveTime = now;
-  }
-}
+  }else {
+    console.log("⏳ Skipped saving to Firebase to slow down speed");
+}}
 
     // ✅ Helper: Get Direction from gamma/beta
     function getDirection(gamma, beta) {
