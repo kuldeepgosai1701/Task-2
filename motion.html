@@ -147,6 +147,9 @@
     const directionText = document.getElementById("direction");
     const tableBody = document.getElementById("table-body");
     let lastSaveTime = 0; 
+    let lastOrientationSaveTime = 0;
+    let lastMotionSaveTime = 0;
+
 
     function moveDot(newX, newY, vibration = false) {
       dot.style.left = `${newX - dot.offsetWidth / 2}px`;
@@ -253,11 +256,11 @@
         const direction = getDirection(gamma, beta);
         moveDot(x, y, false);
         updateDirection(gamma, beta);
-            const now = Date.now();
-            if (now - lastSaveTime > 300) {
-      lastSaveTime = now;
-      saveToDatabase(gamma, beta, alpha, direction, false);
-    }
+          const now = Date.now();
+if (now - lastOrientationSaveTime > 500) {
+  lastOrientationSaveTime = now;
+  saveToDatabase(gamma, beta, alpha, direction, false);
+}
 
       }
     }
@@ -291,11 +294,12 @@
         y = Math.max(0, Math.min(y, window.innerHeight - dotSize));
 
         moveDot(x, y, vibrate);
-           const now = Date.now();
-    if (now - lastSaveTime > 300) {
-      lastSaveTime = now;
-      saveToDatabase(acc.x, acc.y, acc.z ?? 0, "N/A", vibrate);
-    }
+         const now = Date.now();
+if (now - lastMotionSaveTime > 500) {
+  lastMotionSaveTime = now;
+  saveToDatabase(acc.x, acc.y, acc.z ?? 0, "N/A", vibrate);
+}
+
 
       }
     });
