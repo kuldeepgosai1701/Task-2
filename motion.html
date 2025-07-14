@@ -94,6 +94,7 @@
       <p id="direction">Direction: Center</p>
       <p id="location">Location: Fetching...</p>
       <button onclick="resetData()">Reset</button>
+      <button onclick="downloadGPSData()">Save GPS</button>
       <div class="compass">N</div>
     </div>
 
@@ -125,6 +126,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <script>
+    
+
     const firebaseConfig = {
       apiKey: "AIzaSyDh77dygGxVJMc8hRgm_ruQS_DW-vq_39M",
       authDomain: "gyroscope-explorer-1bafb.firebaseapp.com",
@@ -142,6 +145,9 @@
     let currentLongitude = null;
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
+
+    let gpsDataList = [];
+
     const dot = document.getElementById("dot");
     const main = document.getElementById("main");
     const directionText = document.getElementById("direction");
@@ -208,12 +214,18 @@
         });
       }
     }
+function showLocation(position) {
+  currentLatitude = position.coords.latitude.toFixed(5);
+  currentLongitude = position.coords.longitude.toFixed(5);
+  document.getElementById("location").textContent = `Location: ${currentLatitude}, ${currentLongitude}`;
 
-    function showLocation(position) {
-      currentLatitude = position.coords.latitude.toFixed(5);
-      currentLongitude = position.coords.longitude.toFixed(5);
-      document.getElementById("location").textContent = `Location: ${currentLatitude}, ${currentLongitude}`;
-    }
+  // Save ONLY latitude and longitude
+  gpsDataList.push({
+    latitude: currentLatitude,
+    longitude: currentLongitude
+  });
+}
+
 
     function showError(error) {
       const locationText = document.getElementById("location");
@@ -325,6 +337,25 @@ if (now - lastMotionSaveTime > 1000) {
 
       tableBody.insertBefore(row, tableBody.firstChild);
     });
+     function downloadGPSData() {
+  if (gpsDataList.length === 0) {
+    alert("No GPS data to download.");
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify(gpsDataList, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "gps_data.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
+
   </script>
 </body>
 </html>
