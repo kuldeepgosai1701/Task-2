@@ -62,10 +62,10 @@
     .trail {
       width: 5px;
       height: 5px;
-      background: rgba(0, 0, 255, 0.5);
       border-radius: 50%;
       position: absolute;
       z-index: 1;
+      transition: all 0.3s ease;
     }
 
     footer {
@@ -96,7 +96,7 @@
       <button onclick="resetData()">Reset</button>
       <div class="compass">N</div>
     </div>
-    
+
     <div id="dot"></div>
 
     <div style="position:absolute; bottom:0; width:100%; max-height:200px; overflow:auto; background:#fff;">
@@ -106,6 +106,7 @@
             <th>Time</th>
             <th>X</th>
             <th>Y</th>
+            <th>Z</th>
             <th>Direction</th>
             <th>Vibration</th>
             <th>Latitude</th>
@@ -131,8 +132,7 @@
       projectId: "gyroscope-explorer-1bafb",
       storageBucket: "gyroscope-explorer-1bafb.appspot.com",
       messagingSenderId: "471468344921",
-      appId: "1:471468344921:web:2c944e8a3b5da71c401348",
-      measurementId: "G-MH8B0QS86S"
+      appId: "1:471468344921:web:2c944e8a3b5da71c401348"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -147,7 +147,7 @@
     const directionText = document.getElementById("direction");
     const tableBody = document.getElementById("table-body");
 
-    function moveDot(newX, newY) {
+    function moveDot(newX, newY, vibration = false) {
       dot.style.left = `${newX - dot.offsetWidth / 2}px`;
       dot.style.top = `${newY - dot.offsetHeight / 2}px`;
 
@@ -155,6 +155,15 @@
       trail.className = "trail";
       trail.style.left = `${newX - 1}px`;
       trail.style.top = `${newY - 1}px`;
+
+      if (vibration) {
+        trail.style.background = "red";
+        trail.style.width = "10px";
+        trail.style.height = "10px";
+      } else {
+        trail.style.background = "blue";
+      }
+
       main.appendChild(trail);
     }
 
@@ -171,17 +180,18 @@
       directionText.textContent = `Direction: ${getDirection(gamma, beta)}`;
     }
 
-    function saveToDatabase(axisX, axisY, direction, vibration) {
+    function saveToDatabase(x, y, z, direction, vibration) {
       const data = {
         axis: {
-          x: axisX.toFixed(2),
-          y: axisY.toFixed(2)
+          x: x?.toFixed(2),
+          y: y?.toFixed(2),
+          z: z?.toFixed(2) ?? "N/A"
         },
         latitude: currentLatitude,
         longitude: currentLongitude,
         timestamp: new Date().toISOString(),
-        direction: direction,
-        vibration: vibration
+        direction,
+        vibration
       };
       db.ref("motionData").push(data);
     }
@@ -224,25 +234,23 @@
       document.getElementById("location").textContent = "Location: Not supported.";
     }
 
-    // 🧭 Orientation permission for iOS
     function handleOrientation(event) {
       const gamma = event.gamma;
       const beta = event.beta;
+      const alpha = event.alpha;
 
-      if (gamma !== null && beta !== null) {
+      if (gamma !== null && beta !== null && alpha !== null) {
         x += gamma * 0.05;
         y += beta * 0.05;
 
         const dotSize = dot.offsetWidth;
-        if (x < 0) x = 0;
-        if (x > window.innerWidth - dotSize) x = window.innerWidth - dotSize;
-        if (y < 0) y = 0;
-        if (y > window.innerHeight - dotSize) y = window.innerHeight - dotSize;
+        x = Math.max(0, Math.min(x, window.innerWidth - dotSize));
+        y = Math.max(0, Math.min(y, window.innerHeight - dotSize));
 
-        moveDot(x, y);
         const direction = getDirection(gamma, beta);
+        moveDot(x, y, false);
         updateDirection(gamma, beta);
-        saveToDatabase(gamma, beta, direction, false);
+        saveToDatabase(gamma, beta, alpha, direction, false);
       }
     }
 
@@ -259,20 +267,23 @@
       }
     });
 
+    function detectVibration(x, y) {
+      return Math.abs(x) > 2 || Math.abs(y) > 2;
+    }
+
     window.addEventListener("devicemotion", (event) => {
       const acc = event.acceleration;
       if (acc?.x !== null && acc?.y !== null) {
+        const vibrate = detectVibration(acc.x, acc.y);
         x += acc.x * 2;
         y += acc.y * 2;
 
         const dotSize = dot.offsetWidth;
-        if (x < 0) x = 0;
-        if (x > window.innerWidth - dotSize) x = window.innerWidth - dotSize;
-        if (y < 0) y = 0;
-        if (y > window.innerHeight - dotSize) y = window.innerHeight - dotSize;
+        x = Math.max(0, Math.min(x, window.innerWidth - dotSize));
+        y = Math.max(0, Math.min(y, window.innerHeight - dotSize));
 
-        moveDot(x, y);
-        saveToDatabase(acc.x, acc.y, "N/A", true);
+        moveDot(x, y, vibrate);
+        saveToDatabase(acc.x, acc.y, acc.z ?? 0, "N/A", vibrate);
       }
     });
 
@@ -280,12 +291,17 @@
       const data = snapshot.val();
       const row = document.createElement("tr");
 
+      if (data.vibration) {
+        row.style.background = "#ffe5e5";
+      }
+
       row.innerHTML = `
         <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
         <td>${data.axis.x}</td>
         <td>${data.axis.y}</td>
+        <td>${data.axis.z ?? "N/A"}</td>
         <td>${data.direction}</td>
-        <td>${data.vibration ? "Yes" : "No"}</td>
+        <td>${data.vibration ? "💥 Yes" : "✅ No"}</td>
         <td>${data.latitude ?? "N/A"}</td>
         <td>${data.longitude ?? "N/A"}</td>
       `;
