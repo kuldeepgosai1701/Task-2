@@ -4,13 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gyroscope Motion Tracker</title>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database-compat.js"></script>
+
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body, html {
       height: 100%;
       font-family: Arial, sans-serif;
@@ -19,7 +23,6 @@
       display: flex;
       flex-direction: column;
     }
-
     header {
       background: #222;
       color: #fff;
@@ -27,13 +30,11 @@
       padding: 15px;
       font-size: 1.5rem;
     }
-
     main {
       flex: 1;
       position: relative;
       overflow: hidden;
     }
-
     .info {
       position: absolute;
       top: 10px;
@@ -43,7 +44,6 @@
       border-radius: 8px;
       z-index: 10;
     }
-
     button {
       margin-top: 5px;
       padding: 5px 12px;
@@ -53,7 +53,6 @@
       color: white;
       border-radius: 4px;
     }
-
     #dot {
       width: 18px;
       height: 18px;
@@ -62,7 +61,6 @@
       position: absolute;
       z-index: 5;
     }
-
     .trail {
       width: 5px;
       height: 5px;
@@ -71,26 +69,22 @@
       position: absolute;
       z-index: 1;
     }
-
     footer {
       background: #ddd;
       text-align: center;
       padding: 10px;
       font-size: 0.9rem;
     }
-
-   .compass {
-  font-size: 20px;
-  font-weight: bold;
-  text-align: center;
-  margin-top: 10px;
-  color: #333;
-}
-
+    .compass {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 10px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
-
   <header>Motion Tracker</header>
 
   <main id="main">
@@ -98,8 +92,8 @@
       <p>Move your phone to see the motion path.</p>
       <p id="direction">Direction: Center</p>
       <p id="location">Location: Fetching...</p>
-       <button onclick="location.reload()">Reset</button>
-        <div class="compass">N</div>
+      <button onclick="location.reload()">Reset</button>
+      <div class="compass">N</div>
     </div>
     <div id="dot"></div>
   </main>
@@ -107,11 +101,31 @@
   <footer>Created by Kuldeep Gosai</footer>
 
   <script>
+    // ✅ Firebase config - replace YOUR_... with your actual keys
+    const firebaseConfig = {
+      apiKey: "AIzaSyDh77dygGxVJMc8hRgm_ruQS_DW-vq_39M",
+      authDomain: "gyroscope-explorer-1bafb.firebaseapp.com",
+      databaseURL: "https://gyroscope-explorer-1bafb-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "gyroscope-explorer-1bafb",
+      storageBucket: "gyroscope-explorer-1bafb.firebasestorage.app",
+      messagingSenderId: "471468344921",
+      appId: "1:471468344921:web:e2ea23f0a55cac1c401348",
+      measurementId: "G-M2DGTV5ZGW"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function sendDataToFirebase(data) {
+      const timestamp = Date.now();
+      db.ref('motions/' + timestamp).set(data);
+    }
+
     const dot = document.getElementById("dot");
     const main = document.getElementById("main");
     const directionText = document.getElementById("direction");
 
-    // Start dot at center of screen
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
 
@@ -134,46 +148,43 @@
       else if (gamma < -5) dir += "West";
       if (dir === "") dir = "Center";
       directionText.textContent = `Direction: ${dir}`;
+      return dir;
     }
 
-    // Initial dot
     moveDot(x, y);
 
-    // ✅ GPS Code Starts Here
-  function showLocation(position) {
-    const latitude = position.coords.latitude.toFixed(5);
-    const longitude = position.coords.longitude.toFixed(5);
-    document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
-  }
-
-  function showError(error) {
-    const locationText = document.getElementById("location");
-    switch(error.code) {
-      case error.PERMISSION_DENIED:
-        locationText.textContent = "Location: Permission denied.";
-        break;
-      case error.POSITION_UNAVAILABLE:
-        locationText.textContent = "Location: Not available.";
-        break;
-      case error.TIMEOUT:
-        locationText.textContent = "Location: Timeout.";
-        break;
-      default:
-        locationText.textContent = "Location: Unknown error.";
+    // ✅ GPS Code
+    function showLocation(position) {
+      const latitude = position.coords.latitude.toFixed(5);
+      const longitude = position.coords.longitude.toFixed(5);
+      document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
     }
-  }
 
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(showLocation, showError);
-  } else {
-    document.getElementById("location").textContent = "Location: Not supported.";
-  }
-  // ✅ GPS Code Ends Here
+    function showError(error) {
+      const locationText = document.getElementById("location");
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          locationText.textContent = "Location: Permission denied.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          locationText.textContent = "Location: Not available.";
+          break;
+        case error.TIMEOUT:
+          locationText.textContent = "Location: Timeout.";
+          break;
+        default:
+          locationText.textContent = "Location: Unknown error.";
+      }
+    }
 
-    // Mobile device gyroscope tracking
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(showLocation, showError);
+    }
+
+    // ✅ Orientation (rotation)
     window.addEventListener("deviceorientation", (event) => {
-      const gamma = event.gamma; // left-right
-      const beta = event.beta;   // front-back
+      const gamma = event.gamma;
+      const beta = event.beta;
 
       if (gamma !== null && beta !== null) {
         x += gamma * 0.05;
@@ -182,38 +193,54 @@
         const screenW = window.innerWidth;
         const screenH = window.innerHeight;
 
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
+        if (x < 0) x = screenW;
+        if (x > screenW) x = 0;
+        if (y < 0) y = screenH;
+        if (y > screenH) y = 0;
 
         moveDot(x, y);
-        updateDirection(gamma, beta);
+        const direction = updateDirection(gamma, beta);
+
+        sendDataToFirebase({
+          type: "orientation",
+          gamma: gamma,
+          beta: beta,
+          direction: direction,
+          timestamp: Date.now()
+        });
       }
     });
 
-// Optional: Track movement due to vibration or shake
-window.addEventListener("devicemotion", (event) => {
-  const acc = event.acceleration;
+    // ✅ Vibration (acceleration)
+    window.addEventListener("devicemotion", (event) => {
+      const acc = event.acceleration;
 
-  if (acc && acc.x !== null && acc.y !== null) {
-    x += acc.x * 2;
-    y += acc.y * 2;
+      if (acc && acc.x !== null && acc.y !== null) {
+        x += acc.x * 2;
+        y += acc.y * 2;
 
-   const screenW = window.innerWidth;
-   const screenH = window.innerHeight;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
 
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
+        if (x < 0) x = screenW;
+        if (x > screenW) x = 0;
+        if (y < 0) y = screenH;
+        if (y > screenH) y = 0;
 
-    moveDot(x, y);
-  }
-});
+        moveDot(x, y);
+
+        sendDataToFirebase({
+          type: "vibration",
+          accX: acc.x,
+          accY: acc.y,
+          timestamp: Date.now()
+        });
+      }
+    });
   </script>
 </body>
 </html>
+
 
 
 
