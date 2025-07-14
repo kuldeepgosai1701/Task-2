@@ -146,6 +146,7 @@
     const main = document.getElementById("main");
     const directionText = document.getElementById("direction");
     const tableBody = document.getElementById("table-body");
+    let lastSaveTime = 0; 
 
     function moveDot(newX, newY, vibration = false) {
       dot.style.left = `${newX - dot.offsetWidth / 2}px`;
@@ -234,6 +235,8 @@
       document.getElementById("location").textContent = "Location: Not supported.";
     }
 
+      
+
     function handleOrientation(event) {
       const gamma = event.gamma;
       const beta = event.beta;
@@ -250,7 +253,12 @@
         const direction = getDirection(gamma, beta);
         moveDot(x, y, false);
         updateDirection(gamma, beta);
-        saveToDatabase(gamma, beta, alpha, direction, false);
+            const now = Date.now();
+            if (now - lastSaveTime > 300) {
+      lastSaveTime = now;
+      saveToDatabase(gamma, beta, alpha, direction, false);
+    }
+
       }
     }
 
@@ -283,7 +291,12 @@
         y = Math.max(0, Math.min(y, window.innerHeight - dotSize));
 
         moveDot(x, y, vibrate);
-        saveToDatabase(acc.x, acc.y, acc.z ?? 0, "N/A", vibrate);
+           const now = Date.now();
+    if (now - lastSaveTime > 300) {
+      lastSaveTime = now;
+      saveToDatabase(acc.x, acc.y, acc.z ?? 0, "N/A", vibrate);
+    }
+
       }
     });
 
