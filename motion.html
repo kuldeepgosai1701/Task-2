@@ -97,7 +97,7 @@
       <p>Move your phone to see the motion path.</p>
       <p id="direction">Direction: Center</p>
       <p id="location">Location: Fetching...</p>
-      <button onclick="location.reload()">Reset</button>
+      <button onclick="resetData()">Reset</button>
       <div class="compass">N</div>
     </div>
      
@@ -111,6 +111,8 @@
         <th>Y</th>
         <th>Direction</th>
         <th>Vibration</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
       </tr>
     </thead>
     <tbody id="table-body">
@@ -155,6 +157,12 @@
         direction: direction,
         vibration: vibration
       };
+       latitude: currentLatitude,
+       longitude: currentLongitude,
+       timestamp: new Date().toISOString(),
+       direction: direction,
+       vibration: vibration
+    };
       db.ref("motionData").push(data);
       console.log("Saved to Firebase:", data);
     }
@@ -178,6 +186,9 @@
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
 
+   let currentLatitude = null;
+   let currentLongitude = null;
+
     function moveDot(newX, newY) {
       dot.style.left = `${newX}px`;
       dot.style.top = `${newY}px`;
@@ -198,10 +209,10 @@
 
     // ✅ GPS Location
     function showLocation(position) {
-      const latitude = position.coords.latitude.toFixed(5);
-      const longitude = position.coords.longitude.toFixed(5);
-      document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
-    }
+     currentLatitude = position.coords.latitude.toFixed(5);
+  currentLongitude = position.coords.longitude.toFixed(5);
+  document.getElementById("location").textContent = `Location: ${currentLatitude}, ${currentLongitude}`;
+}
 
     function showError(error) {
       const locationText = document.getElementById("location");
@@ -282,10 +293,26 @@ db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
     <td>${data.axis.y}</td>
     <td>${data.direction}</td>
     <td>${data.vibration ? "Yes" : "No"}</td>
+     <td>${data.latitude ?? "N/A"}</td>
+     <td>${data.longitude ?? "N/A"}</td>
   `;
 
   tableBody.insertBefore(row, tableBody.firstChild); // newest on top
 });
+
+function resetData() {
+  if (confirm("Are you sure you want to reset all motion data?")) {
+    // ✅ Firebase database me "motionData" node ko hatao
+    db.ref("motionData").remove().then(() => {
+      alert("Data cleared successfully."); // ✅ Alert dikhao
+      location.reload(); // ✅ Page reload karo
+    }).catch((error) => {
+      console.error("Error deleting data:", error);
+      alert("Failed to delete data.");
+    });
+  }
+}
+
 
   </script>
 </body>
