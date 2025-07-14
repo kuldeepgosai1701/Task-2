@@ -329,22 +329,21 @@ function downloadGPS() {
 
 // ✅ Refresh Firebase Table (without clearing Firebase data)
 function refreshTable() {
-   console.log("🔄 Refreshing table...");
-  tableBody.innerHTML = ""; // clear table
-  db.ref("motionData").limitToLast(30).once("value", (snapshot) => {
-    snapshot.forEach((child) => {
-      const data = child.val();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
-        <td>${data.axis.x}</td>
-        <td>${data.axis.y}</td>
-        <td>${data.direction}</td>
-        <td>${data.vibration ? "Yes" : "No"}</td>
-      `;
-      tableBody.insertBefore(row, tableBody.firstChild);
-    });
-  });
+  if (confirm("Are you sure you want to clear all old motion data?")) {
+    // 1️⃣ Clear motionData from Firebase
+    db.ref("motionData").remove()
+      .then(() => {
+        console.log("✅ Firebase data cleared.");
+
+        // 2️⃣ Clear the HTML table
+        tableBody.innerHTML = "";
+        alert("Old data cleared. Now tracking new data only.");
+      })
+      .catch((error) => {
+        console.error("❌ Error clearing data:", error);
+        alert("Failed to clear data.");
+      });
+  }
 }
 
   </script>
