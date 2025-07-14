@@ -291,14 +291,23 @@ if (now - lastOrientationSaveTime > 1000) {
       }
     });
 
-    function detectVibration(x, y) {
-      return Math.abs(x) > 2 || Math.abs(y) > 2;
+    function detectVibration(x, y, z=0) {
+      return Math.abs(x) > 10 || Math.abs(y) >10 Math.abs(x) > 10 ;
     }
 
     window.addEventListener("devicemotion", (event) => {
       const acc = event.acceleration;
       if (acc?.x !== null && acc?.y !== null) {
-        const vibrate = detectVibration(acc.x, acc.y);
+        const vibrate = detectVibration(acc.x, acc.y acc.z ?? 0 );
+
+         // 🔥 Step 3: Add this logging for debugging
+        if (vibrate) {
+       console.log("💥 Vibration Detected!", {
+        x: acc.x.toFixed(2),
+        y: acc.y.toFixed(2),
+        z: acc.z?.toFixed(2) ?? "N/A"
+      });
+    }
         x += acc.x * 2;
         y += acc.y * 2;
 
