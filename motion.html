@@ -100,7 +100,25 @@
       <button onclick="location.reload()">Reset</button>
       <div class="compass">N</div>
     </div>
+     
     <div id="dot"></div>
+    <div style="position:absolute; bottom:0; width:100%; max-height:200px; overflow:auto; background:#fff;">
+  <table id="data-table" border="1" style="width:100%; font-size:0.8rem; border-collapse:collapse;">
+    <thead style="position:sticky; top:0; background:#007bff; color:white;">
+      <tr>
+        <th>Time</th>
+        <th>X</th>
+        <th>Y</th>
+        <th>Direction</th>
+        <th>Vibration</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      <!-- Firebase data rows will appear here -->
+    </tbody>
+  </table>
+</div>
+
   </main>
 
   <footer>Created by Kuldeep Gosai</footer>
@@ -251,6 +269,24 @@
         saveToDatabase(acc.x, acc.y, "N/A", true);
       }
     });
+// ✅ Firebase real-time listener for table
+const tableBody = document.getElementById("table-body");
+
+db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
+  const data = snapshot.val();
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
+    <td>${data.axis.x}</td>
+    <td>${data.axis.y}</td>
+    <td>${data.direction}</td>
+    <td>${data.vibration ? "Yes" : "No"}</td>
+  `;
+
+  tableBody.insertBefore(row, tableBody.firstChild); // newest on top
+});
+
   </script>
 </body>
 </html>
