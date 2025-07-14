@@ -110,8 +110,7 @@
             <th>Z</th>
             <th>Direction</th>
             <th>Vibration</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
+            
           </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -333,8 +332,7 @@ if (now - lastMotionSaveTime > 1000) {
         <td>${data.axis.z ?? "N/A"}</td>
         <td>${data.direction}</td>
         <td>${data.vibration ? "💥 Yes" : "✅ No"}</td>
-        <td>${data.latitude ?? "N/A"}</td>
-        <td>${data.longitude ?? "N/A"}</td>
+       
       `;
 
       tableBody.insertBefore(row, tableBody.firstChild);
