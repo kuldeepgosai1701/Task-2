@@ -217,9 +217,11 @@
 function showLocation(position) {
   currentLatitude = position.coords.latitude.toFixed(5);
   currentLongitude = position.coords.longitude.toFixed(5);
-  document.getElementById("location").textContent = `Location: ${currentLatitude}, ${currentLongitude}`;
 
-  // Save ONLY latitude and longitude
+  // Hide location from screen (if you want nothing visible)
+  document.getElementById("location").textContent = `Location: (Hidden)`;
+
+  // Save ONLY to file (keep storing)
   gpsDataList.push({
     latitude: currentLatitude,
     longitude: currentLongitude
