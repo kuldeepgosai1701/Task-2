@@ -145,6 +145,12 @@
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
 
+window.addEventListener("load", () => {
+  // Wait till page fully loads
+  moveDot(x, y);  // center me dot dikhe
+});
+
+
     let gpsDataList = [];
 
     const dot = document.getElementById("dot");
@@ -284,10 +290,12 @@ if (now - lastOrientationSaveTime > 1000) {
         DeviceOrientationEvent.requestPermission().then(state => {
           if (state === "granted") {
             window.addEventListener("deviceorientation", handleOrientation);
+            window.addEventListener("devicemotion", handleMotion);
           }
         }).catch(console.error);
       } else {
         window.addEventListener("deviceorientation", handleOrientation);
+         window.addEventListener("devicemotion", handleMotion); // ADD THIS
       }
     });
 
