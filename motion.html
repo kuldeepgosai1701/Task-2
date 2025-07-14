@@ -131,6 +131,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <script>
+
+   let lastSaveTime = 0; // For throttling
+   const SAVE_INTERVAL = 1000; // in milliseconds (1000ms = 1 second)
+
     // ✅ Firebase Config (replace with your actual config from Firebase console)
     const firebaseConfig = {
       apiKey: "AIzaSyDh77dygGxVJMc8hRgm_ruQS_DW-vq_39M",
@@ -148,19 +152,24 @@
     const db = firebase.database();
 
     // ✅ Helper: Save data to Firebase
-    function saveToDatabase(axisX, axisY, direction, vibration) {
-      const data = {
-        axis: {
-          x: axisX.toFixed(2),
-          y: axisY.toFixed(2)
-        },
-        timestamp: new Date().toISOString(),
-        direction: direction,
-        vibration: vibration
-      };
-      db.ref("motionData").push(data);
-      console.log("Saved to Firebase:", data);
-    }
+   
+function saveToDatabase(axisX, axisY, direction, vibration) {
+  const now = Date.now();
+  if (now - lastSaveTime >= SAVE_INTERVAL) {
+    const data = {
+      axis: {
+        x: axisX.toFixed(2),
+        y: axisY.toFixed(2)
+      },
+      timestamp: new Date().toISOString(),
+      direction: direction,
+      vibration: vibration
+    };
+    db.ref("motionData").push(data);
+    console.log("Saved to Firebase:", data);
+    lastSaveTime = now;
+  }
+}
 
     // ✅ Helper: Get Direction from gamma/beta
     function getDirection(gamma, beta) {
