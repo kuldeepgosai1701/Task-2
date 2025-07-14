@@ -257,7 +257,7 @@
         moveDot(x, y, false);
         updateDirection(gamma, beta);
           const now = Date.now();
-if (now - lastOrientationSaveTime > 500) {
+if (now - lastOrientationSaveTime > 1000) {
   lastOrientationSaveTime = now;
   saveToDatabase(gamma, beta, alpha, direction, false);
 }
@@ -295,7 +295,7 @@ if (now - lastOrientationSaveTime > 500) {
 
         moveDot(x, y, vibrate);
          const now = Date.now();
-if (now - lastMotionSaveTime > 500) {
+if (now - lastMotionSaveTime > 1000) {
   lastMotionSaveTime = now;
   saveToDatabase(acc.x, acc.y, acc.z ?? 0, "N/A", vibrate);
 }
