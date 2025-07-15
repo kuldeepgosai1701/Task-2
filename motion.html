@@ -279,13 +279,18 @@ db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
   const data = snapshot.val();
   const row = document.createElement("tr");
 
-  row.innerHTML = `
-    <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
-    <td>${data.axis.x}</td>
-    <td>${data.axis.y}</td>
-    <td>${data.direction}</td>
-    <td>${data.vibration ? "Yes" : "No"}</td>
-  `;
+ const vibrationStyle = data.vibration
+  ? 'style="background:#ffcccc; font-weight:bold;"'  // red & bold
+  : "";
+
+row.innerHTML = `
+  <td ${vibrationStyle}>${new Date(data.timestamp).toLocaleTimeString()}</td>
+  <td ${vibrationStyle}>${data.axis.x}</td>
+  <td ${vibrationStyle}>${data.axis.y}</td>
+  <td ${vibrationStyle}>${data.direction}</td>
+  <td ${vibrationStyle}>${data.vibration ? "🔴 Vibrated" : "No"}</td>
+`;
+
 
   tableBody.insertBefore(row, tableBody.firstChild); // newest on top
 });
