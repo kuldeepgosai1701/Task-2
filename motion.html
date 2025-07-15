@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,9 +97,7 @@
       <p>Move your phone to see the motion path.</p>
       <p id="direction">Direction: Center</p>
       <p id="location">Location: Fetching...</p>
-      <button onclick="resetApp()">Reset</button>
-      <button onclick="saveGPSToFile()">Save GPS</button>
-
+      <button onclick="location.reload()">Reset</button>
       <div class="compass">N</div>
     </div>
      
@@ -162,20 +159,16 @@
       console.log("Saved to Firebase:", data);
     }
 
-   function detectVibration(x, y, threshold = 2.0) {
-  return Math.abs(x) > threshold || Math.abs(y) > threshold;
-}
-
-function getDirection(gamma, beta) {
-  let dir = "";
-  if (beta > 5) dir += "South ";
-  else if (beta < -5) dir += "North ";
-  if (gamma > 5) dir += "East";
-  else if (gamma < -5) dir += "West";
-  if (dir === "") dir = "Center";
-  return dir;
-}
-
+    // ✅ Helper: Get Direction from gamma/beta
+    function getDirection(gamma, beta) {
+      let dir = "";
+      if (beta > 5) dir += "South ";
+      else if (beta < -5) dir += "North ";
+      if (gamma > 5) dir += "East";
+      else if (gamma < -5) dir += "West";
+      if (dir === "") dir = "Center";
+      return dir;
+    }
 
     // ✅ Dot Movement Logic
     const dot = document.getElementById("dot");
@@ -184,8 +177,6 @@ function getDirection(gamma, beta) {
 
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
-
-   let latestDirection = "Center";
 
     function moveDot(newX, newY) {
       dot.style.left = `${newX}px`;
@@ -253,116 +244,53 @@ function getDirection(gamma, beta) {
         if (y > screenH) y = 0;
 
         moveDot(x, y);
-       latestDirection = getDirection(gamma, beta); // ✅ update global direction
-    directionText.textContent = `Direction: ${latestDirection}`;
-        saveToDatabase(gamma, beta, latestdirection, false);
+        const direction = getDirection(gamma, beta);
+        updateDirection(gamma, beta);
+        saveToDatabase(gamma, beta, direction, false);
       }
     });
 
-   window.addEventListener("devicemotion", (event) => {
-  const acc = event.acceleration;
-  if (acc && acc.x !== null && acc.y !== null) {
-    x += acc.x * 2;
-    y += acc.y * 2;
+    // ✅ Device Motion (Vibration Detection)
+    window.addEventListener("devicemotion", (event) => {
+      const acc = event.acceleration;
+      if (acc && acc.x !== null && acc.y !== null) {
+        x += acc.x * 2;
+        y += acc.y * 2;
 
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
 
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
+        if (x < 0) x = screenW;
+        if (x > screenW) x = 0;
+        if (y < 0) y = screenH;
+        if (y > screenH) y = 0;
 
-    moveDot(x, y);
-
-   const vibrationDetected = detectVibration(acc.x, acc.y); // ✅ more accurate
-    saveToDatabase(acc.x, acc.y, latestDirection, vibrationDetected); // ✅ correct direction & vibration
-  }
-});
-
+        moveDot(x, y);
+        saveToDatabase(acc.x, acc.y, "N/A", true);
+      }
+    });
 // ✅ Firebase real-time listener for table
 const tableBody = document.getElementById("table-body");
 
-let dataQueue = [];
-let isProcessing = false;
-
 db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
   const data = snapshot.val();
-  dataQueue.push(data);
-  processQueueSlowly();
-});
-
-function processQueueSlowly() {
-  if (isProcessing || dataQueue.length === 0) return;
-  isProcessing = true;
-
-  const data = dataQueue.shift();
   const row = document.createElement("tr");
 
-  // ✅ All plain — no style, no color
   row.innerHTML = `
     <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
     <td>${data.axis.x}</td>
     <td>${data.axis.y}</td>
-    <td>${data.direction || "N/A"}</td>
+    <td>${data.direction}</td>
     <td>${data.vibration ? "Yes" : "No"}</td>
   `;
 
-  tableBody.insertBefore(row, tableBody.firstChild);
-
-  setTimeout(() => {
-    isProcessing = false;
-    processQueueSlowly();
-  }, 2000); // delay between rows
-}
-
-
-  function resetApp() {
-  // Step 1: Remove all data from Firebase
-  db.ref("motionData").remove()
-    .then(() => {
-      console.log("Old data removed from Firebase.");
-      // Step 2: Reload the page
-      location.reload();
-    })
-    .catch((error) => {
-      console.error("Error removing data:", error);
-    });
-}
-  
-let gpsLog = []; // 🔹 All GPS coordinates will be stored here
-
-function showLocation(position) {
-  const latitude = position.coords.latitude.toFixed(5);
-  const longitude = position.coords.longitude.toFixed(5);
-  const timestamp = new Date().toISOString();
-  document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
-
-  // ✅ Save to gpsLog array
-  gpsLog.push(`${timestamp} - Latitude: ${latitude}, Longitude: ${longitude}`);
-}
-
-function saveGPSToFile() {
-  if (gpsLog.length === 0) {
-    alert("No GPS data available to save.");
-    return;
-  }
-
-  const blob = new Blob([gpsLog.join('\n')], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "gps_log.txt";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+  tableBody.insertBefore(row, tableBody.firstChild); // newest on top
+});
 
   </script>
 </body>
 </html>
+
 
 
 
