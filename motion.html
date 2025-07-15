@@ -242,7 +242,7 @@
     }
   });
 
-// ✅ 1. Place this above devicemotion event
+// ✅ 1. Create Function
 function findVibration(x, y, z, threshold = 3) {
   return (Math.abs(x) > threshold || Math.abs(y) > threshold || Math.abs(z) > threshold)
     ? "Yes"
