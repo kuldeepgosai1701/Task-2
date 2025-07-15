@@ -92,21 +92,7 @@
 
   <div id="dot"></div>
 
-  <div style="position:absolute; bottom:0; width:100%; max-height:200px; overflow:auto; background:#fff;">
-    <table id="data-table" border="1" style="width:100%; font-size:0.8rem; border-collapse:collapse;">
-      <thead style="position:sticky; top:0; background:#007bff; color:white;">
-        <tr>
-          <th>Time</th>
-          <th>X</th>
-          <th>Y</th>
-          <th>Z</th>
-          <th>Direction</th>
-          <th>Vibration</th>
-        </tr>
-      </thead>
-      <tbody id="table-body"></tbody>
-    </table>
-  </div>
+  
 </main>
 
 <footer>Created by Kuldeep Gosai</footer>
@@ -254,6 +240,13 @@ window.addEventListener("devicemotion", (event) => {
   const acc = event.acceleration;
   if (acc && acc.x !== null && acc.y !== null && acc.z !== null) {
     const vibrationStatus = findVibration(acc.x, acc.y, acc.z); // ✅ calculate vibration
+
+    // 🔴 Change dot color on vibration
+    if (vibrationStatus === "Yes") {
+      dot.style.backgroundColor = "red";
+    } else {
+      dot.style.backgroundColor = "blue";
+    }
 
     x += acc.x * 2;
     y += acc.y * 2;
