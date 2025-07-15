@@ -304,7 +304,7 @@ function processQueueSlowly() {
     <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
     <td>${data.axis.x}</td>
     <td>${data.axis.y}</td>
-    <td>${data.direction}</td>
+    <td>${data.direction || "N/A"}</td>
     <td>${data.vibration ? "Yes" : "No"}</td>
   `;
 
