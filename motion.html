@@ -275,25 +275,42 @@
 // ✅ Firebase real-time listener for table
 const tableBody = document.getElementById("table-body");
 
+let dataQueue = [];
+let isProcessing = false;
+
 db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
   const data = snapshot.val();
+  dataQueue.push(data);
+  processQueueSlowly();
+});
+
+function processQueueSlowly() {
+  if (isProcessing || dataQueue.length === 0) return;
+  isProcessing = true;
+
+  const data = dataQueue.shift();
   const row = document.createElement("tr");
 
- const vibrationStyle = data.vibration
-  ? 'style="background:#ffcccc; font-weight:bold;"'  // red & bold
-  : "";
+  const vibrationStyle = data.vibration
+    ? 'style="background:#ffcccc; font-weight:bold;"'
+    : "";
 
-row.innerHTML = `
-  <td ${vibrationStyle}>${new Date(data.timestamp).toLocaleTimeString()}</td>
-  <td ${vibrationStyle}>${data.axis.x}</td>
-  <td ${vibrationStyle}>${data.axis.y}</td>
-  <td ${vibrationStyle}>${data.direction}</td>
-  <td ${vibrationStyle}>${data.vibration ? "🔴 Vibrated" : "No"}</td>
-`;
+  row.innerHTML = `
+    <td ${vibrationStyle}>${new Date(data.timestamp).toLocaleTimeString()}</td>
+    <td ${vibrationStyle}>${data.axis.x}</td>
+    <td ${vibrationStyle}>${data.axis.y}</td>
+    <td ${vibrationStyle}>${data.direction}</td>
+    <td ${vibrationStyle}>${data.vibration ? "🔴 Vibrated" : "No"}</td>
+  `;
 
+  tableBody.insertBefore(row, tableBody.firstChild);
 
-  tableBody.insertBefore(row, tableBody.firstChild); // newest on top
-});
+  // Wait 1000ms (1 second) before processing next
+  setTimeout(() => {
+    isProcessing = false;
+    processQueueSlowly();
+  }, 2000);  // Change to 2000 for slower speed
+}
 
   function resetApp() {
   // Step 1: Remove all data from Firebase
