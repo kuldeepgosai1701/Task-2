@@ -259,9 +259,17 @@
     }
   });
 
-  // ✅ Show Data in Table
-  db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
-    const data = snapshot.val();
+ let tableBuffer = [];
+
+db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
+  tableBuffer.push(snapshot.val());
+});
+
+// Display buffer entries every 1 second
+setInterval(() => {
+  if (tableBuffer.length > 0) {
+    const data = tableBuffer.shift(); // remove first item
+
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
@@ -271,7 +279,9 @@
       <td>${data.vibration ? "Yes" : "No"}</td>
     `;
     tableBody.insertBefore(row, tableBody.firstChild);
-  });
+  }
+}, 2000); // <-- delay between rows (1000ms = 1 second)
+
 
   // ✅ Reset Button Clears Firebase & Table
   function resetAll() {
