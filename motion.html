@@ -144,6 +144,9 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
+  let latestDirection = "Center";
+  let isVibrating = false;
+
   const dot = document.getElementById("dot");
   const main = document.getElementById("main");
   const directionText = document.getElementById("direction");
@@ -188,6 +191,17 @@
     db.ref("motionData").push(data);
   }
 
+let lastSavedTime = 0;
+const SAVE_INTERVAL = 500;
+
+function maybeSaveToDatabase(x, y, direction, vibration) {
+  const now = Date.now();
+  if (now - lastSavedTime > SAVE_INTERVAL) {
+    saveToDatabase(x, y, direction, vibration);
+    lastSavedTime = now;
+  }
+}
+
   function updateDirection(gamma, beta) {
     latestDirection = getDirection(gamma, beta);
     directionText.textContent = `Direction: ${latestDirection}`;
@@ -230,8 +244,11 @@
       if (y > screenH) y = 0;
 
       moveDot(x, y);
-      updateDirection(gamma, beta);
-      saveToDatabase(gamma, beta, latestDirection, false);
+      latestDirection = getDirection(gamma, beta);
+    directionText.textContent = `Direction: ${latestDirection}`;
+
+    maybeSaveToDatabase(gamma, beta, latestDirection, isVibrating);
+    isVibrating = false; // reset after saving
     }
   });
 
@@ -254,7 +271,7 @@
         if (y > screenH) y = 0;
 
         moveDot(x, y);
-        saveToDatabase(acc.x, acc.y, "N/A", true);
+       maybeSaveToDatabase(acc.x, acc.y, latestDirection, true);
       }
     }
   });
