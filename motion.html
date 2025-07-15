@@ -98,7 +98,9 @@
       <p>Move your phone to see the motion path.</p>
       <p id="direction">Direction: Center</p>
       <p id="location">Location: Fetching...</p>
-      <button onclick="location.reload()">Reset</button>
+      <button onclick="resetApp()">Reset</button>
+      <button onclick="saveGPSToFile()">Save GPS</button>
+
       <div class="compass">N</div>
     </div>
      
@@ -287,6 +289,49 @@ db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
 
   tableBody.insertBefore(row, tableBody.firstChild); // newest on top
 });
+
+  function resetApp() {
+  // Step 1: Remove all data from Firebase
+  db.ref("motionData").remove()
+    .then(() => {
+      console.log("Old data removed from Firebase.");
+      // Step 2: Reload the page
+      location.reload();
+    })
+    .catch((error) => {
+      console.error("Error removing data:", error);
+    });
+}
+  
+let gpsLog = []; // 🔹 All GPS coordinates will be stored here
+
+function showLocation(position) {
+  const latitude = position.coords.latitude.toFixed(5);
+  const longitude = position.coords.longitude.toFixed(5);
+  const timestamp = new Date().toISOString();
+  document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
+
+  // ✅ Save to gpsLog array
+  gpsLog.push(`${timestamp} - Latitude: ${latitude}, Longitude: ${longitude}`);
+}
+
+function saveGPSToFile() {
+  if (gpsLog.length === 0) {
+    alert("No GPS data available to save.");
+    return;
+  }
+
+  const blob = new Blob([gpsLog.join('\n')], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "gps_log.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
   </script>
 </body>
