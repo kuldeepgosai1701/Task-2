@@ -255,7 +255,7 @@ function getDirection(gamma, beta) {
         moveDot(x, y);
        latestDirection = getDirection(gamma, beta); // ✅ update global direction
     directionText.textContent = `Direction: ${latestDirection}`;
-        saveToDatabase(gamma, beta, direction, false);
+        saveToDatabase(gamma, beta, latestdirection, false);
       }
     });
 
