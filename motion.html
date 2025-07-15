@@ -98,9 +98,7 @@
       <p>Move your phone to see the motion path.</p>
       <p id="direction">Direction: Center</p>
       <p id="location">Location: Fetching...</p>
-      <button onclick="refreshTable()">Refresh Table</button>
-      <button onclick="downloadGPS()">Save GPS to File</button>
-
+      <button onclick="location.reload()">Reset</button>
       <div class="compass">N</div>
     </div>
      
@@ -131,10 +129,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <script>
-
-   let lastSaveTime = 0; // For throttling
-   const SAVE_INTERVAL = 1000; // in milliseconds (1000ms = 1 second)
-
     // ✅ Firebase Config (replace with your actual config from Firebase console)
     const firebaseConfig = {
       apiKey: "AIzaSyDh77dygGxVJMc8hRgm_ruQS_DW-vq_39M",
@@ -152,25 +146,19 @@
     const db = firebase.database();
 
     // ✅ Helper: Save data to Firebase
-   
-function saveToDatabase(axisX, axisY, direction, vibration) {
-  const now = Date.now();
-  if (now - lastSaveTime >= SAVE_INTERVAL) {
-    const data = {
-      axis: {
-        x: axisX.toFixed(2),
-        y: axisY.toFixed(2)
-      },
-      timestamp: new Date().toISOString(),
-      direction: direction,
-      vibration: vibration
-    };
-    db.ref("motionData").push(data);
-    console.log("Saved to Firebase:", data);
-    lastSaveTime = now;
-  }else {
-    console.log("⏳ Skipped saving to Firebase to slow down speed");
-}}
+    function saveToDatabase(axisX, axisY, direction, vibration) {
+      const data = {
+        axis: {
+          x: axisX.toFixed(2),
+          y: axisY.toFixed(2)
+        },
+        timestamp: new Date().toISOString(),
+        direction: direction,
+        vibration: vibration
+      };
+      db.ref("motionData").push(data);
+      console.log("Saved to Firebase:", data);
+    }
 
     // ✅ Helper: Get Direction from gamma/beta
     function getDirection(gamma, beta) {
@@ -287,90 +275,18 @@ const tableBody = document.getElementById("table-body");
 
 db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
   const data = snapshot.val();
-const row = document.createElement("tr");
+  const row = document.createElement("tr");
 
-if (data.vibration) {
-  row.style.backgroundColor = "#ffe6e6"; // light red background for vibration
-  row.innerHTML = `
-    <td>🔥 ${new Date(data.timestamp).toLocaleTimeString()}</td>
-    <td>${data.axis.x}</td>
-    <td>${data.axis.y}</td>
-    <td>${data.direction}</td>
-    <td><span style="color:red; font-weight:bold;">⚠️ Yes</span></td>
-  `;
-} else {
   row.innerHTML = `
     <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
     <td>${data.axis.x}</td>
     <td>${data.axis.y}</td>
     <td>${data.direction}</td>
-    <td>No</td>
+    <td>${data.vibration ? "Yes" : "No"}</td>
   `;
-}
 
   tableBody.insertBefore(row, tableBody.firstChild); // newest on top
 });
-
-// ✅ GPS Saving
-let gpsCoordinates = [];
-
-// Update showLocation to store GPS in memory
-function showLocation(position) {
-  const latitude = position.coords.latitude.toFixed(5);
-  const longitude = position.coords.longitude.toFixed(5);
-  document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
-  gpsCoordinates.push(`${latitude}, ${longitude} @ ${new Date().toLocaleTimeString()}`);
-}
-
-// ✅ Download GPS coordinates as text file
-function downloadGPS() {
-  if (gpsCoordinates.length === 0) {
-    alert("No GPS data to save yet.");
-    return;
-  }
-
-  const blob = new Blob([gpsCoordinates.join("\n")], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "gps_coordinates.txt";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ✅ Refresh Firebase Table (without clearing Firebase data)
-function refreshTable() {
-  tableBody.innerHTML = ""; // clear table
-
-  db.ref("motionData").limitToLast(30).once("value", (snapshot) => {
-    snapshot.forEach((child) => {
-      const data = child.val();
-      const row = document.createElement("tr");
-
-      if (data.vibration) {
-        row.style.backgroundColor = "#ffe6e6";
-        row.innerHTML = `
-          <td>🔥 ${new Date(data.timestamp).toLocaleTimeString()}</td>
-          <td>${data.axis.x}</td>
-          <td>${data.axis.y}</td>
-          <td>${data.direction}</td>
-          <td><span style="color:red; font-weight:bold;">⚠️ Yes</span></td>
-        `;
-      } else {
-        row.innerHTML = `
-          <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
-          <td>${data.axis.x}</td>
-          <td>${data.axis.y}</td>
-          <td>${data.direction}</td>
-          <td>No</td>
-        `;
-      }
-
-      tableBody.insertBefore(row, tableBody.firstChild);
-    });
-  });
-}
-
 
   </script>
 </body>
