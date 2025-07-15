@@ -97,7 +97,9 @@
       <p>Move your phone to see the motion path.</p>
       <p id="direction">Direction: Center</p>
       <p id="location">Location: Fetching...</p>
-      <button onclick="location.reload()">Reset</button>
+      <button onclick="resetAll()">Reset</button>
+      <button onclick="saveGPS()">Save GPS</button>
+
       <div class="compass">N</div>
     </div>
      
@@ -127,133 +129,119 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
-  <script>
-    // ✅ Firebase Config (replace with your actual config from Firebase console)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDh77dygGxVJMc8hRgm_ruQS_DW-vq_39M",
-  authDomain: "gyroscope-explorer-1bafb.firebaseapp.com",
-  databaseURL: "https://gyroscope-explorer-1bafb-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "gyroscope-explorer-1bafb",
-  storageBucket: "gyroscope-explorer-1bafb.firebasestorage.app",
-  messagingSenderId: "471468344921",
-  appId: "1:471468344921:web:2c944e8a3b5da71c401348",
-  measurementId: "G-MH8B0QS86S"
+ <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDh77dygGxVJMc8hRgm_ruQS_DW-vq_39M",
+    authDomain: "gyroscope-explorer-1bafb.firebaseapp.com",
+    databaseURL: "https://gyroscope-explorer-1bafb-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "gyroscope-explorer-1bafb",
+    storageBucket: "gyroscope-explorer-1bafb.appspot.com",
+    messagingSenderId: "471468344921",
+    appId: "1:471468344921:web:2c944e8a3b5da71c401348",
+    measurementId: "G-MH8B0QS86S"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const dot = document.getElementById("dot");
+  const main = document.getElementById("main");
+  const directionText = document.getElementById("direction");
+  const tableBody = document.getElementById("table-body");
+
+  let x = window.innerWidth / 2;
+  let y = window.innerHeight / 2;
+  let latestDirection = "Center";
+  let isVibrating = false;
+  let latestGPS = "";
+
+  function moveDot(newX, newY) {
+    dot.style.left = `${newX}px`;
+    dot.style.top = `${newY}px`;
+
+    const trail = document.createElement("div");
+    trail.className = "trail";
+    trail.style.left = `${newX + 6}px`;
+    trail.style.top = `${newY + 6}px`;
+    main.appendChild(trail);
+  }
+
+  function getDirection(gamma, beta) {
+    let dir = "";
+    if (beta > 5) dir += "South ";
+    else if (beta < -5) dir += "North ";
+    if (gamma > 5) dir += "East";
+    else if (gamma < -5) dir += "West";
+    return dir.trim() || "Center";
+  }
+
+  function saveToDatabase(axisX, axisY, direction, vibration) {
+    const data = {
+      axis: {
+        x: axisX.toFixed(2),
+        y: axisY.toFixed(2)
+      },
+      timestamp: new Date().toISOString(),
+      direction: direction,
+      vibration: vibration
     };
+    db.ref("motionData").push(data);
+  }
 
-    // ✅ Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  function updateDirection(gamma, beta) {
+    latestDirection = getDirection(gamma, beta);
+    directionText.textContent = `Direction: ${latestDirection}`;
+  }
 
-    // ✅ Helper: Save data to Firebase
-    function saveToDatabase(axisX, axisY, direction, vibration) {
-      const data = {
-        axis: {
-          x: axisX.toFixed(2),
-          y: axisY.toFixed(2)
-        },
-        timestamp: new Date().toISOString(),
-        direction: direction,
-        vibration: vibration
-      };
-      db.ref("motionData").push(data);
-      console.log("Saved to Firebase:", data);
+  moveDot(x, y);
+
+  // ✅ GPS
+  function showLocation(position) {
+    const lat = position.coords.latitude.toFixed(5);
+    const lon = position.coords.longitude.toFixed(5);
+    latestGPS = `Latitude: ${lat}, Longitude: ${lon}`;
+    document.getElementById("location").textContent = `Location: ${lat}, ${lon}`;
+  }
+
+  function showError(error) {
+    const locationText = document.getElementById("location");
+    locationText.textContent = "Location: Error getting GPS.";
+  }
+
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(showLocation, showError);
+  }
+
+  // ✅ Orientation Event (for motion)
+  window.addEventListener("deviceorientation", (event) => {
+    const gamma = event.gamma;
+    const beta = event.beta;
+
+    if (gamma !== null && beta !== null) {
+      x += gamma * 0.05;
+      y += beta * 0.05;
+
+      const screenW = window.innerWidth;
+      const screenH = window.innerHeight;
+
+      if (x < 0) x = screenW;
+      if (x > screenW) x = 0;
+      if (y < 0) y = screenH;
+      if (y > screenH) y = 0;
+
+      moveDot(x, y);
+      updateDirection(gamma, beta);
+      saveToDatabase(gamma, beta, latestDirection, false);
     }
+  });
 
-    // ✅ Helper: Get Direction from gamma/beta
-    function getDirection(gamma, beta) {
-      let dir = "";
-      if (beta > 5) dir += "South ";
-      else if (beta < -5) dir += "North ";
-      if (gamma > 5) dir += "East";
-      else if (gamma < -5) dir += "West";
-      if (dir === "") dir = "Center";
-      return dir;
-    }
+  // ✅ Motion Event (for vibration)
+  window.addEventListener("devicemotion", (event) => {
+    const acc = event.acceleration;
+    if (acc && acc.x !== null && acc.y !== null) {
+      const vibrationDetected = Math.abs(acc.x) > 2 || Math.abs(acc.y) > 2;
 
-    // ✅ Dot Movement Logic
-    const dot = document.getElementById("dot");
-    const main = document.getElementById("main");
-    const directionText = document.getElementById("direction");
-
-    let x = window.innerWidth / 2;
-    let y = window.innerHeight / 2;
-
-    function moveDot(newX, newY) {
-      dot.style.left = `${newX}px`;
-      dot.style.top = `${newY}px`;
-
-      const trail = document.createElement("div");
-      trail.className = "trail";
-      trail.style.left = `${newX + 6}px`;
-      trail.style.top = `${newY + 6}px`;
-      main.appendChild(trail);
-    }
-
-    function updateDirection(gamma, beta) {
-      const dir = getDirection(gamma, beta);
-      directionText.textContent = `Direction: ${dir}`;
-    }
-
-    moveDot(x, y);
-
-    // ✅ GPS Location
-    function showLocation(position) {
-      const latitude = position.coords.latitude.toFixed(5);
-      const longitude = position.coords.longitude.toFixed(5);
-      document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
-    }
-
-    function showError(error) {
-      const locationText = document.getElementById("location");
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          locationText.textContent = "Location: Permission denied.";
-          break;
-        case error.POSITION_UNAVAILABLE:
-          locationText.textContent = "Location: Not available.";
-          break;
-        case error.TIMEOUT:
-          locationText.textContent = "Location: Timeout.";
-          break;
-        default:
-          locationText.textContent = "Location: Unknown error.";
-      }
-    }
-
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(showLocation, showError);
-    } else {
-      document.getElementById("location").textContent = "Location: Not supported.";
-    }
-
-    // ✅ Device Orientation Handler
-    window.addEventListener("deviceorientation", (event) => {
-      const gamma = event.gamma;
-      const beta = event.beta;
-
-      if (gamma !== null && beta !== null) {
-        x += gamma * 0.05;
-        y += beta * 0.05;
-
-        const screenW = window.innerWidth;
-        const screenH = window.innerHeight;
-
-        if (x < 0) x = screenW;
-        if (x > screenW) x = 0;
-        if (y < 0) y = screenH;
-        if (y > screenH) y = 0;
-
-        moveDot(x, y);
-        const direction = getDirection(gamma, beta);
-        updateDirection(gamma, beta);
-        saveToDatabase(gamma, beta, direction, false);
-      }
-    });
-
-    // ✅ Device Motion (Vibration Detection)
-    window.addEventListener("devicemotion", (event) => {
-      const acc = event.acceleration;
-      if (acc && acc.x !== null && acc.y !== null) {
+      if (vibrationDetected) {
         x += acc.x * 2;
         y += acc.y * 2;
 
@@ -268,28 +256,46 @@
         moveDot(x, y);
         saveToDatabase(acc.x, acc.y, "N/A", true);
       }
+    }
+  });
+
+  // ✅ Show Data in Table
+  db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
+    const data = snapshot.val();
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
+      <td>${data.axis.x}</td>
+      <td>${data.axis.y}</td>
+      <td>${data.direction}</td>
+      <td>${data.vibration ? "Yes" : "No"}</td>
+    `;
+    tableBody.insertBefore(row, tableBody.firstChild);
+  });
+
+  // ✅ Reset Button Clears Firebase & Table
+  function resetAll() {
+    db.ref("motionData").remove().then(() => {
+      tableBody.innerHTML = "";
+      location.reload(); // optional: restart motion
     });
-// ✅ Firebase real-time listener for table
-const tableBody = document.getElementById("table-body");
+  }
 
-db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
-  const data = snapshot.val();
-  const row = document.createElement("tr");
-
-  row.innerHTML = `
-    <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
-    <td>${data.axis.x}</td>
-    <td>${data.axis.y}</td>
-    <td>${data.direction}</td>
-    <td>${data.vibration ? "Yes" : "No"}</td>
-  `;
-
-  tableBody.insertBefore(row, tableBody.firstChild); // newest on top
-});
-
-  </script>
-</body>
-</html>
+  // ✅ Save GPS Button Function
+  function saveGPS() {
+    if (!latestGPS) {
+      alert("GPS not available yet.");
+      return;
+    }
+    const blob = new Blob([latestGPS], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "gps_coordinates.txt";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
 
 
 
