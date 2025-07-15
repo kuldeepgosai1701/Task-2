@@ -300,7 +300,7 @@ function processQueueSlowly() {
     <td ${vibrationStyle}>${data.axis.x}</td>
     <td ${vibrationStyle}>${data.axis.y}</td>
     <td ${vibrationStyle}>${data.direction}</td>
-    <td ${vibrationStyle}>${data.vibration ? "🔴 Vibrated" : "No"}</td>
+   <td>${data.vibration ? "Yes" : "No"}</td>
   `;
 
   tableBody.insertBefore(row, tableBody.firstChild);
