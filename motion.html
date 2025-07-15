@@ -291,26 +291,23 @@ function processQueueSlowly() {
   const data = dataQueue.shift();
   const row = document.createElement("tr");
 
-  const vibrationStyle = data.vibration
-    ? 'style="background:#ffcccc; font-weight:bold;"'
-    : "";
-
+  // ✅ All plain — no style, no color
   row.innerHTML = `
-    <td ${vibrationStyle}>${new Date(data.timestamp).toLocaleTimeString()}</td>
-    <td ${vibrationStyle}>${data.axis.x}</td>
-    <td ${vibrationStyle}>${data.axis.y}</td>
-    <td ${vibrationStyle}>${data.direction}</td>
-   <td>${data.vibration ? "Yes" : "No"}</td>
+    <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
+    <td>${data.axis.x}</td>
+    <td>${data.axis.y}</td>
+    <td>${data.direction}</td>
+    <td>${data.vibration ? "Yes" : "No"}</td>
   `;
 
   tableBody.insertBefore(row, tableBody.firstChild);
 
-  // Wait 1000ms (1 second) before processing next
   setTimeout(() => {
     isProcessing = false;
     processQueueSlowly();
-  }, 2000);  // Change to 2000 for slower speed
+  }, 2000); // delay between rows
 }
+
 
   function resetApp() {
   // Step 1: Remove all data from Firebase
