@@ -162,16 +162,20 @@
       console.log("Saved to Firebase:", data);
     }
 
-    // ✅ Helper: Get Direction from gamma/beta
-    function getDirection(gamma, beta) {
-      let dir = "";
-      if (beta > 5) dir += "South ";
-      else if (beta < -5) dir += "North ";
-      if (gamma > 5) dir += "East";
-      else if (gamma < -5) dir += "West";
-      if (dir === "") dir = "Center";
-      return dir;
-    }
+   function detectVibration(x, y, threshold = 2.0) {
+  return Math.abs(x) > threshold || Math.abs(y) > threshold;
+}
+
+function getDirection(gamma, beta) {
+  let dir = "";
+  if (beta > 5) dir += "South ";
+  else if (beta < -5) dir += "North ";
+  if (gamma > 5) dir += "East";
+  else if (gamma < -5) dir += "West";
+  if (dir === "") dir = "Center";
+  return dir;
+}
+
 
     // ✅ Dot Movement Logic
     const dot = document.getElementById("dot");
@@ -180,6 +184,8 @@
 
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
+
+   let latestDirection = "Center";
 
     function moveDot(newX, newY) {
       dot.style.left = `${newX}px`;
@@ -247,8 +253,8 @@
         if (y > screenH) y = 0;
 
         moveDot(x, y);
-        const direction = getDirection(gamma, beta);
-        updateDirection(gamma, beta);
+       latestDirection = getDirection(gamma, beta); // ✅ update global direction
+    directionText.textContent = `Direction: ${latestDirection}`;
         saveToDatabase(gamma, beta, direction, false);
       }
     });
@@ -269,8 +275,8 @@
 
     moveDot(x, y);
 
-    const vibrationDetected = detectVibration(acc.x, acc.y); // ✅ Accurate detection
-    saveToDatabase(acc.x, acc.y, "N/A", vibrationDetected);
+   const vibrationDetected = detectVibration(acc.x, acc.y); // ✅ more accurate
+    saveToDatabase(acc.x, acc.y, latestDirection, vibrationDetected); // ✅ correct direction & vibration
   }
 });
 
