@@ -3,254 +3,154 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gyroscope Motion Tracker</title>
+  <title>Motion Tracker</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html {
-      height: 100%;
+    body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
     }
-    header {
-      background: #222;
-      color: #fff;
-      text-align: center;
-      padding: 15px;
-      font-size: 1.5rem;
-    }
-    main {
-      flex: 1;
+    #main {
       position: relative;
+      width: 100vw;
+      height: 100vh;
+      background-color: #f0f0f0;
       overflow: hidden;
     }
-    .info {
+    #dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-color: blue;
+      border-radius: 50%;
+    }
+    .trail {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background-color: rgba(0, 0, 255, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    #info {
       position: absolute;
       top: 10px;
       left: 10px;
-      background: rgba(255,255,255,0.95);
+      background: white;
       padding: 10px;
-      border-radius: 8px;
-      z-index: 10;
-    }
-    button {
-      margin-top: 5px;
-      padding: 5px 12px;
-      font-size: 0.9rem;
-      border: none;
-      background: #007bff;
-      color: white;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    #dot {
-      width: 18px;
-      height: 18px;
-      background: blue;
-      border-radius: 50%;
-      position: absolute;
-      z-index: 5;
-    }
-    .trail {
-      width: 5px;
-      height: 5px;
-      background: rgba(0, 0, 255, 0.5);
-      border-radius: 50%;
-      position: absolute;
-      z-index: 1;
-    }
-    footer {
-      background: #ddd;
-      text-align: center;
-      padding: 10px;
-      font-size: 0.9rem;
-    }
-    .compass {
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      margin-top: 10px;
-      color: #333;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
-
-<header>Motion Tracker</header>
-
-<main id="main">
-  <div class="info">
-    <p>Move your phone to see the motion path.</p>
-    <p id="direction">Direction: Center</p>
-    <p id="location">Location: Fetching...</p>
-    <button onclick="resetData()">Reset</button>
-    <button onclick="saveGPSToFile()">Save GPS</button>
-    <div class="compass">N</div>
+  <div id="main">
+    <div id="dot"></div>
+    <div id="info">
+      <p>Move your phone to see the motion path.</p>
+      <p id="direction">Direction: Center</p>
+      <p id="location">Location: Fetching...</p>
+      <button onclick="resetDot()">Reset</button>
+      <button onclick="saveGPSData()">Save GPS</button>
+      <h2 id="compass">N</h2>
+    </div>
   </div>
-  <div id="dot"></div>
-</main>
+  <footer style="text-align:center; padding: 10px; background:#eee;">
+    Created by Kuldeep Gosai
+  </footer>
 
-<footer>Created by Kuldeep Gosai</footer>
+  <script>
+    const main = document.getElementById("main");
+    const dot = document.getElementById("dot");
+    const directionText = document.getElementById("direction");
+    const locationText = document.getElementById("location");
+    const compassText = document.getElementById("compass");
 
-<script>
-  let gpsDataLog = [];
-  let latestVibrationStatus = "No";
-  let latestDirection = "Center";
-  const dot = document.getElementById("dot");
-  const main = document.getElementById("main");
-  const directionText = document.getElementById("direction");
-  const rect = main.getBoundingClientRect();
+    let x, y;
+    let gpsData = [];
 
-  let x = rect.width / 2;
-  let y = rect.height / 2;
-
-  function moveDot(newX, newY) {
-    dot.style.left = `${newX}px`;
-    dot.style.top = `${newY}px`;
-    const trail = document.createElement("div");
-    trail.className = "trail";
-    trail.style.left = `${newX + 6}px`;
-    trail.style.top = `${newY + 6}px`;
-    main.appendChild(trail);
-  }
-
-  moveDot(x, y);
-
-  function resetData() {
-    gpsDataLog = [];
-    const rect = main.getBoundingClientRect();
-    x = rect.width / 2;
-    y = rect.height / 2;
-    moveDot(x, y);
-  }
-
-  function saveGPSToFile() {
-    if (gpsDataLog.length === 0) {
-      alert("No data to save.");
-      return;
-    }
-    let content = "Time\tLatitude\tLongitude\tVibration\tDirection\n";
-    gpsDataLog.forEach(entry => {
-      content += `${entry.time}\t${entry.lat}\t${entry.lon}\t${entry.vibration}\t${entry.direction}\n`;
-    });
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "gps_motion_data.txt";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  function showLocation(position) {
-    const lat = position.coords.latitude.toFixed(5);
-    const lon = position.coords.longitude.toFixed(5);
-    document.getElementById("location").textContent = `Location: ${lat}, ${lon}`;
-  }
-  function showError(error) {
-    document.getElementById("location").textContent = "Location: Error getting position.";
-  }
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(showLocation, showError);
-  }
-
-  function getDirection(gamma, beta) {
-    let dir = "";
-    if (beta > 5) dir += "South ";
-    else if (beta < -5) dir += "North ";
-    if (gamma > 5) dir += "East";
-    else if (gamma < -5) dir += "West";
-    return dir.trim() || "Center";
-  }
-
-  function findVibration(x, y, z, threshold = 3) {
-    return (Math.abs(x) > threshold || Math.abs(y) > threshold || Math.abs(z) > threshold) ? "Yes" : "No";
-  }
-
-  window.addEventListener("deviceorientation", (event) => {
-    const gamma = event.gamma;
-    const beta = event.beta;
-
-    if (gamma !== null && beta !== null) {
-      x += gamma * 0.05;
-      y += beta * 0.05;
-
-      const w = rect.width;
-      const h = rect.height;
-      if (x < 0) x = w;
-      if (x > w) x = 0;
-      if (y < 0) y = h;
-      if (y > h) y = 0;
-
-      moveDot(x, y);
-      const dir = getDirection(gamma, beta);
-      directionText.textContent = `Direction: ${dir}`;
-      latestDirection = dir;
-    }
-  });
-
-  window.addEventListener("devicemotion", (event) => {
-    const acc = event.acceleration;
-    if (acc && acc.x !== null && acc.y !== null && acc.z !== null) {
-      const vibrationStatus = findVibration(acc.x, acc.y, acc.z);
-      latestVibrationStatus = vibrationStatus;
-      dot.style.backgroundColor = (vibrationStatus === "Yes") ? "red" : "blue";
-
-      x += acc.x * 2;
-      y += acc.y * 2;
-
-      const w = rect.width;
-      const h = rect.height;
-      if (x < 0) x = w;
-      if (x > w) x = 0;
-      if (y < 0) y = h;
-      if (y > h) y = 0;
-
+    function initializeDotPosition() {
+      const rect = main.getBoundingClientRect();
+      x = rect.width / 2;
+      y = rect.height / 2;
       moveDot(x, y);
     }
-  });
 
-  let prevLat = null, prevLon = null;
-  function gpsMoveAndLog(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    const vibration = latestVibrationStatus;
-    const direction = latestDirection;
-    const data = {
-      time: new Date().toLocaleTimeString(),
-      lat: lat.toFixed(5),
-      lon: lon.toFixed(5),
-      vibration,
-      direction
-    };
-    gpsDataLog.push(data);
-    if (prevLat !== null && prevLon !== null) {
-      const dx = (lon - prevLon) * 100000;
-      const dy = (lat - prevLat) * 100000;
-      x += dx;
-      y -= dy;
-      const w = rect.width;
-      const h = rect.height;
-      if (x < 0) x = w;
-      if (x > w) x = 0;
-      if (y < 0) y = h;
-      if (y > h) y = 0;
-      moveDot(x, y);
-    }
-    prevLat = lat;
-    prevLon = lon;
-  }
+    function moveDot(newX, newY) {
+      dot.style.left = `${newX}px`;
+      dot.style.top = `${newY}px`;
 
-  setInterval(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(gpsMoveAndLog);
+      const trail = document.createElement("div");
+      trail.className = "trail";
+      trail.style.left = `${newX + 6}px`;
+      trail.style.top = `${newY + 6}px`;
+      main.appendChild(trail);
     }
-  }, 5000);
-</script>
+
+    function resetDot() {
+      main.querySelectorAll('.trail').forEach(e => e.remove());
+      initializeDotPosition();
+    }
+
+    function saveGPSData() {
+      const blob = new Blob([gpsData.join('\n')], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'gps_log.txt';
+      a.click();
+    }
+
+    window.onload = () => {
+      initializeDotPosition();
+
+      if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', (event) => {
+          const alpha = event.alpha;
+          if (alpha !== null) {
+            let direction = "";
+            if (alpha < 45 || alpha >= 315) direction = "N";
+            else if (alpha < 135) direction = "E";
+            else if (alpha < 225) direction = "S";
+            else direction = "W";
+
+            compassText.textContent = direction;
+          }
+        });
+      }
+
+      if (window.DeviceMotionEvent) {
+        window.addEventListener('devicemotion', (event) => {
+          const acc = event.accelerationIncludingGravity;
+          if (acc) {
+            const screenW = main.clientWidth;
+            const screenH = main.clientHeight;
+
+            x += acc.x * 2;
+            y -= acc.y * 2;
+
+            if (x < 0) x = 0;
+            if (y < 0) y = 0;
+            if (x > screenW) x = screenW;
+            if (y > screenH) y = screenH;
+
+            moveDot(x, y);
+
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition((pos) => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                const vibration = acc.z.toFixed(2);
+                const direction = compassText.textContent;
+                const log = `Lat: ${lat}, Lon: ${lon}, Dir: ${direction}, Vib: ${vibration}`;
+                gpsData.push(log);
+                locationText.textContent = `Location: ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+                directionText.textContent = `Direction: ${direction}`;
+              });
+            }
+          }
+        });
+      }
+    }
+  </script>
 </body>
 </html>
 
