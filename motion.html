@@ -168,19 +168,25 @@
   moveDot(x, y);
 
   // ✅ Reset Button
-  function resetData() {
-    db.ref("motionData").remove().then(() => {
-      document.getElementById("table-body").innerHTML = "";
-     gpsDataLog = [];
-    });
-  }
+ function resetData() {
+  // Clear Firebase data
+  db.ref("motionData").remove().then(() => {
+    // Clear data array and table
+    gpsDataLog = [];
+    const tableBody = document.getElementById("table-body");
+    if (tableBody) tableBody.innerHTML = "";
 
-  // ✅ Save GPS to file
- function saveGPSToFile() {
-  if (gpsDataLog.length === 0) {
-    alert("No data to save.");
-    return;
-  }
+    // Remove all trail elements from DOM
+    const trails = document.querySelectorAll('.trail');
+    trails.forEach(trail => trail.remove());
+
+    // Reset dot position
+    x = window.innerWidth / 2;
+    y = window.innerHeight / 2;
+    moveDot(x, y);
+  });
+}
+
 
 // ✅ Header row (CSV format)
   let content = "Time,Latitude,Longitude,Vibration,Direction\n";
