@@ -168,12 +168,22 @@
   moveDot(x, y);
 
   // ✅ Reset Button
-  function resetData() {
-    db.ref("motionData").remove().then(() => {
-      document.getElementById("table-body").innerHTML = "";
-     gpsDataLog = [];
-    });
-  }
+ function resetData() {
+  db.ref("motionData").remove().then(() => {
+    // Clear GPS log array
+    gpsDataLog = [];
+
+    // Remove trail elements from the DOM
+    const trails = document.querySelectorAll(".trail");
+    trails.forEach(trail => trail.remove());
+
+    // Optionally reset the dot to center
+    x = window.innerWidth / 2;
+    y = window.innerHeight / 2;
+    moveDot(x, y);
+  });
+}
+
 
   // ✅ Save GPS to file
  function saveGPSToFile() {
