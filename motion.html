@@ -168,24 +168,31 @@
   moveDot(x, y);
 
   // ✅ Reset Button
- function resetData() {
+function resetData() {
   // Clear Firebase data
   db.ref("motionData").remove().then(() => {
-    // Clear data array and table
+    // Clear the GPS log array
     gpsDataLog = [];
-    const tableBody = document.getElementById("table-body");
-    if (tableBody) tableBody.innerHTML = "";
 
-    // Remove all trail elements from DOM
-    const trails = document.querySelectorAll('.trail');
+    // Remove all trail elements
+    const trails = document.querySelectorAll(".trail");
     trails.forEach(trail => trail.remove());
 
-    // Reset dot position
+    // Reset previous GPS location
+    prevLat = null;
+    prevLon = null;
+
+    // Reset dot position WITHOUT leaving a trail
     x = window.innerWidth / 2;
     y = window.innerHeight / 2;
-    moveDot(x, y);
+    dot.style.left = `${x}px`;
+    dot.style.top = `${y}px`;
+
+    // Optional: Reset dot color too
+    dot.style.backgroundColor = "blue";
   });
 }
+
 
 
 // ✅ Header row (CSV format)
