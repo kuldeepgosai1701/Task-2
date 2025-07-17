@@ -307,17 +307,47 @@ function gpsMoveAndLog(position) {
   const lat = position.coords.latitude;
   const lon = position.coords.longitude;
 
-  const vibration = latestVibrationStatus;
-  const direction = latestDirection;
+  // Real-time motion data se get direction & vibration
+  let currentDirection = latestDirection;
+  let currentVibration = latestVibrationStatus;
+
+  // Final fallback agar latest values change nahi hue to default
+  if (!currentDirection) currentDirection = "Center";
+  if (!currentVibration) currentVibration = "No";
 
   const data = {
     time: new Date().toLocaleTimeString(),
     lat: lat.toFixed(5),
     lon: lon.toFixed(5),
-    vibration,
-    direction
+    vibration: currentVibration,
+    direction: currentDirection
   };
+
   gpsDataLog.push(data);
+
+  // Only move the dot if we have previous coordinates
+  if (prevLat !== null && prevLon !== null) {
+    const dx = (lon - prevLon) * 100000; // scale factor
+    const dy = (lat - prevLat) * 100000;
+
+    x += dx;
+    y -= dy;
+
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+    if (x < 0) x = screenW;
+    if (x > screenW) x = 0;
+    if (y < 0) y = screenH;
+    if (y > screenH) y = 0;
+
+    moveDot(x, y);
+  }
+
+  prevLat = lat;
+  prevLon = lon;
+}
+
+ 
 
   // Only move the dot if we have previous coordinates
   if (prevLat !== null && prevLon !== null) {
