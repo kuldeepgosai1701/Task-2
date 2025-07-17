@@ -182,7 +182,9 @@
     return;
   }
 
-  let content = "Time\tLatitude\tLongitude\tVibration\tDirection\n";
+// ✅ Header row (CSV format)
+  let content = "Time,Latitude,Longitude,Vibration,Direction\n";
+
   gpsDataLog.forEach(entry => {
     content += `${entry.time}\t${entry.lat}\t${entry.lon}\t${entry.vibration}\t${entry.direction}\n`;
   });
