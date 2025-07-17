@@ -272,7 +272,8 @@ window.addEventListener("devicemotion", (event) => {
 
     moveDot(x, y);
 
-    saveToDatabase(acc.x, acc.y, acc.z, "N/A", vibrationStatus === "Yes"); // ✅ use here
+    saveToDatabase(acc.x, acc.y, acc.z, latestDirection, vibrationStatus === "Yes");
+
   }
 });
 
