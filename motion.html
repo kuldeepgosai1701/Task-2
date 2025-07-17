@@ -156,34 +156,24 @@
   let y = window.innerHeight / 2;
 
   function moveDot(newX, newY) {
-    dot.style.left = `${newX}px`;
-    dot.style.top = `${newY}px`;
+    dot.style.left = ${newX}px;
+    dot.style.top = ${newY}px;
     const trail = document.createElement("div");
     trail.className = "trail";
-    trail.style.left = `${newX + 6}px`;
-    trail.style.top = `${newY + 6}px`;
+    trail.style.left = ${newX + 6}px;
+    trail.style.top = ${newY + 6}px;
     main.appendChild(trail);
   }
 
   moveDot(x, y);
 
   // ✅ Reset Button
- function resetData() {
-  db.ref("motionData").remove().then(() => {
-    // Clear GPS log array
-    gpsDataLog = [];
-
-    // Remove trail elements from the DOM
-    const trails = document.querySelectorAll(".trail");
-    trails.forEach(trail => trail.remove());
-
-    // Optionally reset the dot to center
-    x = window.innerWidth / 2;
-    y = window.innerHeight / 2;
-    moveDot(x, y);
-  });
-}
-
+  function resetData() {
+    db.ref("motionData").remove().then(() => {
+      document.getElementById("table-body").innerHTML = "";
+     gpsDataLog = [];
+    });
+  }
 
   // ✅ Save GPS to file
  function saveGPSToFile() {
@@ -194,7 +184,7 @@
 
   let content = "Time\tLatitude\tLongitude\tVibration\tDirection\n";
   gpsDataLog.forEach(entry => {
-    content += `${entry.time}\t${entry.lat}\t${entry.lon}\t${entry.vibration}\t${entry.direction}\n`;
+    content += ${entry.time}\t${entry.lat}\t${entry.lon}\t${entry.vibration}\t${entry.direction}\n;
   });
 
   const blob = new Blob([content], { type: "text/plain" });
@@ -212,7 +202,7 @@
   function showLocation(position) {
     const lat = position.coords.latitude.toFixed(5);
     const lon = position.coords.longitude.toFixed(5);
-    document.getElementById("location").textContent = `Location: ${lat}, ${lon}`;
+    document.getElementById("location").textContent = Location: ${lat}, ${lon};
   }
   function showError(error) {
     const txt = document.getElementById("location");
@@ -240,7 +230,7 @@
 
       moveDot(x, y);
       const dir = getDirection(gamma, beta);
-      directionText.textContent = `Direction: ${dir}`;
+      directionText.textContent = Direction: ${dir};
       latestDirection = dir;
       saveToDatabase(gamma, beta, 0, dir, false);
     }
@@ -290,14 +280,14 @@ window.addEventListener("devicemotion", (event) => {
   db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
     const data = snapshot.val();
     const row = document.createElement("tr");
-    row.innerHTML = `
+    row.innerHTML = 
       <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
       <td>${data.axis.x}</td>
       <td>${data.axis.y}</td>
       <td>${data.axis.z}</td>
       <td>${data.direction}</td>
       <td>${data.vibration ? "Yes" : "No"}</td>
-    `;
+    ;
     tableBody.insertBefore(row, tableBody.firstChild);
   });
 
@@ -307,47 +297,17 @@ function gpsMoveAndLog(position) {
   const lat = position.coords.latitude;
   const lon = position.coords.longitude;
 
-  // Real-time motion data se get direction & vibration
-  let currentDirection = latestDirection;
-  let currentVibration = latestVibrationStatus;
-
-  // Final fallback agar latest values change nahi hue to default
-  if (!currentDirection) currentDirection = "Center";
-  if (!currentVibration) currentVibration = "No";
+  const vibration = latestVibrationStatus;
+  const direction = latestDirection;
 
   const data = {
     time: new Date().toLocaleTimeString(),
     lat: lat.toFixed(5),
     lon: lon.toFixed(5),
-    vibration: currentVibration,
-    direction: currentDirection
+    vibration,
+    direction
   };
-
   gpsDataLog.push(data);
-
-  // Only move the dot if we have previous coordinates
-  if (prevLat !== null && prevLon !== null) {
-    const dx = (lon - prevLon) * 100000; // scale factor
-    const dy = (lat - prevLat) * 100000;
-
-    x += dx;
-    y -= dy;
-
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
-
-    moveDot(x, y);
-  }
-
-  prevLat = lat;
-  prevLon = lon;
-}
-
- 
 
   // Only move the dot if we have previous coordinates
   if (prevLat !== null && prevLon !== null) {
