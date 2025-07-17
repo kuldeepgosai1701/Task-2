@@ -9,14 +9,20 @@
       margin: 0;
       font-family: Arial, sans-serif;
     }
+    header {
+      background-color: #222;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-size: 24px;
+    }
     #main {
       position: relative;
-      width: 100vw;
-      height: 100vh;
-      background-color: #f0f0f0;
+      height: 90vh;
+      background-color: #eee;
       overflow: hidden;
     }
-    #dot {
+    .dot {
       position: absolute;
       width: 12px;
       height: 12px;
@@ -25,134 +31,81 @@
     }
     .trail {
       position: absolute;
-      width: 4px;
-      height: 4px;
-      background-color: rgba(0, 0, 255, 0.5);
+      width: 6px;
+      height: 6px;
+      background-color: red;
       border-radius: 50%;
-      pointer-events: none;
+      opacity: 0.6;
     }
     #info {
       position: absolute;
       top: 10px;
       left: 10px;
-      background: white;
+      background-color: white;
       padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
+  <header>Motion Tracker</header>
   <div id="main">
-    <div id="dot"></div>
     <div id="info">
       <p>Move your phone to see the motion path.</p>
-      <p id="direction">Direction: Center</p>
-      <p id="location">Location: Fetching...</p>
-      <button onclick="resetDot()">Reset</button>
-      <button onclick="saveGPSData()">Save GPS</button>
-      <h2 id="compass">N</h2>
+      <p>Direction: <span id="direction">Center</span></p>
+      <p>Location: <span id="location">Fetching...</span></p>
+      <button onclick="resetTracker()">Reset</button>
+      <button onclick="saveGPS()">Save GPS</button>
+      <p id="vibration">N</p>
     </div>
   </div>
-  <footer style="text-align:center; padding: 10px; background:#eee;">
-    Created by Kuldeep Gosai
-  </footer>
+  <footer>Created by Kuldeep Gosai</footer>
 
   <script>
     const main = document.getElementById("main");
-    const dot = document.getElementById("dot");
-    const directionText = document.getElementById("direction");
-    const locationText = document.getElementById("location");
-    const compassText = document.getElementById("compass");
+    const dot = document.createElement("div");
+    dot.className = "dot";
+    main.appendChild(dot);
 
     let x, y;
-    let gpsData = [];
+    const rect = main.getBoundingClientRect();
+    x = rect.width / 2;
+    y = rect.height / 2;
+    moveDot(x, y);
 
-    function initializeDotPosition() {
-      const rect = main.getBoundingClientRect();
-      x = rect.width / 2;
-      y = rect.height / 2;
-      moveDot(x, y);
+    function moveDot(x, y) {
+      dot.style.left = `${x}px`;
+      dot.style.top = `${y}px`;
     }
 
-    function moveDot(newX, newY) {
-      dot.style.left = `${newX}px`;
-      dot.style.top = `${newY}px`;
-
+    function moveTrail(x, y) {
       const trail = document.createElement("div");
       trail.className = "trail";
-      trail.style.left = `${newX + 6}px`;
-      trail.style.top = `${newY + 6}px`;
+      trail.style.left = `${x + 6}px`;
+      trail.style.top = `${y + 6}px`;
       main.appendChild(trail);
     }
 
-    function resetDot() {
-      main.querySelectorAll('.trail').forEach(e => e.remove());
-      initializeDotPosition();
+    function resetTracker() {
+      x = rect.width / 2;
+      y = rect.height / 2;
+      moveDot(x, y);
+      document.querySelectorAll(".trail").forEach(el => el.remove()); // REMOVE TRAILS
     }
 
-    function saveGPSData() {
-      const blob = new Blob([gpsData.join('\n')], { type: 'text/plain' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'gps_log.txt';
-      a.click();
-    }
-
-    window.onload = () => {
-      initializeDotPosition();
-
-      if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', (event) => {
-          const alpha = event.alpha;
-          if (alpha !== null) {
-            let direction = "";
-            if (alpha < 45 || alpha >= 315) direction = "N";
-            else if (alpha < 135) direction = "E";
-            else if (alpha < 225) direction = "S";
-            else direction = "W";
-
-            compassText.textContent = direction;
-          }
-        });
-      }
-
-      if (window.DeviceMotionEvent) {
-        window.addEventListener('devicemotion', (event) => {
-          const acc = event.accelerationIncludingGravity;
-          if (acc) {
-            const screenW = main.clientWidth;
-            const screenH = main.clientHeight;
-
-            x += acc.x * 2;
-            y -= acc.y * 2;
-
-            if (x < 0) x = 0;
-            if (y < 0) y = 0;
-            if (x > screenW) x = screenW;
-            if (y > screenH) y = screenH;
-
-            moveDot(x, y);
-
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition((pos) => {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                const vibration = acc.z.toFixed(2);
-                const direction = compassText.textContent;
-                const log = `Lat: ${lat}, Lon: ${lon}, Dir: ${direction}, Vib: ${vibration}`;
-                gpsData.push(log);
-                locationText.textContent = `Location: ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
-                directionText.textContent = `Direction: ${direction}`;
-              });
-            }
-          }
-        });
-      }
+    function saveGPS() {
+      alert("GPS saved (mock).");
     }
   </script>
 </body>
 </html>
+
 
 
 
