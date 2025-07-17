@@ -140,10 +140,10 @@
   // ✅ Get direction string
   function getDirection(gamma, beta) {
     let dir = "";
-    if (beta > 3) dir += "South ";
-    else if (beta < -3) dir += "North ";
-    if (gamma > 3) dir += "East";
-    else if (gamma < -3) dir += "West";
+    if (beta > 5) dir += "South ";
+    else if (beta < -5) dir += "North ";
+    if (gamma > 5) dir += "East";
+    else if (gamma < -5) dir += "West";
     return dir.trim() || "Center";
   }
 
@@ -168,36 +168,21 @@
   moveDot(x, y);
 
   // ✅ Reset Button
-function resetData() {
-  // Clear Firebase data
-  db.ref("motionData").remove().then(() => {
-    // Clear the GPS log array
-    gpsDataLog = [];
+  function resetData() {
+    db.ref("motionData").remove().then(() => {
+      document.getElementById("table-body").innerHTML = "";
+     gpsDataLog = [];
+    });
+  }
 
-    // Remove all trail elements
-    const trails = document.querySelectorAll(".trail");
-    trails.forEach(trail => trail.remove());
+  // ✅ Save GPS to file
+ function saveGPSToFile() {
+  if (gpsDataLog.length === 0) {
+    alert("No data to save.");
+    return;
+  }
 
-    // Reset previous GPS location
-    prevLat = null;
-    prevLon = null;
-
-    // Reset dot position WITHOUT leaving a trail
-    x = window.innerWidth / 2;
-    y = window.innerHeight / 2;
-    dot.style.left = `${x}px`;
-    dot.style.top = `${y}px`;
-
-    // Optional: Reset dot color too
-    dot.style.backgroundColor = "blue";
-  });
-}
-
-
-
-// ✅ Header row (CSV format)
-  let content = "Time,Latitude,Longitude,Vibration,Direction\n";
-
+  let content = "Time\tLatitude\tLongitude\tVibration\tDirection\n";
   gpsDataLog.forEach(entry => {
     content += `${entry.time}\t${entry.lat}\t${entry.lon}\t${entry.vibration}\t${entry.direction}\n`;
   });
@@ -252,7 +237,7 @@ function resetData() {
   });
 
 // ✅ 1. Create Function
-function findVibration(x, y, z, threshold = 2) {
+function findVibration(x, y, z, threshold = 3) {
   return (Math.abs(x) > threshold || Math.abs(y) > threshold || Math.abs(z) > threshold)
     ? "Yes"
     : "No";
@@ -285,8 +270,7 @@ window.addEventListener("devicemotion", (event) => {
 
     moveDot(x, y);
 
-    saveToDatabase(acc.x, acc.y, acc.z, latestDirection, vibrationStatus === "Yes");
-
+    saveToDatabase(acc.x, acc.y, acc.z, "N/A", vibrationStatus === "Yes"); // ✅ use here
   }
 });
 
