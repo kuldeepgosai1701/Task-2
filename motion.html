@@ -334,7 +334,7 @@ function gpsMoveAndLog(position) {
   }
 
   // ✅ Movement calculation
-  const dx = (lon - prevLon) * 100000; // Scale factor for screen
+ /* const dx = (lon - prevLon) * 100000; // Scale factor for screen
   const dy = (lat - prevLat) * 100000;
 
   console.log(`Moving dot by dx: ${dx}, dy: ${dy}`);
@@ -358,7 +358,7 @@ function gpsMoveAndLog(position) {
   // ✅ Update previous coordinates
   prevLat = lat;
   prevLon = lon;
-}
+}*/
 
 
   // ✅ Calculate change and move dot from second reading onward
@@ -384,9 +384,12 @@ function gpsMoveAndLog(position) {
 // Call GPS update every 5 seconds
 setInterval(() => {
   if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(gpsMoveAndLog, showError);
-  }
-}, 5000);
+    navigator.geolocation.getCurrentPosition(gpsMoveAndLog, showError{
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 5000
+  });
+}
 
 
 </script>
