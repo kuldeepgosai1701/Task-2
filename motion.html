@@ -229,7 +229,7 @@
 
   // ✅ Device Orientation
 //  window.addEventListener("deviceorientation", (event) => {
-    const gamma = event.gamma;
+   /* const gamma = event.gamma;
     const beta = event.beta;
 
     if (gamma !== null && beta !== null) {
@@ -249,7 +249,7 @@
       latestDirection = dir;
       saveToDatabase(gamma, beta, 0, dir, false);
     }
-  });
+ */ });
 
 // ✅ 1. Create Function
 function findVibration(x, y, z, threshold = 3) {
@@ -260,7 +260,7 @@ function findVibration(x, y, z, threshold = 3) {
 
 
 //window.addEventListener("devicemotion", (event) => {
-  const acc = event.acceleration;
+ /* const acc = event.acceleration;
   if (acc && acc.x !== null && acc.y !== null && acc.z !== null) {
     const vibrationStatus = findVibration(acc.x, acc.y, acc.z); // ✅ calculate vibration
     latestVibrationStatus = vibrationStatus;
@@ -288,6 +288,7 @@ function findVibration(x, y, z, threshold = 3) {
     saveToDatabase(acc.x, acc.y, acc.z, "N/A", vibrationStatus === "Yes"); // ✅ use here
   }
 });
+*/
 
 
   // ✅ Firebase Listener: Table
