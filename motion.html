@@ -324,8 +324,8 @@ function gpsMoveAndLog(position) {
     const dx = (lon - prevLon) * 100000; // scale factor
     const dy = (lat - prevLat) * 100000;
 
-    x += dx;
-    y -= dy;
+    x += dx * 0.5; // Adjust sensitivity (tune 0.5 as needed)
+    y += dy * 0.5;
 
     const screenW = window.innerWidth;
     const screenH = window.innerHeight;
