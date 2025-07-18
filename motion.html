@@ -215,6 +215,7 @@
 
   // ✅ Show GPS on screen
   function showLocation(position) {
+    console.log("Got position:", position); // ✅ Debugging
     const lat = position.coords.latitude.toFixed(5);
     const lon = position.coords.longitude.toFixed(5);
     document.getElementById("location").textContent = `Location: ${lat}, ${lon}`;
@@ -222,6 +223,7 @@
   function showError(error) {
     const txt = document.getElementById("location");
     txt.textContent = "Location: Error getting position.";
+    console.error("GPS Error:", error);
   }
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(showLocation, showError);
