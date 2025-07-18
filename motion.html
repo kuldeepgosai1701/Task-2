@@ -325,23 +325,29 @@ function gpsMoveAndLog(position) {
   };
   gpsDataLog.push(data);
 
-  // Only move the dot if we have previous coordinates
-  if (prevLat !== null && prevLon !== null) {
-    const dx = (lon - prevLon) * 100000; // scale factor
-    const dy = (lat - prevLat) * 100000;
-
-    x += dx * 0.5; // Adjust sensitivity (tune 0.5 as needed)
-    y += dy * 0.5;
-
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
-
-    moveDot(x, y);
+  // ✅ First-time GPS fix: only store first lat/lon, skip movement
+  if (prevLat === null || prevLon === null) {
+    prevLat = lat;
+    prevLon = lon;
+    console.log("First GPS location set. Waiting for next reading to move dot.");
+    return; // ⛔ Skip movement on first reading
   }
+
+  // ✅ Calculate change and move dot from second reading onward
+  const dx = (lon - prevLon) * 100000; // scale factor
+  const dy = (lat - prevLat) * 100000;
+
+  x += dx * 2;  // Adjusted scale for visible movement
+  y += dy * 2;
+
+  const screenW = main.clientWidth;
+  const screenH = main.clientHeight;
+  if (x < 0) x = screenW;
+  if (x > screenW) x = 0;
+  if (y < 0) y = screenH;
+  if (y > screenH) y = 0;
+
+  moveDot(x, y);
 
   prevLat = lat;
   prevLon = lon;
