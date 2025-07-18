@@ -325,13 +325,41 @@ function gpsMoveAndLog(position) {
   };
   gpsDataLog.push(data);
 
-  // ✅ First-time GPS fix: only store first lat/lon, skip movement
+  // ✅ First-time GPS: Just store values and skip movement
   if (prevLat === null || prevLon === null) {
     prevLat = lat;
     prevLon = lon;
-    console.log("First GPS location set. Waiting for next reading to move dot.");
-    return; // ⛔ Skip movement on first reading
+    console.log("First GPS location stored.");
+    return;
   }
+
+  // ✅ Movement calculation
+  const dx = (lon - prevLon) * 100000; // Scale factor for screen
+  const dy = (lat - prevLat) * 100000;
+
+  console.log(`Moving dot by dx: ${dx}, dy: ${dy}`);
+
+  // ✅ Update x/y
+  x += dx * 2;  // scale to see visible movement
+  y += dy * 2;
+
+  const screenW = main.clientWidth;
+  const screenH = main.clientHeight;
+
+  // ✅ Boundary check
+  if (x < 0) x = 0;
+  if (x > screenW) x = screenW;
+  if (y < 0) y = 0;
+  if (y > screenH) y = screenH;
+
+  // ✅ Move dot
+  moveDot(x, y);
+
+  // ✅ Update previous coordinates
+  prevLat = lat;
+  prevLon = lon;
+}
+
 
   // ✅ Calculate change and move dot from second reading onward
   const dx = (lon - prevLon) * 100000; // scale factor
@@ -356,9 +384,10 @@ function gpsMoveAndLog(position) {
 // Call GPS update every 5 seconds
 setInterval(() => {
   if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(gpsMoveAndLog);
+    navigator.geolocation.getCurrentPosition(gpsMoveAndLog, showError);
   }
 }, 5000);
+
 
 </script>
 </body>
