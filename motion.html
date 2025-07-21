@@ -140,6 +140,15 @@
     });
   }
 
+function markVibrationPoint(x, y) {
+  const trail = document.createElement("div");
+  trail.className = "trail";
+  trail.style.left = `${x + 6}px`;
+  trail.style.top = `${y + 6}px`;
+  trail.style.background = "red"; // vibration mark
+  main.appendChild(trail);
+}
+
   function resetDot() {
     x = 1500;
     y = 1500;
@@ -197,6 +206,24 @@
       locationText.textContent = "Geolocation not supported.";
     }
   }, 5000);
+
+  window.addEventListener('devicemotion', function(event) {
+  if (!event.acceleration) return;
+
+  const ax = event.acceleration.x || 0;
+  const ay = event.acceleration.y || 0;
+  const az = event.acceleration.z || 0;
+
+  const totalAcceleration = Math.sqrt(ax * ax + ay * ay + az * az);
+
+  // Threshold: adjust as needed
+  if (totalAcceleration > 15) {
+    console.log("📳 Shake detected:", totalAcceleration.toFixed(2));
+    navigator.vibrate(300); // physical vibration (if supported)
+    markVibrationPoint(x, y); // draw red dot where shake detected
+  }
+});
+
 </script>
 
 
