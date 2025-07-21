@@ -103,15 +103,19 @@
   let prevLat = null;
   let prevLon = null;
 
-  function moveDot(newX, newY) {
-    // Draw trail from previous position
+  function addTrail(x, y) {
     const trail = document.createElement("div");
     trail.className = "trail";
     trail.style.left = `${x + 6}px`;
     trail.style.top = `${y + 6}px`;
     main.appendChild(trail);
+  }
 
-    // Update position
+  function moveDot(newX, newY) {
+    // Pehle purani jagah pe trail chhodo
+    addTrail(x, y);
+
+    // Ab dot ko move karo
     x = newX;
     y = newY;
 
@@ -134,8 +138,8 @@
     dot.style.left = `${x}px`;
     dot.style.top = `${y}px`;
 
-    const trails = document.querySelectorAll(".trail");
-    trails.forEach(trail => trail.remove());
+    // Purana trail hatao
+    document.querySelectorAll(".trail").forEach(trail => trail.remove());
 
     scrollContainer.scrollTo({
       left: x - scrollContainer.clientWidth / 2,
@@ -144,7 +148,7 @@
     });
   }
 
-  moveDot(x, y); // set initial position
+  moveDot(x, y); // Initial center
 
   function showLocation(position) {
     const lat = position.coords.latitude;
@@ -182,6 +186,7 @@
     }
   }, 5000);
 </script>
+
 
 </body>
 </html>
