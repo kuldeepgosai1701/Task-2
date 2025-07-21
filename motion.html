@@ -80,9 +80,14 @@
 
 <div id="scrollContainer">
   <main id="main">
+    <canvas id="trailCanvas" width="3000" height="3000"></canvas>
+     <div id="dot"></div>
     <div id="dot"></div>
   </main>
 </div>
+
+
+
 
 <div class="info">
   <p>Move your phone to see the motion path.</p>
@@ -94,28 +99,34 @@
 
 <script>
   const dot = document.getElementById("dot");
-  const main = document.getElementById("main");
+  const canvas = document.getElementById("trailCanvas");
+  const ctx = canvas.getContext("2d");
   const locationText = document.getElementById("location");
   const scrollContainer = document.getElementById("scrollContainer");
 
+  const main = document.getElementById("main");
   let x = 1500;
   let y = 1500;
   let prevLat = null;
   let prevLon = null;
-
-  function addTrail(x, y) {
-    const trail = document.createElement("div");
-    trail.className = "trail";
-    trail.style.left = `${x + 6}px`;
-    trail.style.top = `${y + 6}px`;
-    main.appendChild(trail);
-  }
+  let prevX = null;
+  let prevY = null;
 
   function moveDot(newX, newY) {
-    // Pehle purani jagah pe trail chhodo
-    addTrail(x, y);
+    // Line draw from prevX,Y to newX,Y
+    if (prevX !== null && prevY !== null) {
+      ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(prevX + 9, prevY + 9); // +9 to center the line with dot
+      ctx.lineTo(newX + 9, newY + 9);
+      ctx.stroke();
+    }
 
-    // Ab dot ko move karo
+    // Save current for next line
+    prevX = x;
+    prevY = y;
+
     x = newX;
     y = newY;
 
@@ -134,12 +145,13 @@
     y = 1500;
     prevLat = null;
     prevLon = null;
+    prevX = null;
+    prevY = null;
 
     dot.style.left = `${x}px`;
     dot.style.top = `${y}px`;
 
-    // Purana trail hatao
-    document.querySelectorAll(".trail").forEach(trail => trail.remove());
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     scrollContainer.scrollTo({
       left: x - scrollContainer.clientWidth / 2,
@@ -148,7 +160,7 @@
     });
   }
 
-  moveDot(x, y); // Initial center
+  moveDot(x, y); // start dot at center
 
   function showLocation(position) {
     const lat = position.coords.latitude;
@@ -186,6 +198,7 @@
     }
   }, 5000);
 </script>
+
 
 
 </body>
