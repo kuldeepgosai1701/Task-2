@@ -10,7 +10,6 @@
       height: 100%;
       font-family: Arial, sans-serif;
       background: #f0f0f0;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
     }
@@ -21,20 +20,25 @@
       padding: 15px;
       font-size: 1.5rem;
     }
+    #scrollContainer {
+      flex: 1;
+      overflow: scroll;
+      position: relative;
+    }
     main {
-      width: 3000px; /* large space to allow scrolling */
+      width: 3000px;
       height: 3000px;
       position: relative;
-      overflow: hidden;
+      background: #f0f0f0;
     }
     .info {
-      position: absolute;
+      position: fixed;
       top: 10px;
       left: 10px;
       background: rgba(255,255,255,0.95);
       padding: 10px;
       border-radius: 8px;
-      z-index: 10;
+      z-index: 20;
     }
     button {
       margin-top: 5px;
@@ -48,14 +52,11 @@
     }
     #dot {
       position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
       width: 18px;
       height: 18px;
       background: blue;
       border-radius: 50%;
-      z-index: 5;
+      z-index: 10;
     }
     .trail {
       width: 5px;
@@ -78,15 +79,16 @@
 <header>Motion Tracker</header>
 
 <div id="scrollContainer">
-<main id="main">
-  <div class="info">
-    <p>Move your phone to see the motion path.</p>
-    <p id="location">Location: Fetching...</p>
-    <button onclick="resetDot()">Reset</button>
-  </div>
+  <main id="main">
+    <div id="dot"></div>
+  </main>
+</div>
 
-  <div id="dot"></div>
-</main>
+<div class="info">
+  <p>Move your phone to see the motion path.</p>
+  <p id="location">Location: Fetching...</p>
+  <button onclick="resetDot()">Reset</button>
+</div>
 
 <footer>Created by Kuldeep Gosai</footer>
 
@@ -94,81 +96,63 @@
   const dot = document.getElementById("dot");
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
+  const scrollContainer = document.getElementById("scrollContainer");
 
-  let x = window.innerWidth / 2;
-  let y = window.innerHeight / 2;
-
+  let x = 1500; // start in center of big map
+  let y = 1500;
   let prevLat = null;
   let prevLon = null;
 
   function moveDot(newX, newY) {
-  dot.style.left = `${newX}px`;
-  dot.style.top = `${newY}px`;
+    dot.style.left = `${newX}px`;
+    dot.style.top = `${newY}px`;
 
-  const trail = document.createElement("div");
-  trail.className = "trail";
-  trail.style.left = `${newX + 6}px`;
-  trail.style.top = `${newY + 6}px`;
-  main.appendChild(trail);
+    const trail = document.createElement("div");
+    trail.className = "trail";
+    trail.style.left = `${newX + 6}px`;
+    trail.style.top = `${newY + 6}px`;
+    main.appendChild(trail);
 
-  // Scroll container to center on the dot
-  const scrollContainer = document.getElementById("scrollContainer");
-  scrollContainer.scrollTo({
-    left: newX - scrollContainer.clientWidth / 2,
-    top: newY - scrollContainer.clientHeight / 2,
-    behavior: "smooth"
-  });
-}
-
+    scrollContainer.scrollTo({
+      left: newX - scrollContainer.clientWidth / 2,
+      top: newY - scrollContainer.clientHeight / 2,
+      behavior: "smooth"
+    });
+  }
 
   function resetDot() {
-    x = window.innerWidth / 2;
-    y = window.innerHeight / 2;
+    x = 1500;
+    y = 1500;
     moveDot(x, y);
-    
     prevLat = null;
     prevLon = null;
-
     const trails = document.querySelectorAll(".trail");
     trails.forEach(trail => trail.remove());
   }
 
-  moveDot(x, y); // initial dot
+  moveDot(x, y); // initial position
 
   function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-    // First time: just store
     if (prevLat === null || prevLon === null) {
       prevLat = lat;
       prevLon = lon;
-      console.log("First GPS coordinate stored.");
       return;
     }
 
-    // Calculate distance change
     const dx = (lon - prevLon) * 100000;
     const dy = (lat - prevLat) * 100000;
 
-    x += dx * 2; // adjust scale for visible move
+    x += dx * 2;
     y += dy * 2;
-
-    const screenW = main.clientWidth;
-    const screenH = main.clientHeight;
-
-    if (x < 0) x = 0;
-    if (x > screenW) x = screenW;
-    if (y < 0) y = 0;
-    if (y > screenH) y = screenH;
 
     moveDot(x, y);
 
     prevLat = lat;
     prevLon = lon;
-
     console.log(`Dot moved to x=${x}, y=${y}`);
   }
 
@@ -177,7 +161,6 @@
     locationText.textContent = "Location: Error fetching position.";
   }
 
-  // Call every 5 seconds
   setInterval(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(showLocation, showError);
@@ -189,6 +172,7 @@
 
 </body>
 </html>
+
 
 
 
