@@ -22,7 +22,8 @@
       font-size: 1.5rem;
     }
     main {
-      flex: 1;
+      width: 3000px; /* large space to allow scrolling */
+      height: 3000px;
       position: relative;
       overflow: hidden;
     }
@@ -76,6 +77,7 @@
 
 <header>Motion Tracker</header>
 
+<div id="scrollContainer">
 <main id="main">
   <div class="info">
     <p>Move your phone to see the motion path.</p>
@@ -100,15 +102,24 @@
   let prevLon = null;
 
   function moveDot(newX, newY) {
-    dot.style.left = `${newX}px`;
-    dot.style.top = `${newY}px`;
+  dot.style.left = `${newX}px`;
+  dot.style.top = `${newY}px`;
 
-    const trail = document.createElement("div");
-    trail.className = "trail";
-    trail.style.left = `${newX + 6}px`;
-    trail.style.top = `${newY + 6}px`;
-    main.appendChild(trail);
-  }
+  const trail = document.createElement("div");
+  trail.className = "trail";
+  trail.style.left = `${newX + 6}px`;
+  trail.style.top = `${newY + 6}px`;
+  main.appendChild(trail);
+
+  // Scroll container to center on the dot
+  const scrollContainer = document.getElementById("scrollContainer");
+  scrollContainer.scrollTo({
+    left: newX - scrollContainer.clientWidth / 2,
+    top: newY - scrollContainer.clientHeight / 2,
+    behavior: "smooth"
+  });
+}
+
 
   function resetDot() {
     x = window.innerWidth / 2;
