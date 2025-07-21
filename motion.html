@@ -104,22 +104,31 @@
   let prevLon = null;
 
   function moveDot(newX, newY) {
-    dot.style.left = `${newX}px`;
-    dot.style.top = `${newY}px`;
+  // Only add trail if position has actually changed
+  const dx = newX - x;
+  const dy = newY - y;
+  
 
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  if (distance > 1) {  // only add trail if moved at least 1px
     const trail = document.createElement("div");
     trail.className = "trail";
     trail.style.left = `${newX}px`;
     trail.style.top = `${newY}px`;
     main.appendChild(trail);
 
-   const scrollContainer = document.getElementById("scrollContainer");
-   scrollContainer.scrollTo({
-      left: newX - scrollContainer.clientWidth / 2,
-      top: newY - scrollContainer.clientHeight / 2,
-      behavior: "smooth"
-    });
-  }
+  x = newX;
+  y = newY;
+
+  dot.style.left = `${x}px`;
+  dot.style.top = `${y}px`;
+
+  scrollContainer.scrollTo({
+    left: x - scrollContainer.clientWidth / 2,
+    top: y - scrollContainer.clientHeight / 2,
+    behavior: "smooth"
+  });
+}
 
   function resetDot() {
     x = 1500;
@@ -150,7 +159,7 @@
     x += dx * 2;
     y += dy * 2;
 
-    moveDot(x, y);
+  moveDot(x + dx * 2, y + dy * 2);
 
     prevLat = lat;
     prevLon = lon;
