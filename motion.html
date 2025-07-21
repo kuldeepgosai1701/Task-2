@@ -109,11 +109,12 @@
 
     const trail = document.createElement("div");
     trail.className = "trail";
-    trail.style.left = `${newX + 6}px`;
-    trail.style.top = `${newY + 6}px`;
+    trail.style.left = `${newX}px`;
+    trail.style.top = `${newY}px`;
     main.appendChild(trail);
 
-    scrollContainer.scrollTo({
+   const scrollContainer = document.getElementById("scrollContainer");
+   scrollContainer.scrollTo({
       left: newX - scrollContainer.clientWidth / 2,
       top: newY - scrollContainer.clientHeight / 2,
       behavior: "smooth"
