@@ -98,6 +98,7 @@
 <footer>Created by Kuldeep Gosai</footer>
 
 <script>
+  let shakeDetected = false; // 🚨 ye line yahan daalein
   const dot = document.getElementById("dot");
   const canvas = document.getElementById("trailCanvas");
   const ctx = canvas.getContext("2d");
@@ -113,32 +114,36 @@
   let prevY = null;
 
   function moveDot(newX, newY) {
-    // Line draw from prevX,Y to newX,Y
-    if (prevX !== null && prevY !== null) {
-      ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(prevX + 9, prevY + 9); // +9 to center the line with dot
-      ctx.lineTo(newX + 9, newY + 9);
-      ctx.stroke();
-    }
+  if (prevX !== null && prevY !== null) {
+    // Choose color based on shake
+    ctx.strokeStyle = shakeDetected ? 'red' : 'rgba(0, 0, 255, 0.7)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(prevX + 9, prevY + 9);
+    ctx.lineTo(newX + 9, newY + 9);
+    ctx.stroke();
 
-    // Save current for next line
-    prevX = x;
-    prevY = y;
-
-    x = newX;
-    y = newY;
-
-    dot.style.left = `${x}px`;
-    dot.style.top = `${y}px`;
-
-    scrollContainer.scrollTo({
-      left: x - scrollContainer.clientWidth / 2,
-      top: y - scrollContainer.clientHeight / 2,
-      behavior: "smooth"
-    });
+    // Reset shake flag after using it
+    shakeDetected = false;
   }
+
+  // Update for next movement
+  prevX = x;
+  prevY = y;
+
+  x = newX;
+  y = newY;
+
+  dot.style.left = `${x}px`;
+  dot.style.top = `${y}px`;
+
+  scrollContainer.scrollTo({
+    left: x - scrollContainer.clientWidth / 2,
+    top: y - scrollContainer.clientHeight / 2,
+    behavior: "smooth"
+  });
+}
+
 
 function markVibrationPoint(x, y) {
   const trail = document.createElement("div");
