@@ -103,20 +103,21 @@
   let prevLat = null;
   let prevLon = null;
 
-  function moveDot(newX, newY) {
-  // Only add trail if position has actually changed
+ function moveDot(newX, newY) {
+  // Add trail only if moved
   const dx = newX - x;
   const dy = newY - y;
-  
-
   const distance = Math.sqrt(dx * dx + dy * dy);
-  if (distance > 1) {  // only add trail if moved at least 1px
+
+  if (distance > 1) {
     const trail = document.createElement("div");
     trail.className = "trail";
-    trail.style.left = `${newX}px`;
-    trail.style.top = `${newY}px`;
+    trail.style.left = `${x + 6}px`; // old x
+    trail.style.top = `${y + 6}px`;  // old y
     main.appendChild(trail);
+  }
 
+  // Now update x, y and dot position
   x = newX;
   y = newY;
 
@@ -130,41 +131,50 @@
   });
 }
 
-  function resetDot() {
-    x = 1500;
-    y = 1500;
-    moveDot(x, y);
-    prevLat = null;
-    prevLon = null;
-    const trails = document.querySelectorAll(".trail");
-    trails.forEach(trail => trail.remove());
-  }
+
+function resetDot() {
+  x = 1500;
+  y = 1500;
+  dot.style.left = `${x}px`;
+  dot.style.top = `${y}px`;
+  prevLat = null;
+  prevLon = null;
+
+  const trails = document.querySelectorAll(".trail");
+  trails.forEach(trail => trail.remove());
+
+  scrollContainer.scrollTo({
+    left: x - scrollContainer.clientWidth / 2,
+    top: y - scrollContainer.clientHeight / 2,
+    behavior: "smooth"
+  });
+}
 
   moveDot(x, y); // initial position
 
-  function showLocation(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+ function showLocation(position) {
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+  locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-    if (prevLat === null || prevLon === null) {
-      prevLat = lat;
-      prevLon = lon;
-      return;
-    }
-
-    const dx = (lon - prevLon) * 100000;
-    const dy = (lat - prevLat) * 100000;
-
-    x += dx * 2;
-    y += dy * 2;
-
-  moveDot(x + dx * 2, y + dy * 2);
-
+  if (prevLat === null || prevLon === null) {
     prevLat = lat;
     prevLon = lon;
-    console.log(`Dot moved to x=${x}, y=${y}`);
+    return;
   }
+
+  const dx = (lon - prevLon) * 100000;
+  const dy = (lat - prevLat) * 100000;
+
+  const newX = x + dx * 2;
+  const newY = y + dy * 2;
+
+  moveDot(newX, newY);
+
+  prevLat = lat;
+  prevLon = lon;
+}
+
 
   function showError(error) {
     console.error("GPS Error:", error);
