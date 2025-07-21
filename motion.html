@@ -98,83 +98,76 @@
   const locationText = document.getElementById("location");
   const scrollContainer = document.getElementById("scrollContainer");
 
-  let x = 1500; // start in center of big map
+  let x = 1500;
   let y = 1500;
   let prevLat = null;
   let prevLon = null;
 
- function moveDot(newX, newY) {
-  // Add trail only if moved
-  const dx = newX - x;
-  const dy = newY - y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-
-  if (distance > 1) {
+  function moveDot(newX, newY) {
+    // Draw trail from previous position
     const trail = document.createElement("div");
     trail.className = "trail";
-    trail.style.left = `${x + 6}px`; // old x
-    trail.style.top = `${y + 6}px`;  // old y
+    trail.style.left = `${x + 6}px`;
+    trail.style.top = `${y + 6}px`;
     main.appendChild(trail);
+
+    // Update position
+    x = newX;
+    y = newY;
+
+    dot.style.left = `${x}px`;
+    dot.style.top = `${y}px`;
+
+    scrollContainer.scrollTo({
+      left: x - scrollContainer.clientWidth / 2,
+      top: y - scrollContainer.clientHeight / 2,
+      behavior: "smooth"
+    });
   }
 
-  // Now update x, y and dot position
-  x = newX;
-  y = newY;
+  function resetDot() {
+    x = 1500;
+    y = 1500;
+    prevLat = null;
+    prevLon = null;
 
-  dot.style.left = `${x}px`;
-  dot.style.top = `${y}px`;
+    dot.style.left = `${x}px`;
+    dot.style.top = `${y}px`;
 
-  scrollContainer.scrollTo({
-    left: x - scrollContainer.clientWidth / 2,
-    top: y - scrollContainer.clientHeight / 2,
-    behavior: "smooth"
-  });
-}
+    const trails = document.querySelectorAll(".trail");
+    trails.forEach(trail => trail.remove());
 
+    scrollContainer.scrollTo({
+      left: x - scrollContainer.clientWidth / 2,
+      top: y - scrollContainer.clientHeight / 2,
+      behavior: "smooth"
+    });
+  }
 
-function resetDot() {
-  x = 1500;
-  y = 1500;
-  dot.style.left = `${x}px`;
-  dot.style.top = `${y}px`;
-  prevLat = null;
-  prevLon = null;
+  moveDot(x, y); // set initial position
 
-  const trails = document.querySelectorAll(".trail");
-  trails.forEach(trail => trail.remove());
+  function showLocation(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-  scrollContainer.scrollTo({
-    left: x - scrollContainer.clientWidth / 2,
-    top: y - scrollContainer.clientHeight / 2,
-    behavior: "smooth"
-  });
-}
+    if (prevLat === null || prevLon === null) {
+      prevLat = lat;
+      prevLon = lon;
+      return;
+    }
 
-  moveDot(x, y); // initial position
+    const dx = (lon - prevLon) * 100000;
+    const dy = (lat - prevLat) * 100000;
 
- function showLocation(position) {
-  const lat = position.coords.latitude;
-  const lon = position.coords.longitude;
-  locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    const newX = x + dx * 2;
+    const newY = y + dy * 2;
 
-  if (prevLat === null || prevLon === null) {
+    moveDot(newX, newY);
+
     prevLat = lat;
     prevLon = lon;
-    return;
   }
-
-  const dx = (lon - prevLon) * 100000;
-  const dy = (lat - prevLat) * 100000;
-
-  const newX = x + dx * 2;
-  const newY = y + dy * 2;
-
-  moveDot(newX, newY);
-
-  prevLat = lat;
-  prevLon = lon;
-}
-
 
   function showError(error) {
     console.error("GPS Error:", error);
@@ -192,6 +185,7 @@ function resetDot() {
 
 </body>
 </html>
+
 
 
 
