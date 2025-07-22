@@ -56,6 +56,7 @@
       background: blue;
       border-radius: 50%;
       z-index: 10;
+      transform: translate(-50%, -50%);
     }
     .trail {
       width: 5px;
@@ -102,8 +103,7 @@
   const scrollContainer = document.getElementById("scrollContainer");
   const main = document.getElementById("main");
 
-  let x = 1500;
-  let y = 1500;
+  let x = 1500, y = 1500;
   let prevLat = null, prevLon = null;
   let prevX = null, prevY = null;
 
@@ -117,7 +117,6 @@
       ctx.stroke();
     }
 
-    // After drawing, reset shake flag
     shakeDetected = false;
 
     prevX = x;
@@ -164,31 +163,31 @@
     });
   }
 
-  moveDot(x, y);
+  moveDot(x, y); // start center
 
- function showLocation(position) {
-  const lat = position.coords.latitude;
-  const lon = position.coords.longitude;
-  locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+  function showLocation(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-  if (prevLat !== null && prevLon !== null) {
-    const dx = (lon - prevLon) * 100000;
-    const dy = (lat - prevLat) * 100000;
-   // const newX = x + dx * 2;
-   // const newY = y + dy * 2;
+    if (prevLat !== null && prevLon !== null) {
+      const dx = (lon - prevLon) * 100000;
+      const dy = (lat - prevLat) * 100000;
 
-   // moveDot(newX, newY);
+      const newX = x + dx * 2;
+      const newY = y + dy * 2;
 
-    // Calculate direction
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    const direction = getDirectionFromAngle(angle);
-    directionText.textContent = `Direction: ${direction}`;
+      moveDot(newX, newY);
+
+      // direction calculation
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const direction = getDirectionFromAngle(angle);
+      directionText.textContent = `Direction: ${direction}`;
+    }
+
+    prevLat = lat;
+    prevLon = lon;
   }
-
-  prevLat = lat;
-  prevLon = lon;
-}
-
 
   function showError(error) {
     console.error("GPS Error:", error);
@@ -199,9 +198,9 @@
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(showLocation, showError);
     }
-  }, 5000);
+  }, 5000); // GPS update every 5s
 
-  // Gyroscope-based vibration detection
+  // Gyroscope: Vibration Detection
   window.addEventListener('devicemotion', function(event) {
     if (!event.acceleration) return;
     const ax = event.acceleration.x || 0;
@@ -217,16 +216,16 @@
     }
   });
 
-function getDirectionFromAngle(angle) {
-  const directions = [
-    "East →", "North-East ↗️", "North ↑", "North-West ↖️",
-    "West ←", "South-West ↙️", "South ↓", "South-East ↘️"
-  ];
-  const index = Math.round((angle % 360 + 360) % 360 / 45) % 8;
-  return directions[index];
-}
-
+  function getDirectionFromAngle(angle) {
+    const directions = [
+      "East →", "North-East ↗️", "North ↑", "North-West ↖️",
+      "West ←", "South-West ↙️", "South ↓", "South-East ↘️"
+    ];
+    const index = Math.round((angle % 360 + 360) % 360 / 45) % 8;
+    return directions[index];
+  }
 </script>
+
 
 </body>
 </html>
