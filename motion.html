@@ -29,7 +29,6 @@
       width: 3000px;
       height: 3000px;
       position: relative;
-      background: #f0f0f0;
     }
     .info {
       position: fixed;
@@ -61,7 +60,6 @@
     .trail {
       width: 5px;
       height: 5px;
-      background: rgba(0, 0, 255, 0.5);
       border-radius: 50%;
       position: absolute;
       z-index: 1;
@@ -81,16 +79,12 @@
 <div id="scrollContainer">
   <main id="main">
     <canvas id="trailCanvas" width="3000" height="3000"></canvas>
-     <div id="dot"></div>
     <div id="dot"></div>
   </main>
 </div>
 
-
-
-
 <div class="info">
-  <p>Move your phone to see the motion path.</p>
+  <p>Move your phone to see motion.</p>
   <p id="location">Location: Fetching...</p>
   <button onclick="resetDot()">Reset</button>
 </div>
@@ -98,61 +92,55 @@
 <footer>Created by Kuldeep Gosai</footer>
 
 <script>
-  let shakeDetected = false; // 🚨 ye line yahan daalein
+  let shakeDetected = false;
   const dot = document.getElementById("dot");
   const canvas = document.getElementById("trailCanvas");
   const ctx = canvas.getContext("2d");
   const locationText = document.getElementById("location");
   const scrollContainer = document.getElementById("scrollContainer");
-
   const main = document.getElementById("main");
+
   let x = 1500;
   let y = 1500;
-  let prevLat = null;
-  let prevLon = null;
-  let prevX = null;
-  let prevY = null;
+  let prevLat = null, prevLon = null;
+  let prevX = null, prevY = null;
 
   function moveDot(newX, newY) {
-  if (prevX !== null && prevY !== null) {
-    // Choose color based on shake
-    ctx.strokeStyle = shakeDetected ? 'red' : 'rgba(0, 0, 255, 0.7)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(prevX + 9, prevY + 9);
-    ctx.lineTo(newX + 9, newY + 9);
-    ctx.stroke();
+    if (prevX !== null && prevY !== null) {
+      ctx.strokeStyle = shakeDetected ? 'red' : 'rgba(0, 0, 255, 0.7)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(prevX + 9, prevY + 9);
+      ctx.lineTo(newX + 9, newY + 9);
+      ctx.stroke();
+    }
 
-    // Reset shake flag after using it
+    // After drawing, reset shake flag
     shakeDetected = false;
+
+    prevX = x;
+    prevY = y;
+    x = newX;
+    y = newY;
+
+    dot.style.left = `${x}px`;
+    dot.style.top = `${y}px`;
+
+    scrollContainer.scrollTo({
+      left: x - scrollContainer.clientWidth / 2,
+      top: y - scrollContainer.clientHeight / 2,
+      behavior: "smooth"
+    });
   }
 
-  // Update for next movement
-  prevX = x;
-  prevY = y;
-
-  x = newX;
-  y = newY;
-
-  dot.style.left = `${x}px`;
-  dot.style.top = `${y}px`;
-
-  scrollContainer.scrollTo({
-    left: x - scrollContainer.clientWidth / 2,
-    top: y - scrollContainer.clientHeight / 2,
-    behavior: "smooth"
-  });
-}
-
-
-function markVibrationPoint(x, y) {
-  const trail = document.createElement("div");
-  trail.className = "trail";
-  trail.style.left = `${x + 6}px`;
-  trail.style.top = `${y + 6}px`;
-  trail.style.background = "red"; // vibration mark
-  main.appendChild(trail);
-}
+  function markVibrationPoint(x, y) {
+    const trail = document.createElement("div");
+    trail.className = "trail";
+    trail.style.left = `${x + 6}px`;
+    trail.style.top = `${y + 6}px`;
+    trail.style.background = "red";
+    main.appendChild(trail);
+  }
 
   function resetDot() {
     x = 1500;
@@ -174,7 +162,7 @@ function markVibrationPoint(x, y) {
     });
   }
 
-  moveDot(x, y); // start dot at center
+  moveDot(x, y);
 
   function showLocation(position) {
     const lat = position.coords.latitude;
@@ -189,7 +177,6 @@ function markVibrationPoint(x, y) {
 
     const dx = (lon - prevLon) * 100000;
     const dy = (lat - prevLat) * 100000;
-
     const newX = x + dx * 2;
     const newY = y + dy * 2;
 
@@ -201,37 +188,31 @@ function markVibrationPoint(x, y) {
 
   function showError(error) {
     console.error("GPS Error:", error);
-    locationText.textContent = "Location: Error fetching position.";
+    locationText.textContent = "Location: Error";
   }
 
   setInterval(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(showLocation, showError);
-    } else {
-      locationText.textContent = "Geolocation not supported.";
     }
   }, 5000);
 
- window.addEventListener('devicemotion', function(event) {
-  if (!event.acceleration) return;
+  // Gyroscope-based vibration detection
+  window.addEventListener('devicemotion', function(event) {
+    if (!event.acceleration) return;
+    const ax = event.acceleration.x || 0;
+    const ay = event.acceleration.y || 0;
+    const az = event.acceleration.z || 0;
 
-  const ax = event.acceleration.x || 0;
-  const ay = event.acceleration.y || 0;
-  const az = event.acceleration.z || 0;
-
-  const totalAcceleration = Math.sqrt(ax * ax + ay * ay + az * az);
-
-  if (totalAcceleration > 15) {
-    console.log("📳 Shake detected:", totalAcceleration.toFixed(2));
-    navigator.vibrate(300);
-    shakeDetected = true; // ✅ set flag
-    markVibrationPoint(x, y); // optional red dot
-  }
-});
-
+    const total = Math.sqrt(ax * ax + ay * ay + az * az);
+    if (total > 15) {
+      console.log("📳 Shake detected:", total.toFixed(2));
+      shakeDetected = true;
+      markVibrationPoint(x, y);
+      navigator.vibrate(300);
+    }
+  });
 </script>
-
-
 
 </body>
 </html>
