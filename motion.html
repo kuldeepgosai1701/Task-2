@@ -212,7 +212,7 @@ function markVibrationPoint(x, y) {
     }
   }, 5000);
 
-  window.addEventListener('devicemotion', function(event) {
+ window.addEventListener('devicemotion', function(event) {
   if (!event.acceleration) return;
 
   const ax = event.acceleration.x || 0;
@@ -221,11 +221,11 @@ function markVibrationPoint(x, y) {
 
   const totalAcceleration = Math.sqrt(ax * ax + ay * ay + az * az);
 
-  // Threshold: adjust as needed
   if (totalAcceleration > 15) {
     console.log("📳 Shake detected:", totalAcceleration.toFixed(2));
-    navigator.vibrate(300); // physical vibration (if supported)
-    markVibrationPoint(x, y); // draw red dot where shake detected
+    navigator.vibrate(300);
+    shakeDetected = true; // ✅ set flag
+    markVibrationPoint(x, y); // optional red dot
   }
 });
 
