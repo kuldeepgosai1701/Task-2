@@ -26,10 +26,11 @@
       position: relative;
     }
     main {
-      width: 3000px;
-      height: 3000px;
-      position: relative;
-    }
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: visible;
+}
     .info {
       position: fixed;
       top: 10px;
@@ -49,15 +50,14 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    #dot {
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      background: blue;
-      border-radius: 50%;
-      z-index: 10;
-      transform: translate(-50%, -50%);
-    }
+   #dot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: blue;
+  border-radius: 50%;
+  z-index: 5;
+}
     .trail {
       width: 5px;
       height: 5px;
@@ -108,31 +108,32 @@
   let prevX = null, prevY = null;
 
   function moveDot(newX, newY) {
-    if (prevX !== null && prevY !== null) {
-      ctx.strokeStyle = shakeDetected ? 'red' : 'rgba(0, 0, 255, 0.7)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(prevX + 9, prevY + 9);
-      ctx.lineTo(newX + 9, newY + 9);
-      ctx.stroke();
-    }
+  dot.style.left = `${newX}px`;
+  dot.style.top = `${newY}px`;
 
-    shakeDetected = false;
+  const trail = document.createElement("div");
+  trail.className = "trail";
+  trail.style.left = `${newX + 6}px`;
+  trail.style.top = `${newY + 6}px`;
+  main.appendChild(trail);
 
-    prevX = x;
-    prevY = y;
-    x = newX;
-    y = newY;
+  // Auto scroll if dot goes near edges (padding margin = 50px)
+  const buffer = 50;
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
+  const screenW = window.innerWidth;
+  const screenH = window.innerHeight;
 
-    dot.style.left = `${x}px`;
-    dot.style.top = `${y}px`;
-
-    scrollContainer.scrollTo({
-      left: x - scrollContainer.clientWidth / 2,
-      top: y - scrollContainer.clientHeight / 2,
+  if (newX - scrollX < buffer || newX - scrollX > screenW - buffer ||
+      newY - scrollY < buffer || newY - scrollY > screenH - buffer) {
+    window.scrollTo({
+      left: newX - screenW / 2,
+      top: newY - screenH / 2,
       behavior: "smooth"
     });
   }
+}
+
 
   function markVibrationPoint(x, y) {
     const trail = document.createElement("div");
@@ -143,25 +144,18 @@
     main.appendChild(trail);
   }
 
-  function resetDot() {
-    x = 1500;
-    y = 1500;
-    prevLat = null;
-    prevLon = null;
-    prevX = null;
-    prevY = null;
+function resetDot() {
+  x = window.innerWidth / 2 + window.scrollX;
+  y = window.innerHeight / 2 + window.scrollY;
+  moveDot(x, y);
 
-    dot.style.left = `${x}px`;
-    dot.style.top = `${y}px`;
+  prevLat = null;
+  prevLon = null;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const trails = document.querySelectorAll(".trail");
+  trails.forEach(trail => trail.remove());
+}
 
-    scrollContainer.scrollTo({
-      left: x - scrollContainer.clientWidth / 2,
-      top: y - scrollContainer.clientHeight / 2,
-      behavior: "smooth"
-    });
-  }
 
   moveDot(x, y); // start center
 
