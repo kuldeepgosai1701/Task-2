@@ -164,10 +164,18 @@ function resetDot() {
 
   const trails = document.querySelectorAll(".trail");
   trails.forEach(trail => trail.remove());
+
+  window.scrollTo({
+    left: x - window.innerWidth / 2,
+    top: y - window.innerHeight / 2,
+    behavior: "auto"
+  });
 }
 
-
-  moveDot(x, y); // start center
+        // Initial center on page load
+   window.addEventListener('load', () => {
+   resetDot();
+   });
 
   function showLocation(position) {
     const lat = position.coords.latitude;
