@@ -231,14 +231,24 @@ function drawLine(x1, y1, x2, y2) {
   window.addEventListener('load', () => {
     resetDot();
     // Start GPS updates
-    setInterval(() => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(showLocation, showError);
-      } else {
-        locationText.textContent = "Geolocation not supported.";
-      }
-    }, 5000);
-  });
+    let testLat = 23.0225; // Start latitude
+let testLon = 72.5714; // Start longitude
+
+setInterval(() => {
+  // Simulate small movement
+  testLat += 0.00001;  // small change in latitude
+  testLon += 0.00001;  // small change in longitude
+
+  const fakePosition = {
+    coords: {
+      latitude: testLat,
+      longitude: testLon
+    }
+  };
+
+  showLocation(fakePosition); // Call your handler manually
+}, 2000); // every 2 seconds
+
 
 function drawLine(x1, y1, x2, y2) {
   const line = document.createElement("div");
