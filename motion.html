@@ -133,6 +133,25 @@
     }
   }
 
+function drawLine(x1, y1, x2, y2) {
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+  const line = document.createElement("div");
+  line.style.position = "absolute";
+  line.style.left = `${x1}px`;
+  line.style.top = `${y1}px`;
+  line.style.width = `${length}px`;
+  line.style.height = `2px`;
+  line.style.backgroundColor = "blue";
+  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transformOrigin = "0 0";
+  line.style.zIndex = 2;
+
+  main.appendChild(line);
+}
+
+
   function resetDot() {
     const centerX = window.scrollX + window.innerWidth / 2;
     const centerY = window.scrollY + window.innerHeight / 2;
