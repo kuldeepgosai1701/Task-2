@@ -26,11 +26,12 @@
       position: relative;
     }
     main {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: visible;
-}
+     position: relative;
+     overflow: visible;
+     width: 100vw;
+     min-height: 100vh;
+ 
+ }
     .info {
       position: fixed;
       top: 10px;
@@ -50,7 +51,7 @@
       border-radius: 4px;
       cursor: pointer;
     }
-   #dot {
+  #dot {
   position: absolute;
   width: 18px;
   height: 18px;
@@ -58,14 +59,16 @@
   border-radius: 50%;
   z-index: 5;
 }
-    .trail {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      position: absolute;
-      z-index: 1;
-    }
-    footer {
+  .trail {
+  width: 5px;
+  height: 5px;
+  background: rgba(0, 0, 255, 0.5);
+  border-radius: 50%;
+  position: absolute;
+  z-index: 1;
+}
+    
+  footer {
       background: #ddd;
       text-align: center;
       padding: 10px;
@@ -79,7 +82,6 @@
 
 <div id="scrollContainer">
   <main id="main">
-    <canvas id="trailCanvas" width="3000" height="3000"></canvas>
     <div id="dot"></div>
   </main>
 </div>
@@ -107,32 +109,40 @@
   let prevLat = null, prevLon = null;
   let prevX = null, prevY = null;
 
-  function moveDot(newX, newY) {
-  dot.style.left = `${newX}px`;
-  dot.style.top = `${newY}px`;
+ function moveDot(newX, newY) {
+  x = newX;
+  y = newY;
+
+  dot.style.left = `${x}px`;
+  dot.style.top = `${y}px`;
 
   const trail = document.createElement("div");
   trail.className = "trail";
-  trail.style.left = `${newX + 6}px`;
-  trail.style.top = `${newY + 6}px`;
+  trail.style.left = `${x + 6}px`;
+  trail.style.top = `${y + 6}px`;
   main.appendChild(trail);
 
-  // Auto scroll if dot goes near edges (padding margin = 50px)
+  // Expand main size dynamically as dot moves
+  main.style.width = `${Math.max(main.scrollWidth, x + 100)}px`;
+  main.style.height = `${Math.max(main.scrollHeight, y + 100)}px`;
+
+  // Auto scroll when dot is near screen edge
   const buffer = 50;
   const scrollX = window.scrollX;
   const scrollY = window.scrollY;
   const screenW = window.innerWidth;
   const screenH = window.innerHeight;
 
-  if (newX - scrollX < buffer || newX - scrollX > screenW - buffer ||
-      newY - scrollY < buffer || newY - scrollY > screenH - buffer) {
+  if (x - scrollX < buffer || x - scrollX > screenW - buffer ||
+      y - scrollY < buffer || y - scrollY > screenH - buffer) {
     window.scrollTo({
-      left: newX - screenW / 2,
-      top: newY - screenH / 2,
+      left: x - screenW / 2,
+      top: y - screenH / 2,
       behavior: "smooth"
     });
   }
 }
+
 
 
   function markVibrationPoint(x, y) {
