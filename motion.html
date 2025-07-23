@@ -22,7 +22,8 @@
       top: 0;
       z-index: 30;
     }
-   #main {
+ 
+  #main {
   position: relative;  /* ✅ this was missing */
   min-width: 100vw;
   min-height: 100vh;
@@ -158,7 +159,11 @@
       const dx = (lon - prevLon) * 100000;
       const dy = (lat - prevLat) * 100000;
 
-      moveDot(x + dx * 2, y + dy * 2);
+         const newX = x + dx * 2;
+         const newY = y + dy * 2;
+         drawLine(x + 9, y + 9, newX + 9, newY + 9); // center to center
+         moveDot(newX, newY);
+
 
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
       const direction = getDirectionFromAngle(angle);
@@ -215,6 +220,26 @@
       }
     }, 5000);
   });
+
+function drawLine(x1, y1, x2, y2) {
+  const line = document.createElement("div");
+  line.style.position = "absolute";
+
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+  line.style.width = `${length}px`;
+  line.style.height = "2px";
+  line.style.backgroundColor = "blue";
+  line.style.left = `${x1}px`;
+  line.style.top = `${y1}px`;
+  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transformOrigin = "0 0";
+  line.style.zIndex = "2";
+
+  main.appendChild(line);
+}
+
 </script>
 
 </body>
