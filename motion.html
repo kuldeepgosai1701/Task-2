@@ -2,146 +2,265 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dot Path Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPS Motion Tracker</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body, html {
-      margin: 0;
-      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
       overflow: auto;
-      height: 100vh;
     }
-    .dot {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background-color: red;
-      border-radius: 50%;
-      z-index: 10;
+    header {
+      background: #222;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      font-size: 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 30;
     }
-    .line {
-      position: absolute;
-      height: 2px;
-      background-color: blue;
-      transform-origin: 0 0;
-      z-index: 5;
-    }
-    #info {
+ 
+  #main {
+  position: relative;  /* ✅ this was missing */
+  min-width: 100vw;
+  min-height: 100vh;
+}
+      .info {
       position: fixed;
       top: 10px;
       left: 10px;
-      background: #fff;
-      padding: 5px;
-      border: 1px solid #000;
-      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      padding: 10px;
+      border-radius: 8px;
+      z-index: 9999;
+    }
+    button {
+      margin-top: 5px;
+      padding: 5px 12px;
+      font-size: 0.9rem;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #dot {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: blue;
+      border-radius: 50%;
+      z-index: 5;
+    }
+    .trail {
+      width: 5px;
+      height: 5px;
+      background: rgba(0, 0, 255, 0.5);
+      border-radius: 50%;
+      position: absolute;
+      z-index: 1;
+    }
+    footer {
+      background: #ddd;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.9rem;
+      position: sticky;
+      bottom: 0;
     }
   </style>
 </head>
 <body>
 
-<div id="info">Waiting for location...</div>
+<header>Motion Tracker</header>
+
+<div class="info">
+  <p>Move your phone to see motion.</p>
+  <p id="location">Location: Fetching...</p>
+  <p id="direction">Direction: Calculating...</p>
+  <button onclick="resetDot()">Reset</button>
+</div>
+
+<main id="main">
+  <div id="dot"></div>
+</main>
+
+<footer>Created by Kuldeep Gosai</footer>
 
 <script>
-let startLat, startLon;
-let isFirst = true;
-let lastX, lastY;
-let fakeLat = 23.0225;
-let fakeLon = 72.5714;
+  const dot = document.getElementById("dot");
+  const main = document.getElementById("main");
+  const locationText = document.getElementById("location");
+  const directionText = document.getElementById("direction");
 
-function showLocation(position) {
-  const lat = position.coords.latitude;
-  const lon = position.coords.longitude;
+  let x = 0, y = 0;
+  let prevLat = null, prevLon = null;
 
-  document.getElementById("info").textContent = `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
+  function moveDot(newX, newY) {
+    x = newX;
+    y = newY;
 
-  if (isFirst) {
-    startLat = lat;
-    startLon = lon;
-    isFirst = false;
+    dot.style.left = `${x}px`;
+    dot.style.top = `${y}px`;
+
+    const trail = document.createElement("div");
+    trail.className = "trail";
+    trail.style.left = `${x + 6}px`;
+    trail.style.top = `${y + 6}px`;
+    main.appendChild(trail);
+
+    // Expand area as needed
+    main.style.width = `${Math.max(main.clientWidth, x + 100)}px`;
+    main.style.height = `${Math.max(main.clientHeight, y + 100)}px`;
+
+    // Auto-scroll
+    const buffer = 50;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+
+    if (x - scrollX < buffer || x - scrollX > screenW - buffer ||
+        y - scrollY < buffer || y - scrollY > screenH - buffer) {
+      window.scrollTo({
+        left: x - screenW / 2,
+        top: y - screenH / 2,
+        behavior: "smooth"
+      });
+    }
+  }
+
+function drawLine(x1, y1, x2, y2) {
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+  const line = document.createElement("div");
+  line.style.position = "absolute";
+  line.style.left = `${x1}px`;
+  line.style.top = `${y1}px`;
+  line.style.width = `${length}px`;
+  line.style.height = `2px`;
+  line.style.backgroundColor = "blue";
+  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transformOrigin = "0 0";
+  line.style.zIndex = 2;
+
+  main.appendChild(line);
+}
+
+
+  function resetDot() {
+    const centerX = window.scrollX + window.innerWidth / 2;
+    const centerY = window.scrollY + window.innerHeight / 2;
+    moveDot(centerX, centerY);
+    prevLat = null;
+    prevLon = null;
+
+    document.querySelectorAll(".trail").forEach(el => el.remove());
 
     // Scroll to center
-    window.scrollTo(0, 0);
-
-    // Set lastX and lastY to screen center
-    lastX = window.innerWidth / 2;
-    lastY = window.innerHeight / 2;
-
-    placeDot(lastX, lastY); // Place first dot
-    return;
+    window.scrollTo({
+      left: centerX - window.innerWidth / 2,
+      top: centerY - window.innerHeight / 2,
+      behavior: "auto"
+    });
   }
 
-  const dx = (lon - startLon) * 100000;
-  const dy = (lat - startLat) * -100000; // minus for top-down
+  function showLocation(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-  const x = window.innerWidth / 2 + dx;
-  const y = window.innerHeight / 2 + dy;
+    if (prevLat !== null && prevLon !== null) {
+      const dx = (lon - prevLon) * 100000;
+      const dy = (lat - prevLat) * 100000;
 
-  moveDot(x, y);
-}
+         const newX = x + dx * 2;
+         const newY = y + dy * 2;
+         drawLine(x + 9, y + 9, newX + 9, newY + 9); // center to center
+         moveDot(newX, newY);
 
-function moveDot(x, y) {
-  // Place new dot
-  placeDot(x, y);
 
-  // Draw line
-  const line = document.createElement("div");
-  line.className = "line";
-  const dx = x - lastX;
-  const dy = y - lastY;
-  const length = Math.sqrt(dx * dx + dy * dy);
-  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-  line.style.width = length + "px";
-  line.style.transform = `rotate(${angle}deg)`;
-  line.style.left = lastX + "px";
-  line.style.top = lastY + "px";
-  document.body.appendChild(line);
-
-  lastX = x;
-  lastY = y;
-
-  // Auto-scroll
-  const buffer = 100;
-  const scrollX = window.scrollX;
-  const scrollY = window.scrollY;
-  const screenWidth = window.innerWidth;
-  const screenHeight = window.innerHeight;
-
-  if (x - scrollX < buffer) {
-    window.scrollTo(x - buffer, scrollY);
-  } else if (x - scrollX > screenWidth - buffer) {
-    window.scrollTo(x - screenWidth + buffer, scrollY);
-  }
-
-  if (y - scrollY < buffer) {
-    window.scrollTo(scrollX, y - buffer);
-  } else if (y - scrollY > screenHeight - buffer) {
-    window.scrollTo(scrollX, y - screenHeight + buffer);
-  }
-}
-
-function placeDot(x, y) {
-  const dot = document.createElement("div");
-  dot.className = "dot";
-  dot.style.left = x + "px";
-  dot.style.top = y + "px";
-  document.body.appendChild(dot);
-}
-
-// Fake GPS simulator
-/*setInterval(() => {
-  fakeLat += 0.00002; // very small movement
-  fakeLon += 0.00003;
-
-  const fakePosition = {
-    coords: {
-      latitude: fakeLat,
-      longitude: fakeLon
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const direction = getDirectionFromAngle(angle);
+      directionText.textContent = `Direction: ${direction}`;
     }
-  };
 
-  showLocation(fakePosition);
-}, 2000); // */
+    prevLat = lat;
+    prevLon = lon;
+  }
+
+  function showError(error) {
+    console.error("GPS Error:", error);
+    locationText.textContent = "Location: Error fetching";
+  }
+
+  function getDirectionFromAngle(angle) {
+    const directions = [
+      "East →", "North-East ↗️", "North ↑", "North-West ↖️",
+      "West ←", "South-West ↙️", "South ↓", "South-East ↘️"
+    ];
+    const index = Math.round((angle % 360 + 360) % 360 / 45) % 8;
+    return directions[index];
+  }
+
+  // Shake Detection (vibration marker)
+  window.addEventListener('devicemotion', function(event) {
+    if (!event.acceleration) return;
+    const ax = event.acceleration.x || 0;
+    const ay = event.acceleration.y || 0;
+    const az = event.acceleration.z || 0;
+
+    const total = Math.sqrt(ax * ax + ay * ay + az * az);
+    if (total > 15) {
+      const marker = document.createElement("div");
+      marker.className = "trail";
+      marker.style.left = `${x + 6}px`;
+      marker.style.top = `${y + 6}px`;
+      marker.style.background = "red";
+      main.appendChild(marker);
+
+      navigator.vibrate(300);
+    }
+  });
+
+  // On page load, center the dot
+  window.addEventListener('load', () => {
+    resetDot();
+    // Start GPS updates
+    setInterval(() => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(showLocation, showError);
+      } else {
+        locationText.textContent = "Geolocation not supported.";
+      }
+    }, 5000);
+  });
+
+function drawLine(x1, y1, x2, y2) {
+  const line = document.createElement("div");
+  line.style.position = "absolute";
+
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+  line.style.width = `${length}px`;
+  line.style.height = "2px";
+  line.style.backgroundColor = "blue";
+  line.style.left = `${x1}px`;
+  line.style.top = `${y1}px`;
+  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transformOrigin = "0 0";
+  line.style.zIndex = "2";
+
+  main.appendChild(line);
+}
+
 </script>
+
 </body>
 </html>
 
