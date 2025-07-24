@@ -31,6 +31,35 @@ header {
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
+.sensitivity-box {
+  position: fixed;
+  top: 70px; /* just below header */
+  right: 20px;
+  background: rgba(0, 64, 128, 0.9);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  font-size: 1rem;
+  z-index: 9999;
+  min-width: 120px;
+}
+
+.sensitivity-box h3 {
+  margin-bottom: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.sensitivity-box p {
+  font-size: 1.3rem;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+
+
 #main {
   position: relative;
   min-width: 100vw;
@@ -58,15 +87,9 @@ header {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
-.info p {
-  transition: color 0.3s ease;
-}
 
 
-.left-info, .right-info {
-  display: flex;
-  flex-direction: column;
-}
+
 
 button {
   margin-top: 10px;
@@ -135,6 +158,12 @@ footer {
 <body>
 
 <header>Motion Tracker</header>
+
+<div class="sensitivity-box">
+  <h3>Sensitivity</h3>
+  <p id="sensitivity">0</p>
+</div>
+
 
 <div class="info">
   <p>Move your phone to see motion.</p>
@@ -257,6 +286,21 @@ function drawLine(x1, y1, x2, y2) {
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
       const direction = getDirectionFromAngle(angle);
       directionText.textContent = `Direction: ${direction}`;
+
+const distance = Math.hypot(dx, dy);
+const intensity = Math.min(Math.round(distance), 999); // sensitivity score
+const sensBox = document.getElementById("sensitivity");
+sensBox.textContent = intensity;
+
+// Change color based on movement sensitivity
+if (intensity < 10) {
+  sensBox.style.color = "lightgreen";
+} else if (intensity < 50) {
+  sensBox.style.color = "orange";
+} else {
+  sensBox.style.color = "red";
+}
+
     }
 
     prevLat = lat;
