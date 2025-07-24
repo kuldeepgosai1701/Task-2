@@ -6,157 +6,176 @@
   <title>GPS Motion Tracker</title>
   <style>
    * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body, html {
-  height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to bottom right, #e6f0ff, #ffffff);
-  overflow: auto;
-  color: #333;
-}
-
-header {
-  background: #004080;
-  color: #fff;
-  text-align: center;
-  padding: 15px;
-  font-size: 1.6rem;
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-.sensitivity-box {
-  position: fixed;
-  top: 70px; /* just below header */
-  right: 20px;
-  background: rgba(0, 64, 128, 0.9);
-  color: #fff;
-  padding: 12px 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  font-size: 1rem;
-  z-index: 9999;
-  min-width: 120px;
-}
-
-.sensitivity-box h3 {
-  margin-bottom: 4px;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.sensitivity-box p {
-  font-size: 1.3rem;
-  font-weight: bold;
-  transition: color 0.3s ease;
-}
-
-
-
-#main {
-  position: relative;
-  min-width: 100vw;
-  min-height: 100vh;
-}
-
-.info {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  background: linear-gradient(145deg, #ffffffdd, #e9f0ffcc);
-  padding: 18px 20px;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  z-index: 9999;
-  font-size: 1rem;
-  width: 250px;
-  line-height: 1.6;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(200, 220, 255, 0.4);
-  transition: all 0.3s ease;
-}
-.info:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-button {
-  margin-top: 10px;
-  padding: 8px 18px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border: none;
-  background: linear-gradient(120deg, #007bff, #0056b3);
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-button:hover {
-  background: linear-gradient(120deg, #0056b3, #003f8c);
-  transform: scale(1.05);
-}
-
-#dot {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: radial-gradient(circle, #007bff 30%, #003366 100%);
-  border-radius: 50%;
-  z-index: 5;
-  box-shadow: 0 0 8px rgba(0, 0, 255, 0.6);
-  animation: bounce 1s infinite; /* ✅ This line */
-}
-
-
-.trail {
-  width: 6px;
-  height: 6px;
-  background: rgba(0, 102, 255, 0.4);
-  border-radius: 50%;
-  position: absolute;
-  z-index: 1;
-  transition: opacity 1s ease;
-}
-
-footer {
-  background: linear-gradient(90deg, #004080, #0066cc);
-  color: white;
-  text-align: center;
-  padding: 14px;
-  font-size: 1rem;
-  font-weight: 500;
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-}
-
-
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
 
+    body, html {
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom right, #e6f0ff, #ffffff);
+      overflow: auto;
+      color: #333;
+    }
+
+    header {
+      background: #004080;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      font-size: 1.6rem;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .sensitivity-box {
+      position: fixed;
+      top: 70px; /* header ke niche */
+      right: 20px;
+      background: rgba(0, 64, 128, 0.9);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      font-size: 1rem;
+      z-index: 9999;
+      min-width: 140px;
+    }
+
+    .sensitivity-box h3 {
+      margin-bottom: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .sensitivity-box input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(to right, #007bff, #00ffcc);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .sensitivity-box input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #004080;
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .sensitivity-box input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    #main {
+      position: relative;
+      min-width: 100vw;
+      min-height: 100vh;
+    }
+
+    .info {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: linear-gradient(145deg, #ffffffdd, #e9f0ffcc);
+      padding: 18px 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      z-index: 9999;
+      font-size: 1rem;
+      width: 250px;
+      line-height: 1.6;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(200, 220, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .info:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      background: linear-gradient(120deg, #007bff, #0056b3);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(120deg, #0056b3, #003f8c);
+      transform: scale(1.05);
+    }
+
+    #dot {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #007bff 30%, #003366 100%);
+      border-radius: 50%;
+      z-index: 5;
+      box-shadow: 0 0 8px rgba(0, 0, 255, 0.6);
+      animation: bounce 1s infinite;
+    }
+
+    .trail {
+      width: 6px;
+      height: 6px;
+      background: rgba(0, 102, 255, 0.4);
+      border-radius: 50%;
+      position: absolute;
+      z-index: 1;
+      transition: opacity 1s ease;
+    }
+
+    footer {
+      background: linear-gradient(90deg, #004080, #0066cc);
+      color: white;
+      text-align: center;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 500;
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
   </style>
 </head>
 <body>
 
 <header>Motion Tracker</header>
 
-
-
+<!-- Sensitivity Control Slider -->
+<div class="sensitivity-box">
+  <h3>Sensitivity</h3>
+  <input type="range" id="sensitivityRange" min="0.5" max="5" step="0.5" value="1">
+</div>
 
 <div class="info">
   <p>Move your phone to see motion.</p>
@@ -177,9 +196,15 @@ footer {
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
+  const sensitivityRange = document.getElementById("sensitivityRange");
 
   let x = 0, y = 0;
   let prevLat = null, prevLon = null;
+  let sensitivityFactor = parseFloat(sensitivityRange.value);
+
+  sensitivityRange.addEventListener("input", () => {
+    sensitivityFactor = parseFloat(sensitivityRange.value);
+  });
 
   function moveDot(newX, newY) {
     x = newX;
@@ -194,52 +219,41 @@ footer {
     trail.style.top = `${y + 6}px`;
     main.appendChild(trail);
 
-    // Auto-fade and remove after 1 second
     setTimeout(() => {
-    trail.style.transition = "opacity 1s ease";
-    trail.style.opacity = "0";
-   setTimeout(() => trail.remove(), 1000);
-  }, 500);
+      trail.style.transition = "opacity 1s ease";
+      trail.style.opacity = "0";
+      setTimeout(() => trail.remove(), 1000);
+    }, 500);
 
-    // Expand area as needed
     main.style.width = `${Math.max(main.clientWidth, x + 100)}px`;
     main.style.height = `${Math.max(main.clientHeight, y + 100)}px`;
 
-    // Auto-scroll
     const buffer = 50;
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
-
-    if (x - scrollX < buffer || x - scrollX > screenW - buffer ||
-        y - scrollY < buffer || y - scrollY > screenH - buffer) {
+    if (x - window.scrollX < buffer || x - window.scrollX > window.innerWidth - buffer ||
+        y - window.scrollY < buffer || y - window.scrollY > window.innerHeight - buffer) {
       window.scrollTo({
-        left: x - screenW / 2,
-        top: y - screenH / 2,
+        left: x - window.innerWidth / 2,
+        top: y - window.innerHeight / 2,
         behavior: "smooth"
       });
     }
   }
 
-function drawLine(x1, y1, x2, y2) {
-  const length = Math.hypot(x2 - x1, y2 - y1);
-  const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
-
-  const line = document.createElement("div");
-  line.style.position = "absolute";
-  line.style.left = `${x1}px`;
-  line.style.top = `${y1}px`;
-  line.style.width = `${length}px`;
-  line.style.height = `2px`;
-  line.style.backgroundColor = "blue";
-  line.style.transform = `rotate(${angle}deg)`;
-  line.style.transformOrigin = "0 0";
-  line.style.zIndex = 2;
-
-  main.appendChild(line);
-}
-
+  function drawLine(x1, y1, x2, y2) {
+    const length = Math.hypot(x2 - x1, y2 - y1);
+    const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+    const line = document.createElement("div");
+    line.style.position = "absolute";
+    line.style.left = `${x1}px`;
+    line.style.top = `${y1}px`;
+    line.style.width = `${length}px`;
+    line.style.height = `2px`;
+    line.style.backgroundColor = "blue";
+    line.style.transform = `rotate(${angle}deg)`;
+    line.style.transformOrigin = "0 0";
+    line.style.zIndex = 2;
+    main.appendChild(line);
+  }
 
   function resetDot() {
     const centerX = window.scrollX + window.innerWidth / 2;
@@ -247,15 +261,8 @@ function drawLine(x1, y1, x2, y2) {
     moveDot(centerX, centerY);
     prevLat = null;
     prevLon = null;
-
     document.querySelectorAll(".trail").forEach(el => el.remove());
-
-    // Scroll to center
-    window.scrollTo({
-      left: centerX - window.innerWidth / 2,
-      top: centerY - window.innerHeight / 2,
-      behavior: "auto"
-    });
+    window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
   }
 
   function showLocation(position) {
@@ -264,24 +271,19 @@ function drawLine(x1, y1, x2, y2) {
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
     if (prevLat !== null && prevLon !== null) {
-      const dx = (lon - prevLon) * 100000;
-      const dy = (lat - prevLat) * 100000;
+      const dx = (lon - prevLon) * 100000 * sensitivityFactor;
+      const dy = (lat - prevLat) * 100000 * sensitivityFactor;
 
-         const newX = x + dx * 1;
-         const newY = y + dy * 1;
-         drawLine(x + 9, y + 9, newX + 9, newY + 9); // center to center
-         moveDot(newX, newY);
-
+      const newX = x + dx;
+      const newY = y + dy;
+      drawLine(x + 9, y + 9, newX + 9, newY + 9);
+      moveDot(newX, newY);
 
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      const direction = getDirectionFromAngle(angle);
-      directionText.textContent = `Direction: ${direction}`;
+      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+    }
 
-const distance = Math.hypot(dx, dy);
-const intensity = Math.min(Math.round(distance), 999); // sensitivity score
-
-
-    revLat = lat;
+    prevLat = lat;
     prevLon = lon;
   }
 
@@ -291,38 +293,30 @@ const intensity = Math.min(Math.round(distance), 999); // sensitivity score
   }
 
   function getDirectionFromAngle(angle) {
-    const directions = [
-      "East →", "North-East ↗️", "North ↑", "North-West ↖️",
-      "West ←", "South-West ↙️", "South ↓", "South-East ↘️"
-    ];
-    const index = Math.round((angle % 360 + 360) % 360 / 45) % 8;
-    return directions[index];
+    const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
+                        "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
+    return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
-  // Shake Detection (vibration marker)
   window.addEventListener('devicemotion', function(event) {
     if (!event.acceleration) return;
     const ax = event.acceleration.x || 0;
     const ay = event.acceleration.y || 0;
     const az = event.acceleration.z || 0;
 
-    const total = Math.sqrt(ax * ax + ay * ay + az * az);
-    if (total > 15) {
+    if (Math.sqrt(ax * ax + ay * ay + az * az) > 15) {
       const marker = document.createElement("div");
       marker.className = "trail";
       marker.style.left = `${x + 6}px`;
       marker.style.top = `${y + 6}px`;
       marker.style.background = "red";
       main.appendChild(marker);
-
       navigator.vibrate(300);
     }
   });
 
-  // On page load, center the dot
   window.addEventListener('load', () => {
     resetDot();
-    // Start GPS updates
     setInterval(() => {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(showLocation, showError);
@@ -331,30 +325,11 @@ const intensity = Math.min(Math.round(distance), 999); // sensitivity score
       }
     }, 5000);
   });
-
-function drawLine(x1, y1, x2, y2) {
-  const line = document.createElement("div");
-  line.style.position = "absolute";
-
-  const length = Math.hypot(x2 - x1, y2 - y1);
-  const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-
-  line.style.width = `${length}px`;
-  line.style.height = "2px";
-  line.style.backgroundColor = "blue";
-  line.style.left = `${x1}px`;
-  line.style.top = `${y1}px`;
-  line.style.transform = `rotate(${angle}deg)`;
-  line.style.transformOrigin = "0 0";
-  line.style.zIndex = "2";
-
-  main.appendChild(line);
-}
-
 </script>
 
 </body>
 </html>
+
 
 
 
