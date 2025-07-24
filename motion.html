@@ -5,72 +5,107 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPS Motion Tracker</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html {
-      height: 100%;
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      overflow: auto;
-    }
-    header {
-      background: #222;
-      color: #fff;
-      text-align: center;
-      padding: 15px;
-      font-size: 1.5rem;
-      position: sticky;
-      top: 0;
-      z-index: 30;
-    }
- 
-  #main {
-  position: relative;  /* ✅ this was missing */
+   * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to bottom right, #e6f0ff, #ffffff);
+  overflow: auto;
+  color: #333;
+}
+
+header {
+  background: #004080;
+  color: #fff;
+  text-align: center;
+  padding: 15px;
+  font-size: 1.6rem;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+#main {
+  position: relative;
   min-width: 100vw;
   min-height: 100vh;
 }
-      .info {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background: rgba(255,255,255,0.95);
-      padding: 10px;
-      border-radius: 8px;
-      z-index: 9999;
+
+.info {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: #ffffffee;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 9999;
+  font-size: 0.95rem;
+  width: 220px;
+  line-height: 1.4;
+  backdrop-filter: blur(6px);
+}
+
+button {
+  margin-top: 8px;
+  padding: 7px 15px;
+  font-size: 0.95rem;
+  border: none;
+  background: #007bff;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+#dot {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, #007bff 30%, #003366 100%);
+  border-radius: 50%;
+  z-index: 5;
+  box-shadow: 0 0 8px rgba(0, 0, 255, 0.6);
+  animation: bounce 1s infinite; /* ✅ This line */
+}
+
+
+.trail {
+  width: 6px;
+  height: 6px;
+  background: rgba(0, 102, 255, 0.4);
+  border-radius: 50%;
+  position: absolute;
+  z-index: 1;
+  transition: opacity 1s ease;
+}
+
+footer {
+  background: #f1f1f1;
+  text-align: center;
+  padding: 10px;
+  font-size: 0.9rem;
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+}
+
     }
-    button {
-      margin-top: 5px;
-      padding: 5px 12px;
-      font-size: 0.9rem;
-      border: none;
-      background: #007bff;
-      color: white;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    #dot {
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      background: blue;
-      border-radius: 50%;
-      z-index: 5;
-    }
-    .trail {
-      width: 5px;
-      height: 5px;
-      background: rgba(0, 0, 255, 0.5);
-      border-radius: 50%;
-      position: absolute;
-      z-index: 1;
-    }
-    footer {
-      background: #ddd;
-      text-align: center;
-      padding: 10px;
-      font-size: 0.9rem;
-      position: sticky;
-      bottom: 0;
-    }
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
   </style>
 </head>
 <body>
@@ -111,6 +146,13 @@
     trail.style.left = `${x + 6}px`;
     trail.style.top = `${y + 6}px`;
     main.appendChild(trail);
+
+    // Auto-fade and remove after 1 second
+    setTimeout(() => {
+    trail.style.transition = "opacity 1s ease";
+    trail.style.opacity = "0";
+   setTimeout(() => trail.remove(), 1000);
+  }, 500);
 
     // Expand area as needed
     main.style.width = `${Math.max(main.clientWidth, x + 100)}px`;
