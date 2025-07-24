@@ -58,6 +58,16 @@ header {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
+.info p {
+  transition: color 0.3s ease;
+}
+
+
+.left-info, .right-info {
+  display: flex;
+  flex-direction: column;
+}
+
 button {
   margin-top: 10px;
   padding: 8px 18px;
@@ -131,6 +141,9 @@ footer {
   <div style="font-size: 1.4rem; margin-bottom: 8px;">📍 Tracker Info</div>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
+ <div class="right-info">
+    <p id="sensitivity">Motion Intensity: --</p>
+  </div>
   <button onclick="resetDot()">Reset</button>
 </div>
 
