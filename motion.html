@@ -163,9 +163,6 @@ footer {
   <div style="font-size: 1.4rem; margin-bottom: 8px;">📍 Tracker Info</div>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
- <div class="right-info">
-    <p id="sensitivity">Motion Intensity: --</p>
-  </div>
   <button onclick="resetDot()">Reset</button>
 </div>
 
@@ -282,21 +279,9 @@ function drawLine(x1, y1, x2, y2) {
 
 const distance = Math.hypot(dx, dy);
 const intensity = Math.min(Math.round(distance), 999); // sensitivity score
-const sensBox = document.getElementById("sensitivity");
-sensBox.textContent = intensity;
 
-// Change color based on movement sensitivity
-if (intensity < 10) {
-  sensBox.style.color = "lightgreen";
-} else if (intensity < 50) {
-  sensBox.style.color = "orange";
-} else {
-  sensBox.style.color = "red";
-}
 
-    }
-
-    prevLat = lat;
+    revLat = lat;
     prevLon = lon;
   }
 
