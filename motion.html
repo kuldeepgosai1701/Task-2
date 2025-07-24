@@ -41,31 +41,39 @@ header {
   position: fixed;
   top: 20px;
   left: 20px;
-  background: #ffffffee;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background: linear-gradient(145deg, #ffffffdd, #e9f0ffcc);
+  padding: 18px 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   z-index: 9999;
-  font-size: 0.95rem;
-  width: 220px;
-  line-height: 1.4;
-  backdrop-filter: blur(6px);
+  font-size: 1rem;
+  width: 250px;
+  line-height: 1.6;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(200, 220, 255, 0.4);
+  transition: all 0.3s ease;
+}
+.info:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 button {
-  margin-top: 8px;
-  padding: 7px 15px;
+  margin-top: 10px;
+  padding: 8px 18px;
   font-size: 0.95rem;
+  font-weight: 600;
   border: none;
-  background: #007bff;
+  background: linear-gradient(120deg, #007bff, #0056b3);
   color: white;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  background: #0056b3;
+  background: linear-gradient(120deg, #0056b3, #003f8c);
+  transform: scale(1.05);
 }
 
 #dot {
@@ -114,6 +122,7 @@ footer {
 
 <div class="info">
   <p>Move your phone to see motion.</p>
+  <div style="font-size: 1.4rem; margin-bottom: 8px;">📍 Tracker Info</div>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
   <button onclick="resetDot()">Reset</button>
