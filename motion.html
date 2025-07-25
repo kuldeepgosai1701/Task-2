@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPS Motion Tracker</title>
   <style>
-   * {
+    * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -33,7 +33,7 @@
 
     .sensitivity-box {
       position: fixed;
-      top: 70px; /* header ke niche */
+      top: 70px;
       right: 20px;
       background: rgba(0, 64, 128, 0.9);
       color: #fff;
@@ -43,7 +43,7 @@
       text-align: center;
       font-size: 1rem;
       z-index: 9999;
-      min-width: 140px;
+      min-width: 160px;
     }
 
     .sensitivity-box h3 {
@@ -54,13 +54,12 @@
 
     .sensitivity-box input[type="range"] {
       -webkit-appearance: none;
-      width: 380px;
+      width: 100%;
       height: 20px;
       background: linear-gradient(to right, #007bff, #00ffcc);
       border-radius: 4px;
       outline: none;
       cursor: pointer;
-      transition: background 0.3s ease;
     }
 
     .sensitivity-box input[type="range"]::-webkit-slider-thumb {
@@ -72,7 +71,6 @@
       border: 2px solid #fff;
       cursor: pointer;
       box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-      transition: transform 0.2s ease;
     }
 
     #main {
@@ -91,16 +89,10 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
       z-index: 9999;
       font-size: 1rem;
-      width: 260px;
+      width: 250px;
       line-height: 1.6;
       backdrop-filter: blur(8px);
       border: 1px solid rgba(200, 220, 255, 0.4);
-      transition: all 0.3s ease;
-    }
-
-    .info:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     }
 
     button {
@@ -170,8 +162,8 @@
 <!-- Sensitivity Control Slider -->
 <div class="sensitivity-box">
   <h3>Sensitivity</h3>
-  <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="3">
-  <div style="margin-top: 5px;">Value: <span id="sensitivityValue">3</span></div>
+  <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="5">
+  <div style="margin-top: 5px;">Value: <span id="sensitivityValue">5</span></div>
 </div>
 
 <div class="info">
@@ -179,9 +171,7 @@
   <div style="font-size: 1.4rem; margin-bottom: 8px;">📍 Tracker Info</div>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
-  <p id="vibration">Vibration: No</p>
   <button onclick="resetDot()">Reset</button>
-  <button onclick="saveToText()">Save TXT</button>
 </div>
 
 <main id="main">
@@ -195,22 +185,14 @@
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
-  const vibrationText = document.getElementById("vibration");
   const sensitivityRange = document.getElementById("sensitivityRange");
+  const sensitivityValue = document.getElementById("sensitivityValue");
 
   let x = 0, y = 0;
   let prevLat = null, prevLon = null;
   let sensitivityFactor = parseFloat(sensitivityRange.value);
-  const sensitivityValue = document.getElementById("sensitivityValue");
+
   sensitivityValue.textContent = sensitivityRange.value;
-
-  // Vibration detection buffer
-  let motionBuffer = [];
-  const THRESHOLD = 15;
-  let currentVibration = "No";
-
-  // Log array to save data
-  const logs = []; // { time, lat, lon, vibration }
 
   sensitivityRange.addEventListener("input", () => {
     sensitivityFactor = parseFloat(sensitivityRange.value);
@@ -231,7 +213,6 @@
     main.appendChild(trail);
 
     setTimeout(() => {
-      trail.style.transition = "opacity 1s ease";
       trail.style.opacity = "0";
       setTimeout(() => trail.remove(), 1000);
     }, 500);
@@ -282,8 +263,8 @@
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
     if (prevLat !== null && prevLon !== null) {
-      const dx = (lon - prevLon) * 500000 * sensitivityFactor;
-      const dy = (lat - prevLat) * 500000 * sensitivityFactor;
+      const dx = (lon - prevLon) * 100000 * sensitivityFactor;
+      const dy = (lat - prevLat) * 100000 * sensitivityFactor;
 
       const newX = x + dx;
       const newY = y + dy;
@@ -293,14 +274,6 @@
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
       directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
     }
-
-    // Store log
-    logs.push({
-      time: new Date().toISOString(),
-      lat,
-      lon,
-      vibration: currentVibration
-    });
 
     prevLat = lat;
     prevLon = lon;
@@ -317,74 +290,24 @@
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
-  // ---- Vibration detection with sensitivity condition (> 3) ----
+  // Gyroscope-based sensitivity control
   window.addEventListener('devicemotion', function(event) {
     if (!event.acceleration) return;
-
-    // Sensitivity <= 3 => vibration off forcefully
-    if (sensitivityFactor <= 3) {
-      currentVibration = "No";
-      vibrationText.textContent = "Vibration: No";
-      return;
-    }
-
     const ax = event.acceleration.x || 0;
     const ay = event.acceleration.y || 0;
     const az = event.acceleration.z || 0;
 
     const magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
-    motionBuffer.push(magnitude);
 
-    if (motionBuffer.length > 10) motionBuffer.shift();
-
-    if (motionBuffer.length === 10) {
-      const avg = motionBuffer.reduce((a, b) => a + b, 0) / 10;
-
-      if (avg > THRESHOLD) {
-        currentVibration = "Yes";
-        vibrationText.textContent = "Vibration: Yes";
-
-        const marker = document.createElement("div");
-        marker.className = "trail";
-        marker.style.left = `${x + 6}px`;
-        marker.style.top = `${y + 6}px`;
-        marker.style.background = "red";
-        main.appendChild(marker);
-
-        navigator.vibrate(200);
-      } else {
-        currentVibration = "No";
-        vibrationText.textContent = "Vibration: No";
-      }
+    if (magnitude > 3) {
+      sensitivityFactor = 8;   // High sensitivity
+    } else {
+      sensitivityFactor = 2;   // Low sensitivity
     }
+
+    sensitivityRange.value = sensitivityFactor;
+    sensitivityValue.textContent = sensitivityFactor;
   });
-
-  // ---- Save TXT: only last N entries (N = slider value) ----
-  function saveToText() {
-    const n = parseInt(sensitivityRange.value, 10);
-    const lastN = logs.slice(-n);
-
-    if (lastN.length === 0) {
-      alert("Abhi tak koi data store nahin hua.");
-      return;
-    }
-
-    let header = "Time\tLatitude\tLongitude\tVibration\n";
-    let body = lastN.map(l =>
-      `${l.time}\t${l.lat.toFixed(5)}\t${l.lon.toFixed(5)}\t${l.vibration}`
-    ).join("\n");
-
-    const content = header + body;
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `gps_last_${n}_entries_${new Date().toISOString().replace(/[:.]/g, "-")}.txt`;
-    a.click();
-
-    URL.revokeObjectURL(url);
-  }
 
   window.addEventListener('load', () => {
     resetDot();
@@ -400,6 +323,7 @@
 
 </body>
 </html>
+
 
 
 
