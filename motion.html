@@ -170,8 +170,8 @@
 <!-- Sensitivity Control Slider -->
 <div class="sensitivity-box">
   <h3>Sensitivity</h3>
-  <input type="range" id="sensitivityRange" min="1" max="10" step="1" value="5">
-  <div style="margin-top: 5px;">Value: <span id="sensitivityValue">5</span></div>
+  <input type="range" id="sensitivityRange" min="1" max="10" step="1" value="3">
+  <div style="margin-top: 5px;">Value: <span id="sensitivityValue">3</span></div>
 </div>
 
 <div class="info">
@@ -206,8 +206,8 @@
 
   // Vibration detection buffer
   let motionBuffer = [];
-  const THRESHOLD = 15;            // aap chahe to adjust kar sakte ho
-  let currentVibration = "No";     // latest vibration state
+  const THRESHOLD = 15;
+  let currentVibration = "No";
 
   // Log array to save data
   const logs = []; // { time, lat, lon, vibration }
@@ -282,7 +282,7 @@
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
     if (prevLat !== null && prevLon !== null) {
-      const dx = (lon - prevLon) * 500000 * sensitivityFactor; // amplify kiya 5x
+      const dx = (lon - prevLon) * 500000 * sensitivityFactor;
       const dy = (lat - prevLat) * 500000 * sensitivityFactor;
 
       const newX = x + dx;
@@ -294,7 +294,7 @@
       directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
     }
 
-    // ---- Log store yahin pe kar rahe hain ----
+    // Store log
     logs.push({
       time: new Date().toISOString(),
       lat,
@@ -317,9 +317,17 @@
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
-  // ---- Vibration detection with 10-entry buffer ----
+  // ---- Vibration detection with sensitivity condition (> 3) ----
   window.addEventListener('devicemotion', function(event) {
     if (!event.acceleration) return;
+
+    // Sensitivity <= 3 => vibration off forcefully
+    if (sensitivityFactor <= 3) {
+      currentVibration = "No";
+      vibrationText.textContent = "Vibration: No";
+      return;
+    }
+
     const ax = event.acceleration.x || 0;
     const ay = event.acceleration.y || 0;
     const az = event.acceleration.z || 0;
@@ -336,7 +344,6 @@
         currentVibration = "Yes";
         vibrationText.textContent = "Vibration: Yes";
 
-        // optional: red marker
         const marker = document.createElement("div");
         marker.className = "trail";
         marker.style.left = `${x + 6}px`;
@@ -352,15 +359,18 @@
     }
   });
 
-  // ---- Save TXT ----
+  // ---- Save TXT: only last N entries (N = slider value) ----
   function saveToText() {
-    if (logs.length === 0) {
+    const n = parseInt(sensitivityRange.value, 10);
+    const lastN = logs.slice(-n);
+
+    if (lastN.length === 0) {
       alert("Abhi tak koi data store nahin hua.");
       return;
     }
 
     let header = "Time\tLatitude\tLongitude\tVibration\n";
-    let body = logs.map(l =>
+    let body = lastN.map(l =>
       `${l.time}\t${l.lat.toFixed(5)}\t${l.lon.toFixed(5)}\t${l.vibration}`
     ).join("\n");
 
@@ -370,7 +380,7 @@
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = `gps_log_${new Date().toISOString().replace(/[:.]/g, "-")}.txt`;
+    a.download = `gps_last_${n}_entries_${new Date().toISOString().replace(/[:.]/g, "-")}.txt`;
     a.click();
 
     URL.revokeObjectURL(url);
@@ -390,6 +400,8 @@
 
 </body>
 </html>
+
+
 
 
 
