@@ -181,6 +181,7 @@
   <div style="font-size: 1.4rem; margin-bottom: 8px;">📍 Tracker Info</div>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
+  <p id="vibration">Vibration: No</p>
   <button onclick="resetDot()">Reset</button>
 </div>
 
@@ -196,6 +197,9 @@
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
   const sensitivityRange = document.getElementById("sensitivityRange");
+  const vibrationText = document.getElementById("vibration");
+  let motionBuffer = [];
+
 
 
 
@@ -304,22 +308,38 @@
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
-  window.addEventListener('devicemotion', function(event) {
-    if (!event.acceleration) return;
-    const ax = event.acceleration.x || 0;
-    const ay = event.acceleration.y || 0;
-    const az = event.acceleration.z || 0;
+ window.addEventListener('devicemotion', function(event) {
+  if (!event.acceleration) return;
+  const ax = event.acceleration.x || 0;
+  const ay = event.acceleration.y || 0;
+  const az = event.acceleration.z || 0;
 
-    if (Math.sqrt(ax * ax + ay * ay + az * az) > 15) {
+  const magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
+  motionBuffer.push(magnitude);
+
+  if (motionBuffer.length > 10) motionBuffer.shift();
+
+  if (motionBuffer.length === 10) {
+    const avg = motionBuffer.reduce((a, b) => a + b, 0) / 10;
+
+    if (avg > 15) {
+      vibrationText.textContent = "Vibration: Yes";
+
+      // (optional) red marker dikhana chaho to:
       const marker = document.createElement("div");
       marker.className = "trail";
       marker.style.left = `${x + 6}px`;
       marker.style.top = `${y + 6}px`;
       marker.style.background = "red";
       main.appendChild(marker);
-      navigator.vibrate(300);
+
+      navigator.vibrate(200);
+    } else {
+      vibrationText.textContent = "Vibration: No";
     }
-  });
+  }
+});
+
 
   window.addEventListener('load', () => {
     resetDot();
