@@ -31,7 +31,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
- .sensitivity-box {
+    .sensitivity-box {
       position: fixed;
       top: 70px; /* header ke niche */
       right: 20px;
@@ -52,7 +52,7 @@
       font-weight: 600;
     }
 
-   .sensitivity-box input[type="range"] {
+    .sensitivity-box input[type="range"] {
       -webkit-appearance: none;
       width: 380px;
       height: 20px;
@@ -75,8 +75,6 @@
       transition: transform 0.2s ease;
     }
 
-   
-
     #main {
       position: relative;
       min-width: 100vw;
@@ -93,7 +91,7 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
       z-index: 9999;
       font-size: 1rem;
-      width: 250px;
+      width: 260px;
       line-height: 1.6;
       backdrop-filter: blur(8px);
       border: 1px solid rgba(200, 220, 255, 0.4);
@@ -173,7 +171,7 @@
 <div class="sensitivity-box">
   <h3>Sensitivity</h3>
   <input type="range" id="sensitivityRange" min="1" max="10" step="1" value="5">
-  <div style="margin-top: 5px;">Value: <span id="sensitivityValue">1</span></div>
+  <div style="margin-top: 5px;">Value: <span id="sensitivityValue">5</span></div>
 </div>
 
 <div class="info">
@@ -183,6 +181,7 @@
   <p id="direction">Direction: Calculating...</p>
   <p id="vibration">Vibration: No</p>
   <button onclick="resetDot()">Reset</button>
+  <button onclick="saveToText()">Save TXT</button>
 </div>
 
 <main id="main">
@@ -196,12 +195,8 @@
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
-  const sensitivityRange = document.getElementById("sensitivityRange");
   const vibrationText = document.getElementById("vibration");
-  let motionBuffer = [];
-
-
-
+  const sensitivityRange = document.getElementById("sensitivityRange");
 
   let x = 0, y = 0;
   let prevLat = null, prevLon = null;
@@ -209,12 +204,18 @@
   const sensitivityValue = document.getElementById("sensitivityValue");
   sensitivityValue.textContent = sensitivityRange.value;
 
+  // Vibration detection buffer
+  let motionBuffer = [];
+  const THRESHOLD = 15;            // aap chahe to adjust kar sakte ho
+  let currentVibration = "No";     // latest vibration state
 
- sensitivityRange.addEventListener("input", () => {
-  sensitivityFactor = parseFloat(sensitivityRange.value);
-  sensitivityValue.textContent = sensitivityRange.value;
-});
+  // Log array to save data
+  const logs = []; // { time, lat, lon, vibration }
 
+  sensitivityRange.addEventListener("input", () => {
+    sensitivityFactor = parseFloat(sensitivityRange.value);
+    sensitivityValue.textContent = sensitivityRange.value;
+  });
 
   function moveDot(newX, newY) {
     x = newX;
@@ -281,8 +282,8 @@
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
     if (prevLat !== null && prevLon !== null) {
-      const dx = (lon - prevLon) * 100000 * sensitivityFactor;
-      const dy = (lat - prevLat) * 100000 * sensitivityFactor;
+      const dx = (lon - prevLon) * 500000 * sensitivityFactor; // amplify kiya 5x
+      const dy = (lat - prevLat) * 500000 * sensitivityFactor;
 
       const newX = x + dx;
       const newY = y + dy;
@@ -292,6 +293,14 @@
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
       directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
     }
+
+    // ---- Log store yahin pe kar rahe hain ----
+    logs.push({
+      time: new Date().toISOString(),
+      lat,
+      lon,
+      vibration: currentVibration
+    });
 
     prevLat = lat;
     prevLon = lon;
@@ -308,38 +317,64 @@
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
- window.addEventListener('devicemotion', function(event) {
-  if (!event.acceleration) return;
-  const ax = event.acceleration.x || 0;
-  const ay = event.acceleration.y || 0;
-  const az = event.acceleration.z || 0;
+  // ---- Vibration detection with 10-entry buffer ----
+  window.addEventListener('devicemotion', function(event) {
+    if (!event.acceleration) return;
+    const ax = event.acceleration.x || 0;
+    const ay = event.acceleration.y || 0;
+    const az = event.acceleration.z || 0;
 
-  const magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
-  motionBuffer.push(magnitude);
+    const magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
+    motionBuffer.push(magnitude);
 
-  if (motionBuffer.length > 10) motionBuffer.shift();
+    if (motionBuffer.length > 10) motionBuffer.shift();
 
-  if (motionBuffer.length === 10) {
-    const avg = motionBuffer.reduce((a, b) => a + b, 0) / 10;
+    if (motionBuffer.length === 10) {
+      const avg = motionBuffer.reduce((a, b) => a + b, 0) / 10;
 
-    if (avg > 15) {
-      vibrationText.textContent = "Vibration: Yes";
+      if (avg > THRESHOLD) {
+        currentVibration = "Yes";
+        vibrationText.textContent = "Vibration: Yes";
 
-      // (optional) red marker dikhana chaho to:
-      const marker = document.createElement("div");
-      marker.className = "trail";
-      marker.style.left = `${x + 6}px`;
-      marker.style.top = `${y + 6}px`;
-      marker.style.background = "red";
-      main.appendChild(marker);
+        // optional: red marker
+        const marker = document.createElement("div");
+        marker.className = "trail";
+        marker.style.left = `${x + 6}px`;
+        marker.style.top = `${y + 6}px`;
+        marker.style.background = "red";
+        main.appendChild(marker);
 
-      navigator.vibrate(200);
-    } else {
-      vibrationText.textContent = "Vibration: No";
+        navigator.vibrate(200);
+      } else {
+        currentVibration = "No";
+        vibrationText.textContent = "Vibration: No";
+      }
     }
-  }
-});
+  });
 
+  // ---- Save TXT ----
+  function saveToText() {
+    if (logs.length === 0) {
+      alert("Abhi tak koi data store nahin hua.");
+      return;
+    }
+
+    let header = "Time\tLatitude\tLongitude\tVibration\n";
+    let body = logs.map(l =>
+      `${l.time}\t${l.lat.toFixed(5)}\t${l.lon.toFixed(5)}\t${l.vibration}`
+    ).join("\n");
+
+    const content = header + body;
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gps_log_${new Date().toISOString().replace(/[:.]/g, "-")}.txt`;
+    a.click();
+
+    URL.revokeObjectURL(url);
+  }
 
   window.addEventListener('load', () => {
     resetDot();
@@ -355,6 +390,7 @@
 
 </body>
 </html>
+
 
 
 
