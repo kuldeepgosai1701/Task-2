@@ -252,12 +252,8 @@
   }
 
 function resetDot() {
-  const mainRect = main.getBoundingClientRect();
-  const scrollX = window.scrollX;
-  const scrollY = window.scrollY;
-
-  const centerX = scrollX + mainRect.left + main.clientWidth / 2 - dot.offsetWidth / 2;
-  const centerY = scrollY + mainRect.top + main.clientHeight / 2 - dot.offsetHeight / 2;
+  const centerX = window.scrollX + window.innerWidth / 2 - dot.offsetWidth / 2;
+  const centerY = window.scrollY + window.innerHeight / 2 - dot.offsetHeight / 2;
 
   moveDot(centerX, centerY);
 
@@ -266,6 +262,7 @@ function resetDot() {
 
   document.querySelectorAll(".trail").forEach(el => el.remove());
 }
+
 
 
 
@@ -328,7 +325,7 @@ window.addEventListener('devicemotion', function(event) {
 window.addEventListener('load', () => {
   setTimeout(() => {
     resetDot();
-  }, 500);
+  }, 300);
 });
 
 
