@@ -187,6 +187,8 @@
   const directionText = document.getElementById("direction");
   const sensitivityRange = document.getElementById("sensitivityRange");
   const sensitivityValue = document.getElementById("sensitivityValue");
+  let dynamicSensitivity = sensitivityFactor;  // holds the gyroscope-adjusted sensitivity internally
+
 
   let x = 0, y = 0;
   let prevLat = null, prevLon = null;
@@ -263,8 +265,8 @@
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
     if (prevLat !== null && prevLon !== null) {
-      const dx = (lon - prevLon) * 100000 * sensitivityFactor;
-      const dy = (lat - prevLat) * 100000 * sensitivityFactor;
+      const dx = (lon - prevLon) * 100000 * dynamicSensitivity;
+      const dy = (lat - prevLat) * 100000 * dynamicSensitivity;
 
       const newX = x + dx;
       const newY = y + dy;
@@ -290,7 +292,6 @@
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
-// Gyroscope-based sensitivity control
 window.addEventListener('devicemotion', function(event) {
   if (!event.acceleration) return;
   const ax = event.acceleration.x || 0;
@@ -299,21 +300,17 @@ window.addEventListener('devicemotion', function(event) {
 
   const magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
 
-  // Default sensitivity around 5
-  let newSensitivity = 5;
+  let newSensitivity = 5;  // baseline sensitivity
 
   if (magnitude > 3) {
-    // Increase sensitivity based on vibration strength
     newSensitivity = Math.min(10, 5 + (magnitude - 3) * 1.5);
   } else if (magnitude < 1) {
-    // Decrease sensitivity slightly if almost no vibration
     newSensitivity = Math.max(0, 5 - (1 - magnitude) * 2);
   }
 
-  sensitivityRange.value = Math.round(newSensitivity);
-  sensitivityFactor = parseFloat(sensitivityRange.value);
-  sensitivityValue.textContent = sensitivityRange.value;
+  dynamicSensitivity = newSensitivity;  // update only internal variable
 });
+
 
 
  window.addEventListener('load', () => {
