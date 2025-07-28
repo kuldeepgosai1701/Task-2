@@ -249,17 +249,23 @@
     main.appendChild(line);
   }
 
-  function resetDot() {
-  const centerX = window.scrollX + window.innerWidth / 2 - dot.offsetWidth / 2;
-  const centerY = window.scrollY + window.innerHeight / 2 - dot.offsetHeight / 2;
+ function resetDot() {
+  const dotRect = dot.getBoundingClientRect(); // Get dot's current dimensions
+  const centerX = window.scrollX + window.innerWidth / 2 - dotRect.width / 2;
+  const centerY = window.scrollY + window.innerHeight / 2 - dotRect.height / 2;
+
   moveDot(centerX, centerY);
+
   prevLat = null;
   prevLon = null;
   document.querySelectorAll(".trail").forEach(el => el.remove());
-  window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
+
+  window.scrollTo({
+    left: centerX - window.innerWidth / 2,
+    top: centerY - window.innerHeight / 2
+  });
 }
 
-  }
 
   function showLocation(position) {
     const lat = position.coords.latitude;
@@ -316,10 +322,10 @@ window.addEventListener('devicemotion', function(event) {
 
 
  window.addEventListener('load', () => {
-  sensitivityRange.value = 5;
-  sensitivityFactor = 5;
-  sensitivityValue.textContent = 5;
-  resetDot();
+  setTimeout(() => {   // delay ensures correct center calculation
+    resetDot();
+  }, 100);
+
   setInterval(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(showLocation, showError);
@@ -328,6 +334,7 @@ window.addEventListener('devicemotion', function(event) {
     }
   }, 5000);
 });
+
 
 </script>
 
