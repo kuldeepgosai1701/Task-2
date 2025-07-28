@@ -187,7 +187,9 @@
   const directionText = document.getElementById("direction");
   const sensitivityRange = document.getElementById("sensitivityRange");
   const sensitivityValue = document.getElementById("sensitivityValue");
+  let sensitivityFactor = parseFloat(sensitivityRange.value); // ✅ Correct order
   let dynamicSensitivity = sensitivityFactor;  // holds the gyroscope-adjusted sensitivity internally
+  
 
 
   let x = 0, y = 0;
@@ -318,8 +320,9 @@ window.addEventListener('devicemotion', function(event) {
 
  window.addEventListener('load', () => {
   setTimeout(() => {
-    resetDot();
-  }, 100);  // Delay ensures correct dot centering
+    resetDot(); // now works because DOM and styles are fully applied
+  }, 300); // slightly longer delay guarantees proper dot size
+
 
   setInterval(() => {
     if ("geolocation" in navigator) {
