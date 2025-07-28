@@ -250,13 +250,15 @@
   }
 
   function resetDot() {
-    const centerX = window.scrollX + window.innerWidth / 2;
-    const centerY = window.scrollY + window.innerHeight / 2;
-    moveDot(centerX, centerY);
-    prevLat = null;
-    prevLon = null;
-    document.querySelectorAll(".trail").forEach(el => el.remove());
-    window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
+  const centerX = window.scrollX + window.innerWidth / 2 - dot.offsetWidth / 2;
+  const centerY = window.scrollY + window.innerHeight / 2 - dot.offsetHeight / 2;
+  moveDot(centerX, centerY);
+  prevLat = null;
+  prevLon = null;
+  document.querySelectorAll(".trail").forEach(el => el.remove());
+  window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
+}
+
   }
 
   function showLocation(position) {
