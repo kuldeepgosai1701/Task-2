@@ -299,25 +299,37 @@ window.addEventListener('devicemotion', function(event) {
 
   const magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
 
-  // Scale magnitude (0 to 10) for slider
-  let gyroValue = Math.min(10, Math.max(0, Math.floor(magnitude)));
+  // Default sensitivity around 5
+  let newSensitivity = 5;
 
-  // Update slider value based on gyroscope
-  sensitivityRange.value = gyroValue;
-  sensitivityFactor = gyroValue;
-  sensitivityValue.textContent = gyroValue;
+  if (magnitude > 3) {
+    // Increase sensitivity based on vibration strength
+    newSensitivity = Math.min(10, 5 + (magnitude - 3) * 1.5);
+  } else if (magnitude < 1) {
+    // Decrease sensitivity slightly if almost no vibration
+    newSensitivity = Math.max(0, 5 - (1 - magnitude) * 2);
+  }
+
+  sensitivityRange.value = Math.round(newSensitivity);
+  sensitivityFactor = parseFloat(sensitivityRange.value);
+  sensitivityValue.textContent = sensitivityRange.value;
 });
 
-  window.addEventListener('load', () => {
-    resetDot();
-    setInterval(() => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(showLocation, showError);
-      } else {
-        locationText.textContent = "Geolocation not supported.";
-      }
-    }, 5000);
-  });
+
+ window.addEventListener('load', () => {
+  sensitivityRange.value = 5;
+  sensitivityFactor = 5;
+  sensitivityValue.textContent = 5;
+  resetDot();
+  setInterval(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(showLocation, showError);
+    } else {
+      locationText.textContent = "Geolocation not supported.";
+    }
+  }, 5000);
+});
+
 </script>
 
 </body>
