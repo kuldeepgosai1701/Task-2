@@ -252,16 +252,21 @@
   }
 
 function resetDot() {
-  const centerX = window.innerWidth / 2 - dot.offsetWidth / 2 + window.scrollX;
-  const centerY = window.innerHeight / 2 - dot.offsetHeight / 2 + window.scrollY;
+  const mainRect = main.getBoundingClientRect();
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
 
-  moveDot(centerX, centerY); // Dot ko center par move karo
+  const centerX = scrollX + mainRect.left + main.clientWidth / 2 - dot.offsetWidth / 2;
+  const centerY = scrollY + mainRect.top + main.clientHeight / 2 - dot.offsetHeight / 2;
+
+  moveDot(centerX, centerY);
 
   prevLat = null;
   prevLon = null;
 
   document.querySelectorAll(".trail").forEach(el => el.remove());
 }
+
 
 
 
@@ -320,10 +325,12 @@ window.addEventListener('devicemotion', function(event) {
 
 
 
- window.addEventListener('load', () => {
+window.addEventListener('load', () => {
   setTimeout(() => {
-    resetDot(); // now works because DOM and styles are fully applied
-  }, 300); // slightly longer delay guarantees proper dot size
+    resetDot();
+  }, 500);
+});
+
 
 
   setInterval(() => {
