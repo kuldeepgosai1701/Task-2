@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPS Motion Tracker</title>
   <style>
-    * {
+   * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -33,7 +33,7 @@
 
     .sensitivity-box {
       position: fixed;
-      top: 70px;
+      top: 70px; /* header ke niche */
       right: 20px;
       background: rgba(0, 64, 128, 0.9);
       color: #fff;
@@ -43,7 +43,7 @@
       text-align: center;
       font-size: 1rem;
       z-index: 9999;
-      min-width: 160px;
+      min-width: 140px;
     }
 
     .sensitivity-box h3 {
@@ -54,24 +54,28 @@
 
     .sensitivity-box input[type="range"] {
       -webkit-appearance: none;
-      width: 100%;
+      width: 380px;
       height: 20px;
       background: linear-gradient(to right, #007bff, #00ffcc);
       border-radius: 4px;
       outline: none;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
 
     .sensitivity-box input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 28px;
-      height: 28px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background: #004080;
       border: 2px solid #fff;
       cursor: pointer;
       box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease;
     }
+
+   
 
     #main {
       position: relative;
@@ -93,6 +97,12 @@
       line-height: 1.6;
       backdrop-filter: blur(8px);
       border: 1px solid rgba(200, 220, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .info:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     }
 
     button {
@@ -162,8 +172,7 @@
 <!-- Sensitivity Control Slider -->
 <div class="sensitivity-box">
   <h3>Sensitivity</h3>
-  <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="5">
-  <div style="margin-top: 5px;">Value: <span id="sensitivityValue">5</span></div>
+  <input type="range" id="sensitivityRange" min="0.5" max="5" step="0.5" value="1">
 </div>
 
 <div class="info">
@@ -186,21 +195,13 @@
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
   const sensitivityRange = document.getElementById("sensitivityRange");
-  const sensitivityValue = document.getElementById("sensitivityValue");
-  let sensitivityFactor = parseFloat(sensitivityRange.value); // ✅ Correct order
-  let dynamicSensitivity = sensitivityFactor;  // holds the gyroscope-adjusted sensitivity internally
-  
-
 
   let x = 0, y = 0;
   let prevLat = null, prevLon = null;
   let sensitivityFactor = parseFloat(sensitivityRange.value);
 
-  sensitivityValue.textContent = sensitivityRange.value;
-
   sensitivityRange.addEventListener("input", () => {
     sensitivityFactor = parseFloat(sensitivityRange.value);
-    sensitivityValue.textContent = sensitivityRange.value;
   });
 
   function moveDot(newX, newY) {
@@ -217,6 +218,7 @@
     main.appendChild(trail);
 
     setTimeout(() => {
+      trail.style.transition = "opacity 1s ease";
       trail.style.opacity = "0";
       setTimeout(() => trail.remove(), 1000);
     }, 500);
@@ -251,22 +253,15 @@
     main.appendChild(line);
   }
 
-function resetDot() {
-  const centerX = window.scrollX + window.innerWidth / 2 - dot.offsetWidth / 2;
-  const centerY = window.scrollY + window.innerHeight / 2 - dot.offsetHeight / 2;
-
-  moveDot(centerX, centerY);
-
-  prevLat = null;
-  prevLon = null;
-
-  document.querySelectorAll(".trail").forEach(el => el.remove());
-}
-
-
-
-
-
+  function resetDot() {
+    const centerX = window.scrollX + window.innerWidth / 2;
+    const centerY = window.scrollY + window.innerHeight / 2;
+    moveDot(centerX, centerY);
+    prevLat = null;
+    prevLon = null;
+    document.querySelectorAll(".trail").forEach(el => el.remove());
+    window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
+  }
 
   function showLocation(position) {
     const lat = position.coords.latitude;
@@ -274,8 +269,8 @@ function resetDot() {
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
     if (prevLat !== null && prevLon !== null) {
-      const dx = (lon - prevLon) * 100000 * dynamicSensitivity;
-      const dy = (lat - prevLat) * 100000 * dynamicSensitivity;
+      const dx = (lon - prevLon) * 100000 * sensitivityFactor;
+      const dy = (lat - prevLat) * 100000 * sensitivityFactor;
 
       const newX = x + dx;
       const newY = y + dy;
@@ -301,51 +296,37 @@ function resetDot() {
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
-window.addEventListener('devicemotion', function(event) {
-  if (!event.acceleration) return;
-  const ax = event.acceleration.x || 0;
-  const ay = event.acceleration.y || 0;
-  const az = event.acceleration.z || 0;
+  window.addEventListener('devicemotion', function(event) {
+    if (!event.acceleration) return;
+    const ax = event.acceleration.x || 0;
+    const ay = event.acceleration.y || 0;
+    const az = event.acceleration.z || 0;
 
-  const magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
-
-  let newSensitivity = 5;  // baseline sensitivity
-
-  if (magnitude > 3) {
-    newSensitivity = Math.min(10, 5 + (magnitude - 3) * 1.5);
-  } else if (magnitude < 1) {
-    newSensitivity = Math.max(0, 5 - (1 - magnitude) * 2);
-  }
-
-  dynamicSensitivity = newSensitivity;  // update only internal variable
-});
-
-
-
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    resetDot();
-  }, 300);
-});
-
-
-
-  setInterval(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(showLocation, showError);
-    } else {
-      locationText.textContent = "Geolocation not supported.";
+    if (Math.sqrt(ax * ax + ay * ay + az * az) > 15) {
+      const marker = document.createElement("div");
+      marker.className = "trail";
+      marker.style.left = `${x + 6}px`;
+      marker.style.top = `${y + 6}px`;
+      marker.style.background = "red";
+      main.appendChild(marker);
+      navigator.vibrate(300);
     }
-  }, 5000);
-});
+  });
 
-
-
+  window.addEventListener('load', () => {
+    resetDot();
+    setInterval(() => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(showLocation, showError);
+      } else {
+        locationText.textContent = "Geolocation not supported.";
+      }
+    }, 5000);
+  });
 </script>
 
 </body>
 </html>
-
 
 
 
