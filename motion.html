@@ -301,22 +301,30 @@ sensitivityRange.addEventListener("input", () => {
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
-  window.addEventListener('devicemotion', function(event) {
-    if (!event.acceleration) return;
-    const ax = event.acceleration.x || 0;
-    const ay = event.acceleration.y || 0;
-    const az = event.acceleration.z || 0;
+ window.addEventListener('devicemotion', function(event) {
+  if (!event.acceleration) return;
+  const ax = event.acceleration.x || 0;
+  const ay = event.acceleration.y || 0;
+  const az = event.acceleration.z || 0;
 
-    if (Math.sqrt(ax * ax + ay * ay + az * az) > 15) {
-      const marker = document.createElement("div");
-      marker.className = "trail";
-      marker.style.left = `${x + 6}px`;
-      marker.style.top = `${y + 6}px`;
-      marker.style.background = "red";
-      main.appendChild(marker);
-      navigator.vibrate(300);
-    }
-  });
+  // Map sensitivityFactor (0 to 10) to a threshold (30 to 5), inverse relation:
+  // Higher sensitivityFactor -> lower threshold to detect vibration
+  const maxThreshold = 30;  // no vibration above this threshold
+  const minThreshold = 5;   // max sensitivity vibration threshold
+
+  // Linear interpolation:
+  const threshold = maxThreshold - ( (sensitivityFactor / 10) * (maxThreshold - minThreshold) );
+
+  if (Math.sqrt(ax * ax + ay * ay + az * az) > threshold) {
+    const marker = document.createElement("div");
+    marker.className = "trail";
+    marker.style.left = `${x + 6}px`;
+    marker.style.top = `${y + 6}px`;
+    marker.style.background = "red";
+    main.appendChild(marker);
+    navigator.vibrate(300);
+  }
+});
 
   window.addEventListener('load', () => {
     resetDot();
