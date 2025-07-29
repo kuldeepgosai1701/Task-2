@@ -300,8 +300,7 @@ sensitivityRange.addEventListener("input", () => {
                         "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
-
- window.addEventListener('devicemotion', function(event) {
+window.addEventListener('devicemotion', function(event) {
   if (!event.acceleration) return;
   const ax = event.acceleration.x || 0;
   const ay = event.acceleration.y || 0;
@@ -325,6 +324,7 @@ sensitivityRange.addEventListener("input", () => {
     navigator.vibrate(300);
   }
 });
+
 
   window.addEventListener('load', () => {
     resetDot();
