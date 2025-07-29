@@ -204,9 +204,8 @@ sensitivityRange.addEventListener("input", () => {
   sensVal.textContent = sensitivityRange.value;
 });*/
 
-let movementScale = 1 + vibrationSensitivity / 2;
+let movementScale = 1; //dot ka speed
 let vibrationSensitivity = 5; //vibration ka speed
-sensVal.textContent = "5";  // To show initial value in UI
 
 sensitivityRange.addEventListener("input", () => {
   const value = parseFloat(sensitivityRange.value);
@@ -227,13 +226,13 @@ sensitivityRange.addEventListener("input", () => {
     x = newX;
     y = newY;
 
-    dot.style.left = `${x}px`;
-    dot.style.top = `${y}px`;
+    dot.style.left = ${x}px;
+    dot.style.top = ${y}px;
 
     const trail = document.createElement("div");
     trail.className = "trail";
-    trail.style.left = `${x + 6}px`;
-    trail.style.top = `${y + 6}px`;
+    trail.style.left = ${x + 6}px;
+    trail.style.top = ${y + 6}px;
     main.appendChild(trail);
 
     setTimeout(() => {
@@ -242,8 +241,8 @@ sensitivityRange.addEventListener("input", () => {
       setTimeout(() => trail.remove(), 1000);
     }, 500);
 
-    main.style.width = `${Math.max(main.clientWidth, x + 100)}px`;
-    main.style.height = `${Math.max(main.clientHeight, y + 100)}px`;
+    main.style.width = ${Math.max(main.clientWidth, x + 100)}px;
+    main.style.height = ${Math.max(main.clientHeight, y + 100)}px;
 
     const buffer = 50;
     if (x - window.scrollX < buffer || x - window.scrollX > window.innerWidth - buffer ||
@@ -261,12 +260,12 @@ sensitivityRange.addEventListener("input", () => {
     const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
     const line = document.createElement("div");
     line.style.position = "absolute";
-    line.style.left = `${x1}px`;
-    line.style.top = `${y1}px`;
-    line.style.width = `${length}px`;
-    line.style.height = `2px`;
+    line.style.left = ${x1}px;
+    line.style.top = ${y1}px;
+    line.style.width = ${length}px;
+    line.style.height = 2px;
     line.style.backgroundColor = "blue";
-    line.style.transform = `rotate(${angle}deg)`;
+    line.style.transform = rotate(${angle}deg);
     line.style.transformOrigin = "0 0";
     line.style.zIndex = 2;
     main.appendChild(line);
@@ -285,7 +284,7 @@ sensitivityRange.addEventListener("input", () => {
   function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    locationText.textContent = Location: ${lat.toFixed(5)}, ${lon.toFixed(5)};
 
     if (prevLat !== null && prevLon !== null) {
       const dx = (lon - prevLon) * 100000 * movementScale;
@@ -298,7 +297,7 @@ sensitivityRange.addEventListener("input", () => {
       moveDot(newX, newY);
 
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+      directionText.textContent = Direction: ${getDirectionFromAngle(angle)};
     }
 
     prevLat = lat;
@@ -330,8 +329,8 @@ window.addEventListener('devicemotion', function(event) {
   if (Math.sqrt(ax * ax + ay * ay + az * az) > threshold) {
     const marker = document.createElement("div");
     marker.className = "trail";
-    marker.style.left = `${x + 6}px`;
-    marker.style.top = `${y + 6}px`;
+    marker.style.left = ${x + 6}px;
+    marker.style.top = ${y + 6}px;
     marker.style.background = "red";
     main.appendChild(marker);
     navigator.vibrate(300);
@@ -343,12 +342,12 @@ const y2 = y + 9 + ay * 30;
 const vibLength = Math.hypot(x2 - (x + 9), y2 - (y + 9));
 const vibAngle = Math.atan2(y2 - (y + 9), x2 - (x + 9)) * (180 / Math.PI);
 vibLine.style.position = "absolute";
-vibLine.style.left = `${x + 9}px`;
-vibLine.style.top = `${y + 9}px`;
-vibLine.style.width = `${vibLength}px`;
-vibLine.style.height = `2px`;
+vibLine.style.left = ${x + 9}px;
+vibLine.style.top = ${y + 9}px;
+vibLine.style.width = ${vibLength}px;
+vibLine.style.height = 2px;
 vibLine.style.backgroundColor = "red";
-vibLine.style.transform = `rotate(${vibAngle}deg)`;
+vibLine.style.transform = rotate(${vibAngle}deg);
 vibLine.style.transformOrigin = "0 0";
 vibLine.style.zIndex = 999;
 main.appendChild(vibLine);
