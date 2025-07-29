@@ -195,9 +195,9 @@
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
- const sensitivityRange = document.getElementById("sensitivityRange");
+  const sensitivityRange = document.getElementById("sensitivityRange");
   const sensVal = document.getElementById("sensVal"); // add this span in HTML too
-   let sensitivityFactor = parseFloat(sensitivityRange.value);  // default: 5
+  let sensitivityFactor = parseFloat(sensitivityRange.value);  // default: 5
 
 sensitivityRange.addEventListener("input", () => {
   sensitivityFactor = parseFloat(sensitivityRange.value);
@@ -306,13 +306,10 @@ window.addEventListener('devicemotion', function(event) {
   const ay = event.acceleration.y || 0;
   const az = event.acceleration.z || 0;
 
-  // Map sensitivityFactor (0 to 10) to a threshold (30 to 5), inverse relation:
-  // Higher sensitivityFactor -> lower threshold to detect vibration
-  const maxThreshold = 30;  // no vibration above this threshold
-  const minThreshold = 5;   // max sensitivity vibration threshold
-
-  // Linear interpolation:
-  const threshold = maxThreshold - ( (sensitivityFactor / 10) * (maxThreshold - minThreshold) );
+  // Reversed logic: lower slider = more sensitivity
+  const minThreshold = 5;    // Vibrates even on small motion
+  const maxThreshold = 30;   // Requires large shake to vibrate (almost disabled)
+  const threshold = minThreshold + ((sensitivityFactor / 10) * (maxThreshold - minThreshold));
 
   if (Math.sqrt(ax * ax + ay * ay + az * az) > threshold) {
     const marker = document.createElement("div");
