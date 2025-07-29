@@ -217,9 +217,10 @@ sensitivityRange.addEventListener("input", () => {
 
 
 
-  sensitivityRange.addEventListener("input", () => {
-    sensitivityFactor = parseFloat(sensitivityRange.value);
-  });
+ /*sensitivityRange.addEventListener("input", () => {
+  sensitivityFactor = parseFloat(sensitivityRange.value);
+});*/
+
 
   function moveDot(newX, newY) {
     x = newX;
@@ -334,7 +335,22 @@ window.addEventListener('devicemotion', function(event) {
     main.appendChild(marker);
     navigator.vibrate(300);
 
-    drawLine(x + 9, y + 9, x + 9 + ax * 10, y + 9 + ay * 10); // small line in accel direction
+    // Red direction line for vibration
+const vibLine = document.createElement("div");
+const x2 = x + 9 + ax * 30;
+const y2 = y + 9 + ay * 30;
+const vibLength = Math.hypot(x2 - (x + 9), y2 - (y + 9));
+const vibAngle = Math.atan2(y2 - (y + 9), x2 - (x + 9)) * (180 / Math.PI);
+vibLine.style.position = "absolute";
+vibLine.style.left = `${x + 9}px`;
+vibLine.style.top = `${y + 9}px`;
+vibLine.style.width = `${vibLength}px`;
+vibLine.style.height = `2px`;
+vibLine.style.backgroundColor = "red";
+vibLine.style.transform = `rotate(${vibAngle}deg)`;
+vibLine.style.transformOrigin = "0 0";
+vibLine.style.zIndex = 999;
+main.appendChild(vibLine);
 
   }
 });
