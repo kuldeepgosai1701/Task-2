@@ -172,7 +172,7 @@
 <!-- Sensitivity Control Slider -->
 <div class="sensitivity-box">
   <h3>Sensitivity</h3>
-  <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="1">
+  <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="5">
   <div style="margin-top:4px;">Value: <span id="sensVal">5</span></div>
 </div>
 
@@ -204,9 +204,9 @@ sensitivityRange.addEventListener("input", () => {
   sensVal.textContent = sensitivityRange.value;
 });*/
 
-let movementScale = 1 + 1 / 2; // i.e. 1.5 initially
-let vibrationSensitivity = 1; //vibration ka speed
-sensVal.textContent = "1";  // To show initial value in UI
+let movementScale = 1 + vibrationSensitivity / 2;
+let vibrationSensitivity = 5; //vibration ka speed
+sensVal.textContent = "5";  // To show initial value in UI
 
 sensitivityRange.addEventListener("input", () => {
   const value = parseFloat(sensitivityRange.value);
