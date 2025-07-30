@@ -317,14 +317,17 @@ window.addEventListener('devicemotion', function(event) {
 
   const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
 
-  // More sensitivity when slider is near 0
-  const vibrationThreshold = 30 - (sensitivityFactor * 2.8);
+  // Sensitivity: 0 = most sensitive (threshold = low), 10 = least sensitive (threshold = high)
+  const vibrationThreshold = 5 + (sensitivityFactor * 2.5); 
+  // 5 (min) to 30 (max) depending on slider
 
+  // If total acceleration exceeds threshold → vibrate
   if (totalAccel > vibrationThreshold) {
     vibratedRecently = true;
+
     navigator.vibrate(300);
 
-    // Optional red dot marker (in addition to red line)
+    // Optional red dot marker
     const marker = document.createElement("div");
     marker.className = "trail";
     marker.style.left = `${x + 6}px`;
@@ -335,6 +338,7 @@ window.addEventListener('devicemotion', function(event) {
     vibratedRecently = false;
   }
 });
+
   window.addEventListener('load', () => {
     resetDot();
     setInterval(() => {
