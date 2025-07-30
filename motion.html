@@ -195,26 +195,14 @@
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
-  const sensitivityRange = document.getElementById("sensitivityRange");
+ const sensitivityRange = document.getElementById("sensitivityRange");
   const sensVal = document.getElementById("sensVal"); // add this span in HTML too
-  /*let sensitivityFactor = parseFloat(sensitivityRange.value);  // default: 5
+   let sensitivityFactor = parseFloat(sensitivityRange.value);  // default: 5
 
 sensitivityRange.addEventListener("input", () => {
   sensitivityFactor = parseFloat(sensitivityRange.value);
   sensVal.textContent = sensitivityRange.value;
-});*/
-
-let movementScale = 1; //dot ka speed
-let vibrationSensitivity = 5; //vibration ka speed
-
-sensitivityRange.addEventListener("input", () => {
-  const value = parseFloat(sensitivityRange.value);
-  sensVal.textContent = value;
-
-  movementScale = 1 + value / 2;         // Dot will always move
-  vibrationSensitivity = value;          // Controls vibration only
 });
-
 
 
   sensitivityRange.addEventListener("input", () => {
@@ -225,13 +213,13 @@ sensitivityRange.addEventListener("input", () => {
     x = newX;
     y = newY;
 
-    dot.style.left = ${x}px;
-    dot.style.top = ${y}px;
+    dot.style.left = `${x}px`;
+    dot.style.top = `${y}px`;
 
     const trail = document.createElement("div");
     trail.className = "trail";
-    trail.style.left = ${x + 6}px;
-    trail.style.top = ${y + 6}px;
+    trail.style.left = `${x + 6}px`;
+    trail.style.top = `${y + 6}px`;
     main.appendChild(trail);
 
     setTimeout(() => {
@@ -240,8 +228,8 @@ sensitivityRange.addEventListener("input", () => {
       setTimeout(() => trail.remove(), 1000);
     }, 500);
 
-    main.style.width = ${Math.max(main.clientWidth, x + 100)}px;
-    main.style.height = ${Math.max(main.clientHeight, y + 100)}px;
+    main.style.width = `${Math.max(main.clientWidth, x + 100)}px`;
+    main.style.height = `${Math.max(main.clientHeight, y + 100)}px`;
 
     const buffer = 50;
     if (x - window.scrollX < buffer || x - window.scrollX > window.innerWidth - buffer ||
@@ -259,12 +247,12 @@ sensitivityRange.addEventListener("input", () => {
     const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
     const line = document.createElement("div");
     line.style.position = "absolute";
-    line.style.left = ${x1}px;
-    line.style.top = ${y1}px;
-    line.style.width = ${length}px;
-    line.style.height = 2px;
+    line.style.left = `${x1}px`;
+    line.style.top = `${y1}px`;
+    line.style.width = `${length}px`;
+    line.style.height = `2px`;
     line.style.backgroundColor = "blue";
-    line.style.transform = rotate(${angle}deg);
+    line.style.transform = `rotate(${angle}deg)`;
     line.style.transformOrigin = "0 0";
     line.style.zIndex = 2;
     main.appendChild(line);
@@ -283,12 +271,11 @@ sensitivityRange.addEventListener("input", () => {
   function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-    locationText.textContent = Location: ${lat.toFixed(5)}, ${lon.toFixed(5)};
+    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
     if (prevLat !== null && prevLon !== null) {
-      const dx = (lon - prevLon) * 100000 * movementScale;
-      const dy = (lat - prevLat) * 100000 * movementScale;
-
+      const dx = (lon - prevLon) * 100000 * sensitivityFactor;
+      const dy = (lat - prevLat) * 100000 * sensitivityFactor;
 
       const newX = x + dx;
       const newY = y + dy;
@@ -296,7 +283,7 @@ sensitivityRange.addEventListener("input", () => {
       moveDot(newX, newY);
 
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = Direction: ${getDirectionFromAngle(angle)};
+      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
     }
 
     prevLat = lat;
@@ -313,32 +300,23 @@ sensitivityRange.addEventListener("input", () => {
                         "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
-window.addEventListener('devicemotion', function(event) {
-  if (!event.acceleration) return;
-  const ax = event.acceleration.x || 0;
-  const ay = event.acceleration.y || 0;
-  const az = event.acceleration.z || 0;
 
-  // Reversed logic: lower slider = more sensitivity
-  const minThreshold = 5;    // Vibrates even on small motion
-  const maxThreshold = 30;   // Requires large shake to vibrate (almost disabled)
-  const threshold = minThreshold + ((vibrationSensitivity / 10) * (maxThreshold - minThreshold));
+  window.addEventListener('devicemotion', function(event) {
+    if (!event.acceleration) return;
+    const ax = event.acceleration.x || 0;
+    const ay = event.acceleration.y || 0;
+    const az = event.acceleration.z || 0;
 
-
-  if (Math.sqrt(ax * ax + ay * ay + az * az) > threshold) {
-    const marker = document.createElement("div");
-    marker.className = "trail";
-    marker.style.left = ${x + 6}px;
-    marker.style.top = ${y + 6}px;
-    marker.style.background = "red";
-    main.appendChild(marker);
-    navigator.vibrate(300);
-
-    drawLine(x + 9, y + 9, x + 9 + ax * 10, y + 9 + ay * 10); // small line in accel direction
-
-  }
-});
-
+    if (Math.sqrt(ax * ax + ay * ay + az * az) > 15) {
+      const marker = document.createElement("div");
+      marker.className = "trail";
+      marker.style.left = `${x + 6}px`;
+      marker.style.top = `${y + 6}px`;
+      marker.style.background = "red";
+      main.appendChild(marker);
+      navigator.vibrate(300);
+    }
+  });
 
   window.addEventListener('load', () => {
     resetDot();
