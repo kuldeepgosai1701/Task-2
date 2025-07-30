@@ -242,7 +242,7 @@ sensitivityRange.addEventListener("input", () => {
     }
   }
 
- function drawLine(x1, y1, x2, y2) {
+function drawLine(x1, y1, x2, y2, isVibrated = false) {
   const length = Math.hypot(x2 - x1, y2 - y1);
   const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
   const line = document.createElement("div");
@@ -251,7 +251,7 @@ sensitivityRange.addEventListener("input", () => {
   line.style.top = `${y1}px`;
   line.style.width = `${length}px`;
   line.style.height = `2px`;
-  line.style.backgroundColor = lastVibration ? "red" : "blue";
+  line.style.backgroundColor = isVibrated ? "red" : "blue"; // red if vibrated
   line.style.transform = `rotate(${angle}deg)`;
   line.style.transformOrigin = "0 0";
   line.style.zIndex = 2;
@@ -280,8 +280,10 @@ sensitivityRange.addEventListener("input", () => {
 
       const newX = x + dx;
       const newY = y + dy;
-      drawLine(x + 9, y + 9, newX + 9, newY + 9);
+      drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
       moveDot(newX, newY);
+      vibratedRecently = false;
+
 
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
       directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
@@ -302,7 +304,7 @@ sensitivityRange.addEventListener("input", () => {
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
- let lastVibration = false; // Track if vibration occurred
+let vibratedRecently = false;
 
 window.addEventListener('devicemotion', function(event) {
   if (!event.acceleration) return;
@@ -313,22 +315,19 @@ window.addEventListener('devicemotion', function(event) {
 
   const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
 
-  // Custom sensitivity threshold (more sensitive when slider near 0)
   const vibrationThreshold = 20 - (sensitivityFactor * 1.8); // dynamic threshold
 
   if (totalAccel > vibrationThreshold) {
-    lastVibration = true;
+    vibratedRecently = true;
 
     const marker = document.createElement("div");
     marker.className = "trail";
     marker.style.left = `${x + 6}px`;
     marker.style.top = `${y + 6}px`;
-    marker.style.background = "red";  // red trail for vibration
+    marker.style.background = "red";
     main.appendChild(marker);
 
     navigator.vibrate(300);
-  } else {
-    lastVibration = false;
   }
 });
 
