@@ -195,9 +195,9 @@
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
- const sensitivityRange = document.getElementById("sensitivityRange");
+  const sensitivityRange = document.getElementById("sensitivityRange");
   const sensVal = document.getElementById("sensVal"); // add this span in HTML too
-   let sensitivityFactor = parseFloat(sensitivityRange.value);  // default: 5
+  let sensitivityFactor = parseFloat(sensitivityRange.value);  // default: 5
 
 sensitivityRange.addEventListener("input", () => {
   sensitivityFactor = parseFloat(sensitivityRange.value);
@@ -306,6 +306,8 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
 
 let vibratedRecently = false;
 
+let vibratedRecently = false;
+
 window.addEventListener('devicemotion', function(event) {
   if (!event.acceleration) return;
 
@@ -315,7 +317,8 @@ window.addEventListener('devicemotion', function(event) {
 
   const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
 
-  const vibrationThreshold = 20 - (sensitivityFactor * 1.8); // dynamic threshold
+  // Adjusted sensitivity formula — higher = less vibration
+  const vibrationThreshold = 30 - (sensitivityFactor * 2.5); // stronger gap
 
   if (totalAccel > vibrationThreshold) {
     vibratedRecently = true;
@@ -330,6 +333,7 @@ window.addEventListener('devicemotion', function(event) {
     navigator.vibrate(300);
   }
 });
+
 
 
   window.addEventListener('load', () => {
