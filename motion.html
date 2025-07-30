@@ -317,22 +317,29 @@ window.addEventListener('devicemotion', function(event) {
 
   const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
 
-  // Adjusted sensitivity formula — higher = less vibration
-  const vibrationThreshold = 30 - (sensitivityFactor * 2.5); // stronger gap
+  // Only detect vibration when sensitivity is low (e.g. <= 5)
+  if (sensitivityFactor <= 5) {
+  console.log("Sensitivity:", sensitivityFactor, "Vibration Detection: ON");
+  const vibrationThreshold = 30 - (sensitivityFactor * 2.5); // More sensitive at lower value
 
-  if (totalAccel > vibrationThreshold) {
-    vibratedRecently = true;
+    if (totalAccel > vibrationThreshold) {
+      vibratedRecently = true;
 
-    const marker = document.createElement("div");
-    marker.className = "trail";
-    marker.style.left = `${x + 6}px`;
-    marker.style.top = `${y + 6}px`;
-    marker.style.background = "red";
-    main.appendChild(marker);
+      const marker = document.createElement("div");
+      marker.className = "trail";
+      marker.style.left = `${x + 6}px`;
+      marker.style.top = `${y + 6}px`;
+      marker.style.background = "red"; // red dot for vibration
+      main.appendChild(marker);
 
-    navigator.vibrate(300);
+      navigator.vibrate(300);
+    }
+  } else {
+  
+    vibratedRecently = false;
   }
 });
+
 
 
 
