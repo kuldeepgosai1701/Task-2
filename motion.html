@@ -277,8 +277,8 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
     if (prevLat !== null && prevLon !== null) {
-      const dx = (lon - prevLon) * 100000 * sensitivityFactor;
-      const dy = (lat - prevLat) * 100000 * sensitivityFactor;
+     const dx = (lon - prevLon) * 100000;  // GPS always drives motion
+     const dy = (lat - prevLat) * 100000;
 
       const newX = x + dx;
       const newY = y + dy;
