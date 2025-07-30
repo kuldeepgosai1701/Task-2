@@ -242,21 +242,22 @@ sensitivityRange.addEventListener("input", () => {
     }
   }
 
-  function drawLine(x1, y1, x2, y2) {
-    const length = Math.hypot(x2 - x1, y2 - y1);
-    const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
-    const line = document.createElement("div");
-    line.style.position = "absolute";
-    line.style.left = `${x1}px`;
-    line.style.top = `${y1}px`;
-    line.style.width = `${length}px`;
-    line.style.height = `2px`;
-    line.style.backgroundColor = "blue";
-    line.style.transform = `rotate(${angle}deg)`;
-    line.style.transformOrigin = "0 0";
-    line.style.zIndex = 2;
-    main.appendChild(line);
-  }
+ function drawLine(x1, y1, x2, y2) {
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+  const line = document.createElement("div");
+  line.style.position = "absolute";
+  line.style.left = `${x1}px`;
+  line.style.top = `${y1}px`;
+  line.style.width = `${length}px`;
+  line.style.height = `2px`;
+  line.style.backgroundColor = lastVibration ? "red" : "blue";
+  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transformOrigin = "0 0";
+  line.style.zIndex = 2;
+  main.appendChild(line);
+}
+
 
   function resetDot() {
     const centerX = window.scrollX + window.innerWidth / 2;
@@ -301,22 +302,36 @@ sensitivityRange.addEventListener("input", () => {
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
-  window.addEventListener('devicemotion', function(event) {
-    if (!event.acceleration) return;
-    const ax = event.acceleration.x || 0;
-    const ay = event.acceleration.y || 0;
-    const az = event.acceleration.z || 0;
+ let lastVibration = false; // Track if vibration occurred
 
-    if (Math.sqrt(ax * ax + ay * ay + az * az) > 15) {
-      const marker = document.createElement("div");
-      marker.className = "trail";
-      marker.style.left = `${x + 6}px`;
-      marker.style.top = `${y + 6}px`;
-      marker.style.background = "red";
-      main.appendChild(marker);
-      navigator.vibrate(300);
-    }
-  });
+window.addEventListener('devicemotion', function(event) {
+  if (!event.acceleration) return;
+
+  const ax = event.acceleration.x || 0;
+  const ay = event.acceleration.y || 0;
+  const az = event.acceleration.z || 0;
+
+  const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
+
+  // Custom sensitivity threshold (more sensitive when slider near 0)
+  const vibrationThreshold = 20 - (sensitivityFactor * 1.8); // dynamic threshold
+
+  if (totalAccel > vibrationThreshold) {
+    lastVibration = true;
+
+    const marker = document.createElement("div");
+    marker.className = "trail";
+    marker.style.left = `${x + 6}px`;
+    marker.style.top = `${y + 6}px`;
+    marker.style.background = "red";  // red trail for vibration
+    main.appendChild(marker);
+
+    navigator.vibrate(300);
+  } else {
+    lastVibration = false;
+  }
+});
+
 
   window.addEventListener('load', () => {
     resetDot();
