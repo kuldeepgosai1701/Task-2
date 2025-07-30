@@ -282,9 +282,12 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
 
       const newX = x + dx;
       const newY = y + dy;
-      drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
+      const vibrateState = vibratedRecently;  // capture current state
+      drawLine(x + 9, y + 9, newX + 9, newY + 9, vibrateState);
       moveDot(newX, newY);
-      vibratedRecently = false;
+
+      // Don't reset immediately — add delay or let devicemotion handle it
+
 
 
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
