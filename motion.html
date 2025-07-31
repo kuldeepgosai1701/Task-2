@@ -329,9 +329,8 @@ window.addEventListener('devicemotion', function(event) {
   // 5 (min) to 30 (max) depending on slider
 
   // If total acceleration exceeds threshold → vibrate
-  if (totalAccel > vibrationThreshold) {
+ /* if (totalAccel > vibrationThreshold) {
     vibratedRecently = true;
-
     navigator.vibrate(300);
 
     // Optional red dot marker
@@ -342,9 +341,9 @@ window.addEventListener('devicemotion', function(event) {
     marker.style.background = "red";
     main.appendChild(marker);
   } else {
-    vibratedRecently = false;
+    //vibratedRecently = false;
   }
-});
+});*/
 
   window.addEventListener('load', () => {
     resetDot();
