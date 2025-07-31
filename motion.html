@@ -196,6 +196,10 @@
   let prevLat = null;
   let prevLon = null;
 
+  let baseLat = null;
+  let baseLon = null;
+
+
   const dot = document.getElementById("dot");
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
@@ -270,6 +274,10 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
     moveDot(centerX, centerY);
     prevLat = null;
     prevLon = null;
+
+    baseLat = null;
+    baseLon = null;
+
     document.querySelectorAll(".trail").forEach(el => el.remove());
     window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
   }
@@ -279,7 +287,7 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
     const lon = position.coords.longitude;
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-    if (prevLat !== null && prevLon !== null) {
+   /* if (prevLat !== null && prevLon !== null) {
    const scaleFactor = 300000;
    const dx = (lon - prevLon) * scaleFactor;
    const dy = (lat - prevLat) * scaleFactor;
@@ -300,7 +308,30 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
 
     prevLat = lat;
     prevLon = lon;
-  }
+  }*/
+
+if (baseLat === null || baseLon === null) {
+  baseLat = lat;
+  baseLon = lon;
+  return; // wait for next update to move
+}
+
+const scaleFactor = 300000;
+const dx = (lon - baseLon) * scaleFactor;
+const dy = (lat - baseLat) * scaleFactor;
+
+const centerX = window.scrollX + window.innerWidth / 2;
+const centerY = window.scrollY + window.innerHeight / 2;
+
+const newX = centerX + dx;
+const newY = centerY + dy;
+
+drawLine(x + 9, y + 9, newX + 9, newY + 9);
+moveDot(newX, newY);
+
+const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+
 
   function showError(error) {
     console.error("GPS Error:", error);
