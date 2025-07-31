@@ -193,6 +193,11 @@
 <footer>Created by Kuldeep Gosai</footer>
 
 <script>
+  let x = 0;
+  let y = 0;
+  let prevLat = null;
+  let prevLon = null;
+
   const dot = document.getElementById("dot");
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
@@ -277,9 +282,9 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
     if (prevLat !== null && prevLon !== null) {
-     const scaleFactor = 300000;  // Increased for longer path
-    const dx = (lon - prevLon) * scaleFactor;
-    const dy = (lat - prevLat) * scaleFactor;
+   const scaleFactor = 300000;
+   const dx = (lon - prevLon) * scaleFactor;
+   const dy = (lat - prevLat) * scaleFactor;
 
       const newX = x + dx;
       const newY = y + dy;
