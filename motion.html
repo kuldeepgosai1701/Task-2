@@ -329,7 +329,7 @@ window.addEventListener('devicemotion', function(event) {
   // 5 (min) to 30 (max) depending on slider
 
   // If total acceleration exceeds threshold → vibrate
- /* if (totalAccel > vibrationThreshold) {
+ if (totalAccel > vibrationThreshold) {
     vibratedRecently = true;
     navigator.vibrate(300);
 
@@ -343,10 +343,10 @@ window.addEventListener('devicemotion', function(event) {
   } else {
     //vibratedRecently = false;
   }
-});*/
+});
 
 
-if (totalAccel > vibrationThreshold) {
+/*if (totalAccel > vibrationThreshold) {
   vibratedRecently = true;
   navigator.vibrate(300);
 
@@ -362,7 +362,7 @@ if (totalAccel > vibrationThreshold) {
   setTimeout(() => {
     vibratedRecently = false;
   }, 500);
-}
+}*/
 
 
   window.addEventListener('load', () => {
