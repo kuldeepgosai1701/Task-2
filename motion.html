@@ -329,8 +329,9 @@ window.addEventListener('devicemotion', function(event) {
   // 5 (min) to 30 (max) depending on slider
 
   // If total acceleration exceeds threshold → vibrate
- if (totalAccel > vibrationThreshold) {
+  if (totalAccel > vibrationThreshold) {
     vibratedRecently = true;
+
     navigator.vibrate(300);
 
     // Optional red dot marker
@@ -341,29 +342,9 @@ window.addEventListener('devicemotion', function(event) {
     marker.style.background = "red";
     main.appendChild(marker);
   } else {
-    //vibratedRecently = false;
+    vibratedRecently = false;
   }
 });
-
-
-/*if (totalAccel > vibrationThreshold) {
-  vibratedRecently = true;
-  navigator.vibrate(300);
-
-  // Optional red dot marker (trail point)
-  const marker = document.createElement("div");
-  marker.className = "trail";
-  marker.style.left = `${x + 6}px`;
-  marker.style.top = `${y + 6}px`;
-  marker.style.background = "red";
-  main.appendChild(marker);
-
-  // Reset red color after 0.5 seconds
-  setTimeout(() => {
-    vibratedRecently = false;
-  }, 500);
-}*/
-
 
   window.addEventListener('load', () => {
     resetDot();
