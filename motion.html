@@ -345,6 +345,26 @@ window.addEventListener('devicemotion', function(event) {
   }
 });*/
 
+
+if (totalAccel > vibrationThreshold) {
+  vibratedRecently = true;
+  navigator.vibrate(300);
+
+  // Optional red dot marker (trail point)
+  const marker = document.createElement("div");
+  marker.className = "trail";
+  marker.style.left = `${x + 6}px`;
+  marker.style.top = `${y + 6}px`;
+  marker.style.background = "red";
+  main.appendChild(marker);
+
+  // Reset red color after 0.5 seconds
+  setTimeout(() => {
+    vibratedRecently = false;
+  }, 500);
+}
+
+
   window.addEventListener('load', () => {
     resetDot();
     setInterval(() => {
