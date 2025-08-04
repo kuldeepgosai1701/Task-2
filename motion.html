@@ -185,7 +185,7 @@
   <button onclick="startTracking()">Start</button>
   <button onclick="stopTracking()">Stop</button>
   <button onclick="resetPage()">Reset</button>
-
+  <button onclick="saveDataToFile()">Save</button>
 </div>
 
 <main id="main">
@@ -319,7 +319,7 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
 
 let vibratedRecently = false;
 
-window.addEventListener('devicemotion', function(event) {
+/*window.addEventListener('devicemotion', function(event) {
   if (!event.acceleration) return;
 
   const ax = event.acceleration.x || 0;
@@ -348,7 +348,43 @@ window.addEventListener('devicemotion', function(event) {
   } else {
     vibratedRecently = false;
   }
+});*/
+
+let recordedData = [];  // Add this at the top of your <script> if not already
+
+window.addEventListener('devicemotion', function(event) {
+  if (!event.acceleration) return;
+
+  const ax = event.acceleration.x || 0;
+  const ay = event.acceleration.y || 0;
+  const az = event.acceleration.z || 0;
+
+  const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
+  const vibrationThreshold = 5 + (sensitivityFactor * 2.5); 
+
+  if (totalAccel > vibrationThreshold) {
+    vibratedRecently = true;
+    navigator.vibrate(300);
+    const marker = document.createElement("div");
+    marker.className = "trail";
+    marker.style.left = `${x + 6}px`;
+    marker.style.top = `${y + 6}px`;
+    marker.style.background = "red";
+    main.appendChild(marker);
+  } else {
+    vibratedRecently = false;
+  }
+
+  // ✅ Store the data entry
+  recordedData.push({
+    x: ax,
+    y: ay,
+    z: az,
+    vibration: vibratedRecently ? "Yes" : "No",
+    direction: directionText.textContent.replace("Direction: ", "")
+  });
 });
+
 
   /*window.addEventListener('load', () => {
     resetDot();
@@ -364,6 +400,32 @@ window.addEventListener('devicemotion', function(event) {
 window.addEventListener('load', () => {
   resetDot();
 });
+
+function saveDataToFile() {
+  const numberOfEntries = parseInt(sensitivityRange.value);  // Slider value
+  const recentData = recordedData.slice(-numberOfEntries);  // Last N entries
+
+  if (recentData.length === 0) {
+    alert("No data to save.");
+    return;
+  }
+
+  let fileContent = "X\tY\tZ\tVibration\tDirection\n";
+  recentData.forEach(entry => {
+    fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
+  });
+
+  const blob = new Blob([fileContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "motion_data.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 
 let trackingInterval = null;
 
@@ -394,6 +456,7 @@ function resetPage() {
 
 </body>
 </html>
+
 
 
 
