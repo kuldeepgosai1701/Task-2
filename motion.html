@@ -182,7 +182,10 @@
   <div style="font-size: 1.4rem; margin-bottom: 8px;">📍 Tracker Info</div>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
-  <button onclick="resetDot()">Reset</button>
+  <button onclick="startTracking()">Start</button>
+  <button onclick="stopTracking()">Stop</button>
+  <button onclick="resetPage()">Reset</button>
+
 </div>
 
 <main id="main">
@@ -347,7 +350,7 @@ window.addEventListener('devicemotion', function(event) {
   }
 });
 
-  window.addEventListener('load', () => {
+  /*window.addEventListener('load', () => {
     resetDot();
     setInterval(() => {
       if ("geolocation" in navigator) {
@@ -356,11 +359,42 @@ window.addEventListener('devicemotion', function(event) {
         locationText.textContent = "Geolocation not supported.";
       }
     }, 5000);
-  });
+  });*/
+
+window.addEventListener('load', () => {
+  resetDot();
+});
+
+let trackingInterval = null;
+
+function startTracking() {
+  if (!trackingInterval) {
+    trackingInterval = setInterval(() => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(showLocation, showError);
+      } else {
+        locationText.textContent = "Geolocation not supported.";
+      }
+    }, 5000);
+    console.log("Tracking started");
+  }
+}
+
+function stopTracking() {
+  clearInterval(trackingInterval);
+  trackingInterval = null;
+  console.log("Tracking stopped");
+}
+
+function resetPage() {
+  location.reload();  // This reloads the page
+}
+
 </script>
 
 </body>
 </html>
+
 
 
 
