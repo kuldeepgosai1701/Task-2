@@ -168,7 +168,10 @@
 </head>
 <body>
 
-<header>Motion Tracker</header>
+<header>
+  <span>Motion Tracker</span>
+  <button onclick="toggleHistory()" style="float: right; margin-right: 10px; font-size: 0.9rem;">History</button>
+</header>
 
 <!-- Sensitivity Control Slider -->
 <div class="sensitivity-box">
@@ -190,6 +193,22 @@
 
 <main id="main">
   <div id="dot"></div>
+  <div id="historyTable" style="display:none; padding: 20px;">
+  <h2 style="margin-bottom: 10px;">GPS Movement History</h2>
+  <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; background: white;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Direction</th>
+      </tr>
+    </thead>
+    <tbody id="historyBody">
+    </tbody>
+  </table>
+</div>
+
 </main>
 
 <footer>Created by Kuldeep Gosai</footer>
@@ -199,6 +218,7 @@
   let y = 0;
   let prevLat = null;
   let prevLon = null;
+  let gpsHistory = [];  // ✅ This line stores the GPS movement history
 
   const dot = document.getElementById("dot");
   const main = document.getElementById("main");
@@ -456,6 +476,7 @@ function resetPage() {
 
 </body>
 </html>
+
 
 
 
