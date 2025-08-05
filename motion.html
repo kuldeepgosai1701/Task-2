@@ -208,7 +208,6 @@
     </tbody>
   </table>
 </div>
-
 </main>
 
 <footer>Created by Kuldeep Gosai</footer>
@@ -302,6 +301,13 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+
+   // Optional angle for direction (reuse or recalculate)
+   const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
+   const direction = getDirectionFromAngle(angle);
+
+    // 📌 Save this entry into GPS history
+    gpsHistory.push({ lat, lon, direction });
 
     if (prevLat !== null && prevLon !== null) {
    const scaleFactor = 300000;
@@ -472,10 +478,34 @@ function resetPage() {
   location.reload();  // This reloads the page
 }
 
+function toggleHistory() {
+  const tableDiv = document.getElementById("historyTable");
+  const tbody = document.getElementById("historyBody");
+
+  if (tableDiv.style.display === "none") {
+    // Populate table with history
+    tbody.innerHTML = "";
+    gpsHistory.forEach((entry, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${entry.lat.toFixed(5)}</td>
+        <td>${entry.lon.toFixed(5)}</td>
+        <td>${entry.direction}</td>
+      `;
+      tbody.appendChild(row);
+    });
+    tableDiv.style.display = "block";
+  } else {
+    tableDiv.style.display = "none";
+  }
+}
+
 </script>
 
 </body>
 </html>
+
 
 
 
