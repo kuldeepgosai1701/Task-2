@@ -183,7 +183,8 @@
   </style>
 </head>
 <body>
-
+<body>
+  <div id="leafletMap" style="height: 100vh; width: 100vw; position: absolute; z-index: 1;"></div>
 <header>
   <span>Motion Tracker</span>
   <button onclick="toggleHistory()" style="float: right; margin-right: 10px; font-size: 0.9rem;">History</button>
@@ -230,20 +231,22 @@
 <footer>Created by Kuldeep Gosai</footer>
 
 <script>
-  let x = 0;
-  let y = 0;
-  let prevLat = null;
-  let prevLon = null;
-  let gpsHistory = [];  // ✅ This line stores the GPS movement historylet map, marker, mapInitialized = false;
+ let map, marker;
 
-function initLeafletMap(lat = 0, lon = 0) {
+function initLeafletMap(lat, lon) {
   map = L.map('leafletMap').setView([lat, lon], 16);
-
-  // Add OpenStreetMap tile layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 20,
-    attribution: '© OpenStreetMap'
+    attribution: '© OpenStreetMap contributors'
   }).addTo(map);
+
+  marker = L.circleMarker([lat, lon], {
+    radius: 10,
+    color: 'blue',
+    fillColor: '#30f',
+    fillOpacity: 0.8
+  }).addTo(map);
+}
+
 
   // Dot Marker
   marker = L.circleMarker([lat, lon], {
@@ -379,30 +382,18 @@ function showLocation(position) {
   const direction = getDirectionFromAngle(angle);
   gpsHistory.push({ lat, lon, direction });
 
-  // 💡 Update Leaflet map
-  if (!mapInitialized) {
+  // 🌍 Leaflet map update
+  if (!map) {
     initLeafletMap(lat, lon);
   } else {
     marker.setLatLng([lat, lon]);
     map.panTo([lat, lon]);
   }
 
-  if (prevLat !== null && prevLon !== null) {
-    const scaleFactor = 300000;
-    const dx = (lon - prevLon) * scaleFactor;
-    const dy = (lat - prevLat) * scaleFactor;
-    const newX = x + dx;
-    const newY = y + dy;
-
-    drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
-    moveDot(newX, newY);
-
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
-  }
-
   prevLat = lat;
   prevLon = lon;
+
+  // existing dot movement code below...
 }
 
 
@@ -577,6 +568,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
