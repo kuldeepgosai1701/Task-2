@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -84,8 +81,6 @@
       box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
       transition: transform 0.2s ease;
     }
-
-   
 
     #main {
       position: relative;
@@ -210,23 +205,22 @@
 </div>
 
 <main id="main">
-<div id="leafletMap" style="height: 400px; width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 8px rgba(0,0,0,0.2);"></div>
   <div id="dot"></div>
   <div id="historyTable" style="display:none; padding: 20px;">
-  <h2 style="margin-bottom: 10px;">GPS Movement History</h2>
-  <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; background: white;">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Latitude</th>
-        <th>Longitude</th>
-        <th>Direction</th>
-      </tr>
-    </thead>
-    <tbody id="historyBody">
-    </tbody>
-  </table>
-</div>
+    <h2 style="margin-bottom: 10px;">GPS Movement History</h2>
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; background: white;">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>Direction</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody">
+      </tbody>
+    </table>
+  </div>
 </main>
 
 <footer>Created by Kuldeep Gosai</footer>
@@ -569,6 +563,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
