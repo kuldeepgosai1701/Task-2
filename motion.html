@@ -171,14 +171,15 @@
     }
 
 #leafletMap {
-  margin-top: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  z-index: 1;
 }
+
 
   </style>
 </head>
-<body>
 <body>
   <div id="leafletMap" style="height: 100vh; width: 100vw; position: absolute; z-index: 1;"></div>
 <header>
@@ -485,6 +486,7 @@ window.addEventListener('devicemotion', function(event) {
 
 window.addEventListener('load', () => {
   resetDot();
+   startTracking(); // ✅ add this line to start tracking and load map
 });
 
 function saveDataToFile() {
@@ -563,6 +565,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
