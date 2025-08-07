@@ -370,42 +370,38 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
 function showLocation(position) {
   const lat = position.coords.latitude;
   const lon = position.coords.longitude;
-  locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-
-  const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
-  const direction = getDirectionFromAngle(angle);
-  gpsHistory.push({ lat, lon, direction });
-
-  // 💡 Update Leaflet map
-  if (!mapInitialized) {
-    initLeafletMap(lat, lon);
-  } else {
-    marker.setLatLng([lat, lon]);
-    map.panTo([lat, lon]);
-  }
 
   if (prevLat !== null && prevLon !== null) {
-    const scaleFactor = 1_000_000;  // make change
+    const scaleFactor = 1000000;
+
+    // ✅ FIX: if x/y are NaN or null, set them to screen center
+    if (isNaN(x) || isNaN(y) || x === null || y === null) {
+      x = window.scrollX + window.innerWidth / 2;
+      y = window.scrollY + window.innerHeight / 2;
+      console.log("Set initial X/Y:", x, y);
+    }
+
     const dx = (lon - prevLon) * scaleFactor;
     const dy = (lat - prevLat) * scaleFactor;
+
     const newX = x + dx;
     const newY = y + dy;
 
-    drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
-    console.log("Lat/Lon:", lat, lon);
-    console.log("Prev:", prevLat, prevLon);
-    console.log("DX/DY:", dx, dy);
-    console.log("NewX/NewY:", newX, newY);
+    console.log("DX:", dx, "DY:", dy);
+    console.log("NewX:", newX, "NewY:", newY);
 
+    drawLine(x, y, newX, newY);
     moveDot(newX, newY);
-
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+    x = newX;
+    y = newY;
   }
 
   prevLat = lat;
   prevLon = lon;
+
+  console.log("Lat:", lat, "Lon:", lon);
 }
+
 
 
   function showError(error) {
@@ -580,6 +576,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
