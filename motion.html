@@ -496,6 +496,7 @@ window.addEventListener('devicemotion', function(event) {
 
 window.addEventListener('load', () => {
   resetDot();
+  startTracking(); // ✅ Start GPS tracking automatically on load
 });
 
 function saveDataToFile() {
@@ -574,6 +575,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
