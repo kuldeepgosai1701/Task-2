@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8" /.>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPS Motion Tracker</title>
 
@@ -385,13 +385,18 @@ function showLocation(position) {
   }
 
   if (prevLat !== null && prevLon !== null) {
-    const scaleFactor = 300000;
+    const scaleFactor = 1_000_000;  // make change
     const dx = (lon - prevLon) * scaleFactor;
     const dy = (lat - prevLat) * scaleFactor;
     const newX = x + dx;
     const newY = y + dy;
 
     drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
+    console.log("Lat/Lon:", lat, lon);
+    console.log("Prev:", prevLat, prevLon);
+    console.log("DX/DY:", dx, dy);
+    console.log("NewX/NewY:", newX, newY);
+
     moveDot(newX, newY);
 
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
@@ -575,6 +580,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
