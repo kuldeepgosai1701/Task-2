@@ -82,16 +82,13 @@
       transition: transform 0.2s ease;
     }
 
+   
+
     #main {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  background: transparent;
-  height: 100vh;
-  width: 100vw;
-  pointer-events: none; /* optional: allows map interaction if needed */
-}
+      position: relative;
+      min-width: 100vw;
+      min-height: 100vh;
+    }
 
     .info {
       position: fixed;
@@ -133,17 +130,16 @@
       transform: scale(1.05);
     }
 
-   #dot {
-  width: 10px;
-  height: 10px;
-  background-color: blue;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-}
+    #dot {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #007bff 30%, #003366 100%);
+      border-radius: 50%;
+      z-index: 5;
+      box-shadow: 0 0 8px rgba(0, 0, 255, 0.6);
+      animation: bounce 1s infinite;
+    }
 
     .trail {
       width: 6px;
@@ -176,20 +172,15 @@
     }
 
 #leafletMap {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  height: 100vh;
-  width: 100vw;
+  margin-top: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
 }
-
-
 
   </style>
 </head>
 <body>
-  <div id="leafletMap" style="height: 100vh; width: 100vw; position: absolute; z-index: 1;"></div>
+
 <header>
   <span>Motion Tracker</span>
   <button onclick="toggleHistory()" style="float: right; margin-right: 10px; font-size: 0.9rem;">History</button>
@@ -213,45 +204,43 @@
   <button onclick="saveDataToFile()">Save</button>
 </div>
 
-<div id="leafletMap"></div>
 <main id="main">
+<div id="leafletMap" style="height: 400px; width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 8px rgba(0,0,0,0.2);"></div>
   <div id="dot"></div>
   <div id="historyTable" style="display:none; padding: 20px;">
-    <h2 style="margin-bottom: 10px;">GPS Movement History</h2>
-    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; background: white;">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Latitude</th>
-          <th>Longitude</th>
-          <th>Direction</th>
-        </tr>
-      </thead>
-      <tbody id="historyBody">
-      </tbody>
-    </table>
-  </div>
+  <h2 style="margin-bottom: 10px;">GPS Movement History</h2>
+  <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; background: white;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Direction</th>
+      </tr>
+    </thead>
+    <tbody id="historyBody">
+    </tbody>
+  </table>
+</div>
 </main>
 
 <footer>Created by Kuldeep Gosai</footer>
 
 <script>
- let map, marker;
+  let x = 0;
+  let y = 0;
+  let prevLat = null;
+  let prevLon = null;
+  let gpsHistory = [];  // ✅ This line stores the GPS movement historylet map, marker, mapInitialized = false;
 
-function initLeafletMap(lat, lon) {
+function initLeafletMap(lat = 0, lon = 0) {
   map = L.map('leafletMap').setView([lat, lon], 16);
+
+  // Add OpenStreetMap tile layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
+    maxZoom: 20,
+    attribution: '© OpenStreetMap'
   }).addTo(map);
-
-  marker = L.circleMarker([lat, lon], {
-    radius: 10,
-    color: 'blue',
-    fillColor: '#30f',
-    fillOpacity: 0.8
-  }).addTo(map);
-}
-
 
   // Dot Marker
   marker = L.circleMarker([lat, lon], {
@@ -387,18 +376,30 @@ function showLocation(position) {
   const direction = getDirectionFromAngle(angle);
   gpsHistory.push({ lat, lon, direction });
 
-  // 🌍 Leaflet map update
-  if (!map) {
+  // 💡 Update Leaflet map
+  if (!mapInitialized) {
     initLeafletMap(lat, lon);
   } else {
     marker.setLatLng([lat, lon]);
     map.panTo([lat, lon]);
   }
 
+  if (prevLat !== null && prevLon !== null) {
+    const scaleFactor = 300000;
+    const dx = (lon - prevLon) * scaleFactor;
+    const dy = (lat - prevLat) * scaleFactor;
+    const newX = x + dx;
+    const newY = y + dy;
+
+    drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
+    moveDot(newX, newY);
+
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+  }
+
   prevLat = lat;
   prevLon = lon;
-
-  // existing dot movement code below...
 }
 
 
@@ -495,7 +496,6 @@ window.addEventListener('devicemotion', function(event) {
 
 window.addEventListener('load', () => {
   resetDot();
-   startTracking(); // ✅ add this line to start tracking and load map
 });
 
 function saveDataToFile() {
@@ -574,6 +574,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
