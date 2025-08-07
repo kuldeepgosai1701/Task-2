@@ -532,7 +532,19 @@ function startTracking() {
   if (!trackingInterval) {
     trackingInterval = setInterval(() => {
       if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(showLocation, showError);
+        navigator.geolocation.watchPosition(
+  showLocation,
+  (error) => {
+    console.error("Geolocation error:", error);
+    alert("Error getting location: " + error.message);
+  },
+  {
+    enableHighAccuracy: true,
+    maximumAge: 1000,
+    timeout: 5000,
+  }
+);
+
       } else {
         locationText.textContent = "Geolocation not supported.";
       }
@@ -576,6 +588,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
