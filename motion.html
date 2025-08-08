@@ -1,276 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /.>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPS Motion Tracker</title>
-
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+4lG+/VnS1TchktwFUPzfhvVqGZ0ZqvyyFf8H3R94=" crossorigin="" />
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j8MkRUYw35vj0IadB1iKsFcwZqTRWyd4InENa+o=" crossorigin=""></script>
-
   <style>
-   * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body, html {
       height: 100%;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to bottom right, #e6f0ff, #ffffff);
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
       overflow: auto;
-      color: #333;
     }
-
     header {
-      background: #004080;
+      background: #222;
       color: #fff;
       text-align: center;
       padding: 15px;
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       position: sticky;
       top: 0;
       z-index: 30;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
-
-    .sensitivity-box {
+ 
+  #main {
+  position: relative;  /* ✅ this was missing */
+  min-width: 100vw;
+  min-height: 100vh;
+}
+      .info {
       position: fixed;
-      top: 70px; /* header ke niche */
-      right: 20px;
-      background: rgba(0, 64, 128, 0.9);
-      color: #fff;
-      padding: 12px 16px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      text-align: center;
-      font-size: 1rem;
-      z-index: 9999;
-      min-width: 140px;
-    }
-
-    .sensitivity-box h3 {
-      margin-bottom: 6px;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .sensitivity-box input[type="range"] {
-      -webkit-appearance: none;
-      width: 380px;
-      height: 20px;
-      background: linear-gradient(to right, #007bff, #00ffcc);
-      border-radius: 4px;
-      outline: none;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .sensitivity-box input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #004080;
-      border: 2px solid #fff;
-      cursor: pointer;
-      box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-      transition: transform 0.2s ease;
-    }
-
-   
-
-    #main {
-      position: relative;
-      min-width: 100vw;
-      min-height: 100vh;
-    }
-
-    .info {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background: linear-gradient(145deg, #ffffffdd, #e9f0ffcc);
-      padding: 18px 20px;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      z-index: 9999;
-      font-size: 1rem;
-      width: 250px;
-      line-height: 1.6;
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(200, 220, 255, 0.4);
-      transition: all 0.3s ease;
-    }
-
-    .info:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    button {
-      margin-top: 10px;
-      padding: 8px 18px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border: none;
-      background: linear-gradient(120deg, #007bff, #0056b3);
-      color: white;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.95);
+      padding: 10px;
       border-radius: 8px;
+      z-index: 9999;
+    }
+    button {
+      margin-top: 5px;
+      padding: 5px 12px;
+      font-size: 0.9rem;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.3s ease;
     }
-
-    button:hover {
-      background: linear-gradient(120deg, #0056b3, #003f8c);
-      transform: scale(1.05);
-    }
-
     #dot {
       position: absolute;
-      width: 20px;
-      height: 20px;
-      background: radial-gradient(circle, #007bff 30%, #003366 100%);
+      width: 18px;
+      height: 18px;
+      background: blue;
       border-radius: 50%;
       z-index: 5;
-      box-shadow: 0 0 8px rgba(0, 0, 255, 0.6);
-      animation: bounce 1s infinite;
     }
-
     .trail {
-      width: 6px;
-      height: 6px;
-      background: rgba(0, 102, 255, 0.4);
+      width: 5px;
+      height: 5px;
+      background: rgba(0, 0, 255, 0.5);
       border-radius: 50%;
       position: absolute;
       z-index: 1;
-      transition: opacity 1s ease;
     }
-
     footer {
-      background: linear-gradient(90deg, #004080, #0066cc);
-      color: white;
+      background: #ddd;
       text-align: center;
-      padding: 14px;
-      font-size: 1rem;
-      font-weight: 500;
+      padding: 10px;
+      font-size: 0.9rem;
       position: sticky;
       bottom: 0;
-      z-index: 10;
-      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
     }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
-    }
-
-#leafletMap {
-  margin-top: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
-}
-
   </style>
 </head>
 <body>
 
-<header>
-  <span>Motion Tracker</span>
-  <button onclick="toggleHistory()" style="float: right; margin-right: 10px; font-size: 0.9rem;">History</button>
-</header>
-
-<!-- Sensitivity Control Slider -->
-<div class="sensitivity-box">
-  <h3>Sensitivity</h3>
-  <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="5">
-  <div style="margin-top:4px;">Value: <span id="sensVal">5</span></div>
-</div>
+<header>Motion Tracker</header>
 
 <div class="info">
   <p>Move your phone to see motion.</p>
-  <div style="font-size: 1.4rem; margin-bottom: 8px;">📍 Tracker Info</div>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
-  <button onclick="startTracking()">Start</button>
-  <button onclick="stopTracking()">Stop</button>
-  <button onclick="resetPage()">Reset</button>
-  <button onclick="saveDataToFile()">Save</button>
+  <button onclick="resetDot()">Reset</button>
 </div>
 
 <main id="main">
-<div id="leafletMap" style="height: 400px; width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 8px rgba(0,0,0,0.2);"></div>
   <div id="dot"></div>
-  <div id="historyTable" style="display:none; padding: 20px;">
-  <h2 style="margin-bottom: 10px;">GPS Movement History</h2>
-  <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; background: white;">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Latitude</th>
-        <th>Longitude</th>
-        <th>Direction</th>
-      </tr>
-    </thead>
-    <tbody id="historyBody">
-    </tbody>
-  </table>
-</div>
 </main>
 
 <footer>Created by Kuldeep Gosai</footer>
 
 <script>
-  let x = 0;
-  let y = 0;
-  let prevLat = null;
-  let prevLon = null;
-  let gpsHistory = [];  // ✅ This line stores the GPS movement historylet map, marker, mapInitialized = false;
-
-function initLeafletMap(lat = 0, lon = 0) {
-  map = L.map('leafletMap').setView([lat, lon], 16);
-
-  // Add OpenStreetMap tile layer
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 20,
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
-
-  // Dot Marker
-  marker = L.circleMarker([lat, lon], {
-    radius: 10,
-    color: '#003366',
-    fillColor: '#007bff',
-    fillOpacity: 0.9
-  }).addTo(map);
-
-  mapInitialized = true;
-}
-
-
   const dot = document.getElementById("dot");
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
-  const sensitivityRange = document.getElementById("sensitivityRange");
-  const sensVal = document.getElementById("sensVal"); // add this span in HTML too
-  let sensitivityFactor = parseFloat(sensitivityRange.value);  // default: 5
 
-sensitivityRange.addEventListener("input", () => {
-  sensitivityFactor = parseFloat(sensitivityRange.value);
-  sensVal.textContent = sensitivityRange.value;
-});
-
-
-  sensitivityRange.addEventListener("input", () => {
-    sensitivityFactor = parseFloat(sensitivityRange.value);
-  });
+  let x = 0, y = 0;
+  let prevLat = null, prevLon = null;
 
   function moveDot(newX, newY) {
     x = newX;
@@ -285,39 +112,42 @@ sensitivityRange.addEventListener("input", () => {
     trail.style.top = `${y + 6}px`;
     main.appendChild(trail);
 
-    setTimeout(() => {
-      trail.style.transition = "opacity 1s ease";
-      trail.style.opacity = "0";
-      setTimeout(() => trail.remove(), 1000);
-    }, 500);
-
+    // Expand area as needed
     main.style.width = `${Math.max(main.clientWidth, x + 100)}px`;
     main.style.height = `${Math.max(main.clientHeight, y + 100)}px`;
 
+    // Auto-scroll
     const buffer = 50;
-    if (x - window.scrollX < buffer || x - window.scrollX > window.innerWidth - buffer ||
-        y - window.scrollY < buffer || y - window.scrollY > window.innerHeight - buffer) {
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+
+    if (x - scrollX < buffer || x - scrollX > screenW - buffer ||
+        y - scrollY < buffer || y - scrollY > screenH - buffer) {
       window.scrollTo({
-        left: x - window.innerWidth / 2,
-        top: y - window.innerHeight / 2,
+        left: x - screenW / 2,
+        top: y - screenH / 2,
         behavior: "smooth"
       });
     }
   }
 
-function drawLine(x1, y1, x2, y2, isVibrated = false) {
+function drawLine(x1, y1, x2, y2) {
   const length = Math.hypot(x2 - x1, y2 - y1);
   const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
   const line = document.createElement("div");
   line.style.position = "absolute";
   line.style.left = `${x1}px`;
   line.style.top = `${y1}px`;
   line.style.width = `${length}px`;
   line.style.height = `2px`;
-  line.style.backgroundColor = isVibrated ? "red" : "blue"; // red if vibrated
+  line.style.backgroundColor = "blue";
   line.style.transform = `rotate(${angle}deg)`;
   line.style.transformOrigin = "0 0";
   line.style.zIndex = 2;
+
   main.appendChild(line);
 }
 
@@ -328,81 +158,40 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
     moveDot(centerX, centerY);
     prevLat = null;
     prevLon = null;
+
     document.querySelectorAll(".trail").forEach(el => el.remove());
-    window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
+
+    // Scroll to center
+    window.scrollTo({
+      left: centerX - window.innerWidth / 2,
+      top: centerY - window.innerHeight / 2,
+      behavior: "auto"
+    });
   }
 
-  /*function showLocation(position) {
+  function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-   // Optional angle for direction (reuse or recalculate)
-   const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
-   const direction = getDirectionFromAngle(angle);
-
-    // 📌 Save this entry into GPS history
-    gpsHistory.push({ lat, lon, direction });
-
     if (prevLat !== null && prevLon !== null) {
-   const scaleFactor = 300000;
-   const dx = (lon - prevLon) * scaleFactor;
-   const dy = (lat - prevLat) * scaleFactor;
+      const dx = (lon - prevLon) * 100000;
+      const dy = (lat - prevLat) * 100000;
 
-      const newX = x + dx;
-      const newY = y + dy;
-      const vibrateState = vibratedRecently;  // capture current state
-      drawLine(x + 9, y + 9, newX + 9, newY + 9, vibrateState);
-      moveDot(newX, newY);
-
-      // Don't reset immediately — add delay or let devicemotion handle it
-
+         const newX = x + dx * 2;
+         const newY = y + dy * 2;
+         drawLine(x + 9, y + 9, newX + 9, newY + 9); // center to center
+         moveDot(newX, newY);
 
 
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+      const direction = getDirectionFromAngle(angle);
+      directionText.textContent = `Direction: ${direction}`;
     }
 
     prevLat = lat;
     prevLon = lon;
-  }*/
-
-function showLocation(position) {
-  const lat = position.coords.latitude;
-  const lon = position.coords.longitude;
-
-  if (prevLat !== null && prevLon !== null) {
-    const scaleFactor = 1000000;
-
-    // ✅ FIX: if x/y are NaN or null, set them to screen center
-    if (isNaN(x) || isNaN(y) || x === null || y === null) {
-      x = window.scrollX + window.innerWidth / 2;
-      y = window.scrollY + window.innerHeight / 2;
-      console.log("Set initial X/Y:", x, y);
-    }
-
-    const dx = (lon - prevLon) * scaleFactor;
-    const dy = (lat - prevLat) * scaleFactor;
-
-    const newX = x + dx;
-    const newY = y + dy;
-
-    console.log("DX:", dx, "DY:", dy);
-    console.log("NewX:", newX, "NewY:", newY);
-
-    drawLine(x, y, newX, newY);
-    moveDot(newX, newY);
-    x = newX;
-    y = newY;
   }
-
-  prevLat = lat;
-  prevLon = lon;
-
-  console.log("Lat:", lat, "Lon:", lon);
-}
-
-
 
   function showError(error) {
     console.error("GPS Error:", error);
@@ -410,82 +199,38 @@ function showLocation(position) {
   }
 
   function getDirectionFromAngle(angle) {
-    const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
-                        "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
-    return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
+    const directions = [
+      "East →", "North-East ↗️", "North ↑", "North-West ↖️",
+      "West ←", "South-West ↙️", "South ↓", "South-East ↘️"
+    ];
+    const index = Math.round((angle % 360 + 360) % 360 / 45) % 8;
+    return directions[index];
   }
 
-let vibratedRecently = false;
+  // Shake Detection (vibration marker)
+  window.addEventListener('devicemotion', function(event) {
+    if (!event.acceleration) return;
+    const ax = event.acceleration.x || 0;
+    const ay = event.acceleration.y || 0;
+    const az = event.acceleration.z || 0;
 
-/*window.addEventListener('devicemotion', function(event) {
-  if (!event.acceleration) return;
+    const total = Math.sqrt(ax * ax + ay * ay + az * az);
+    if (total > 15) {
+      const marker = document.createElement("div");
+      marker.className = "trail";
+      marker.style.left = `${x + 6}px`;
+      marker.style.top = `${y + 6}px`;
+      marker.style.background = "red";
+      main.appendChild(marker);
 
-  const ax = event.acceleration.x || 0;
-  const ay = event.acceleration.y || 0;
-  const az = event.acceleration.z || 0;
-
-  const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
-
-  // Sensitivity: 0 = most sensitive (threshold = low), 10 = least sensitive (threshold = high)
-  const vibrationThreshold = 5 + (sensitivityFactor * 2.5); 
-  // 5 (min) to 30 (max) depending on slider
-
-  // If total acceleration exceeds threshold → vibrate
-  if (totalAccel > vibrationThreshold) {
-    vibratedRecently = true;
-
-    navigator.vibrate(300);
-
-    // Optional red dot marker
-    const marker = document.createElement("div");
-    marker.className = "trail";
-    marker.style.left = `${x + 6}px`;
-    marker.style.top = `${y + 6}px`;
-    marker.style.background = "red";
-    main.appendChild(marker);
-  } else {
-    vibratedRecently = false;
-  }
-});*/
-
-let recordedData = [];  // Add this at the top of your <script> if not already
-
-window.addEventListener('devicemotion', function(event) {
-  if (!event.acceleration) return;
-
-  const ax = event.acceleration.x || 0;
-  const ay = event.acceleration.y || 0;
-  const az = event.acceleration.z || 0;
-
-  const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
-  const vibrationThreshold = 5 + (sensitivityFactor * 2.5); 
-
-  if (totalAccel > vibrationThreshold) {
-    vibratedRecently = true;
-    navigator.vibrate(300);
-    const marker = document.createElement("div");
-    marker.className = "trail";
-    marker.style.left = `${x + 6}px`;
-    marker.style.top = `${y + 6}px`;
-    marker.style.background = "red";
-    main.appendChild(marker);
-  } else {
-    vibratedRecently = false;
-  }
-
-  // ✅ Store the data entry
-  recordedData.push({
-    x: ax,
-    y: ay,
-    z: az,
-    vibration: vibratedRecently ? "Yes" : "No",
-    direction: directionText.textContent.replace("Direction: ", "")
+      navigator.vibrate(300);
+    }
   });
-});
 
-
-  /*window.addEventListener('load', () => {
+  // On page load, center the dot
+  window.addEventListener('load', () => {
     resetDot();
+    // Start GPS updates
     setInterval(() => {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(showLocation, showError);
@@ -493,101 +238,32 @@ window.addEventListener('devicemotion', function(event) {
         locationText.textContent = "Geolocation not supported.";
       }
     }, 5000);
-  });*/
-
-window.addEventListener('load', () => {
-  resetDot();
-  startTracking(); // ✅ Start GPS tracking automatically on load
-});
-
-function saveDataToFile() {
-  const numberOfEntries = parseInt(sensitivityRange.value);  // Slider value
-  const recentData = recordedData.slice(-numberOfEntries);  // Last N entries
-
-  if (recentData.length === 0) {
-    alert("No data to save.");
-    return;
-  }
-
-  let fileContent = "X\tY\tZ\tVibration\tDirection\n";
-  recentData.forEach(entry => {
-    fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
   });
 
-  const blob = new Blob([fileContent], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
+function drawLine(x1, y1, x2, y2) {
+  const line = document.createElement("div");
+  line.style.position = "absolute";
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "motion_data.txt";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+  line.style.width = `${length}px`;
+  line.style.height = "2px";
+  line.style.backgroundColor = "blue";
+  line.style.left = `${x1}px`;
+  line.style.top = `${y1}px`;
+  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transformOrigin = "0 0";
+  line.style.zIndex = "2";
+
+  main.appendChild(line);
 }
 
-
-let trackingInterval = null;
-
-function startTracking() {
-  if (!trackingInterval) {
-    trackingInterval = setInterval(() => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.watchPosition(
-  showLocation,
-  (error) => {
-    console.error("Geolocation error:", error);
-    alert("Error getting location: " + error.message);
-  },
-  {
-    enableHighAccuracy: true,
-    maximumAge: 1000,
-    timeout: 5000,
-  }
-);
-
-      } else {
-        locationText.textContent = "Geolocation not supported.";
-      }
-    }, 5000);
-    console.log("Tracking started");
-  }
-}
-
-function stopTracking() {
-  clearInterval(trackingInterval);
-  trackingInterval = null;
-  console.log("Tracking stopped");
-}
-
-function resetPage() {
-  location.reload();  // This reloads the page
-}
-
-function toggleHistory() {
-  const tableDiv = document.getElementById("historyTable");
-  const tbody = document.getElementById("historyBody");
-
-  if (tableDiv.style.display === "none") {
-    // Populate table with history
-    tbody.innerHTML = "";
-    gpsHistory.forEach((entry, index) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${entry.lat.toFixed(5)}</td>
-        <td>${entry.lon.toFixed(5)}</td>
-        <td>${entry.direction}</td>
-      `;
-      tbody.appendChild(row);
-    });
-    tableDiv.style.display = "block";
-  } else {
-    tableDiv.style.display = "none";
-  }
-}
 </script>
+
 </body>
 </html>
+
 
 
 
