@@ -130,16 +130,18 @@
       transform: scale(1.05);
     }
 
-    #dot {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: radial-gradient(circle, #007bff 30%, #003366 100%);
-      border-radius: 50%;
-      z-index: 5;
-      box-shadow: 0 0 8px rgba(0, 0, 255, 0.6);
-      animation: bounce 1s infinite;
-    }
+#dot {
+  width: 10px;
+  height: 10px;
+  background-color: blue;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
 
     .trail {
       width: 6px;
@@ -574,6 +576,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
