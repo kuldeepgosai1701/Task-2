@@ -374,36 +374,46 @@ function showLocation(position) {
   const lon = position.coords.longitude;
   locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
+  if (prevLat === null || prevLon === null) {
+    // First GPS point — dot ko center me set karo
+    x = window.scrollX + window.innerWidth / 2;
+    y = window.scrollY + window.innerHeight / 2;
+    moveDot(x, y);
+
+    prevLat = lat;
+    prevLon = lon;
+
+    // Leaflet map init
+    if (!mapInitialized) {
+      initLeafletMap(lat, lon);
+    }
+    return; // First time me line draw nahi karni
+  }
+
   const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
   const direction = getDirectionFromAngle(angle);
   gpsHistory.push({ lat, lon, direction });
 
-  // 💡 Update Leaflet map
-  if (!mapInitialized) {
-    initLeafletMap(lat, lon);
-  } else {
+  // Leaflet map update
+  if (mapInitialized) {
     marker.setLatLng([lat, lon]);
     map.panTo([lat, lon]);
   }
 
-  if (prevLat !== null && prevLon !== null) {
-    const scaleFactor = 300000;
-    const dx = (lon - prevLon) * scaleFactor;
-    const dy = (lat - prevLat) * scaleFactor;
-    const newX = x + dx;
-    const newY = y + dy;
+  const scaleFactor = 300000;
+  const dx = (lon - prevLon) * scaleFactor;
+  const dy = (lat - prevLat) * scaleFactor;
+  const newX = x + dx;
+  const newY = y + dy;
 
-    drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
-    moveDot(newX, newY);
+  drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
+  moveDot(newX, newY);
 
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
-  }
+  directionText.textContent = `Direction: ${getDirectionFromAngle(Math.atan2(dy, dx) * (180 / Math.PI))}`;
 
   prevLat = lat;
   prevLon = lon;
 }
-
 
   function showError(error) {
     console.error("GPS Error:", error);
@@ -576,6 +586,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
