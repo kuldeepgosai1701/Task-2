@@ -1,16 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /.>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPS Motion Tracker</title>
-
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+4lG+/VnS1TchktwFUPzfhvVqGZ0ZqvyyFf8H3R94=" crossorigin="" />
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j8MkRUYw35vj0IadB1iKsFcwZqTRWyd4InENa+o=" crossorigin=""></script>
-
   <style>
    * {
       margin: 0;
@@ -170,13 +163,6 @@
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
     }
-
-#leafletMap {
-  margin-top: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
-}
-
   </style>
 </head>
 <body>
@@ -205,7 +191,6 @@
 </div>
 
 <main id="main">
-<div id="leafletMap" style="height: 400px; width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 8px rgba(0,0,0,0.2);"></div>
   <div id="dot"></div>
   <div id="historyTable" style="display:none; padding: 20px;">
   <h2 style="margin-bottom: 10px;">GPS Movement History</h2>
@@ -231,28 +216,7 @@
   let y = 0;
   let prevLat = null;
   let prevLon = null;
-  let gpsHistory = [];  // ✅ This line stores the GPS movement historylet map, marker, mapInitialized = false;
-
-function initLeafletMap(lat = 0, lon = 0) {
-  map = L.map('leafletMap').setView([lat, lon], 16);
-
-  // Add OpenStreetMap tile layer
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 20,
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
-
-  // Dot Marker
-  marker = L.circleMarker([lat, lon], {
-    radius: 10,
-    color: '#003366',
-    fillColor: '#007bff',
-    fillOpacity: 0.9
-  }).addTo(map);
-
-  mapInitialized = true;
-}
-
+  let gpsHistory = [];  // ✅ This line stores the GPS movement history
 
   const dot = document.getElementById("dot");
   const main = document.getElementById("main");
@@ -276,13 +240,13 @@ sensitivityRange.addEventListener("input", () => {
     x = newX;
     y = newY;
 
-    dot.style.left = `${x}px`;
-    dot.style.top = `${y}px`;
+    dot.style.left = ${x}px;
+    dot.style.top = ${y}px;
 
     const trail = document.createElement("div");
     trail.className = "trail";
-    trail.style.left = `${x + 6}px`;
-    trail.style.top = `${y + 6}px`;
+    trail.style.left = ${x + 6}px;
+    trail.style.top = ${y + 6}px;
     main.appendChild(trail);
 
     setTimeout(() => {
@@ -291,8 +255,8 @@ sensitivityRange.addEventListener("input", () => {
       setTimeout(() => trail.remove(), 1000);
     }, 500);
 
-    main.style.width = `${Math.max(main.clientWidth, x + 100)}px`;
-    main.style.height = `${Math.max(main.clientHeight, y + 100)}px`;
+    main.style.width = ${Math.max(main.clientWidth, x + 100)}px;
+    main.style.height = ${Math.max(main.clientHeight, y + 100)}px;
 
     const buffer = 50;
     if (x - window.scrollX < buffer || x - window.scrollX > window.innerWidth - buffer ||
@@ -310,12 +274,12 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
   const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
   const line = document.createElement("div");
   line.style.position = "absolute";
-  line.style.left = `${x1}px`;
-  line.style.top = `${y1}px`;
-  line.style.width = `${length}px`;
-  line.style.height = `2px`;
+  line.style.left = ${x1}px;
+  line.style.top = ${y1}px;
+  line.style.width = ${length}px;
+  line.style.height = 2px;
   line.style.backgroundColor = isVibrated ? "red" : "blue"; // red if vibrated
-  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transform = rotate(${angle}deg);
   line.style.transformOrigin = "0 0";
   line.style.zIndex = 2;
   main.appendChild(line);
@@ -332,10 +296,10 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
     window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
   }
 
-  /*function showLocation(position) {
+  function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    locationText.textContent = Location: ${lat.toFixed(5)}, ${lon.toFixed(5)};
 
    // Optional angle for direction (reuse or recalculate)
    const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
@@ -360,49 +324,12 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
 
 
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+      directionText.textContent = Direction: ${getDirectionFromAngle(angle)};
     }
 
     prevLat = lat;
     prevLon = lon;
-  }*/
-
-function showLocation(position) {
-  const lat = position.coords.latitude;
-  const lon = position.coords.longitude;
-
-  if (prevLat !== null && prevLon !== null) {
-    const scaleFactor = 1000000;
-
-    // ✅ FIX: if x/y are NaN or null, set them to screen center
-    if (isNaN(x) || isNaN(y) || x === null || y === null) {
-      x = window.scrollX + window.innerWidth / 2;
-      y = window.scrollY + window.innerHeight / 2;
-      console.log("Set initial X/Y:", x, y);
-    }
-
-    const dx = (lon - prevLon) * scaleFactor;
-    const dy = (lat - prevLat) * scaleFactor;
-
-    const newX = x + dx;
-    const newY = y + dy;
-
-    console.log("DX:", dx, "DY:", dy);
-    console.log("NewX:", newX, "NewY:", newY);
-
-    drawLine(x, y, newX, newY);
-    moveDot(newX, newY);
-    x = newX;
-    y = newY;
   }
-
-  prevLat = lat;
-  prevLon = lon;
-
-  console.log("Lat:", lat, "Lon:", lon);
-}
-
-
 
   function showError(error) {
     console.error("GPS Error:", error);
@@ -439,8 +366,8 @@ let vibratedRecently = false;
     // Optional red dot marker
     const marker = document.createElement("div");
     marker.className = "trail";
-    marker.style.left = `${x + 6}px`;
-    marker.style.top = `${y + 6}px`;
+    marker.style.left = ${x + 6}px;
+    marker.style.top = ${y + 6}px;
     marker.style.background = "red";
     main.appendChild(marker);
   } else {
@@ -465,8 +392,8 @@ window.addEventListener('devicemotion', function(event) {
     navigator.vibrate(300);
     const marker = document.createElement("div");
     marker.className = "trail";
-    marker.style.left = `${x + 6}px`;
-    marker.style.top = `${y + 6}px`;
+    marker.style.left = ${x + 6}px;
+    marker.style.top = ${y + 6}px;
     marker.style.background = "red";
     main.appendChild(marker);
   } else {
@@ -497,7 +424,6 @@ window.addEventListener('devicemotion', function(event) {
 
 window.addEventListener('load', () => {
   resetDot();
-  startTracking(); // ✅ Start GPS tracking automatically on load
 });
 
 function saveDataToFile() {
@@ -511,7 +437,7 @@ function saveDataToFile() {
 
   let fileContent = "X\tY\tZ\tVibration\tDirection\n";
   recentData.forEach(entry => {
-    fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
+    fileContent += ${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n;
   });
 
   const blob = new Blob([fileContent], { type: 'text/plain' });
@@ -532,19 +458,7 @@ function startTracking() {
   if (!trackingInterval) {
     trackingInterval = setInterval(() => {
       if ("geolocation" in navigator) {
-        navigator.geolocation.watchPosition(
-  showLocation,
-  (error) => {
-    console.error("Geolocation error:", error);
-    alert("Error getting location: " + error.message);
-  },
-  {
-    enableHighAccuracy: true,
-    maximumAge: 1000,
-    timeout: 5000,
-  }
-);
-
+        navigator.geolocation.getCurrentPosition(showLocation, showError);
       } else {
         locationText.textContent = "Geolocation not supported.";
       }
@@ -572,12 +486,12 @@ function toggleHistory() {
     tbody.innerHTML = "";
     gpsHistory.forEach((entry, index) => {
       const row = document.createElement("tr");
-      row.innerHTML = `
+      row.innerHTML = 
         <td>${index + 1}</td>
         <td>${entry.lat.toFixed(5)}</td>
         <td>${entry.lon.toFixed(5)}</td>
         <td>${entry.direction}</td>
-      `;
+      ;
       tbody.appendChild(row);
     });
     tableDiv.style.display = "block";
@@ -585,9 +499,12 @@ function toggleHistory() {
     tableDiv.style.display = "none";
   }
 }
+
 </script>
+
 </body>
 </html>
+
 
 
 
