@@ -10,7 +10,6 @@
       height: 100%;
       font-family: Arial, sans-serif;
       background: #f0f0f0;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
     }
@@ -21,19 +20,26 @@
       padding: 15px;
       font-size: 1.5rem;
     }
-    main {
+    #scrollContainer {
       flex: 1;
+      overflow: scroll;
       position: relative;
-      overflow: hidden;
     }
+    main {
+     position: relative;
+     overflow: visible;
+     width: 100vw;
+     min-height: 100vh;
+ 
+ }
     .info {
-      position: absolute;
+      position: fixed;
       top: 10px;
       left: 10px;
       background: rgba(255,255,255,0.95);
       padding: 10px;
       border-radius: 8px;
-      z-index: 10;
+      z-index: 20;
     }
     button {
       margin-top: 5px;
@@ -45,26 +51,24 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    #dot {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 18px;
-      height: 18px;
-      background: blue;
-      border-radius: 50%;
-      z-index: 5;
-    }
-    .trail {
-      width: 5px;
-      height: 5px;
-      background: rgba(0, 0, 255, 0.5);
-      border-radius: 50%;
-      position: absolute;
-      z-index: 1;
-    }
-    footer {
+  #dot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: blue;
+  border-radius: 50%;
+  z-index: 5;
+}
+  .trail {
+  width: 5px;
+  height: 5px;
+  background: rgba(0, 0, 255, 0.5);
+  border-radius: 50%;
+  position: absolute;
+  z-index: 1;
+}
+    
+  footer {
       background: #ddd;
       text-align: center;
       padding: 10px;
@@ -77,105 +81,163 @@
 <header>Motion Tracker</header>
 
 <div id="scrollContainer">
-<main id="main">
-  <div class="info">
-    <p>Move your phone to see the motion path.</p>
-    <p id="location">Location: Fetching...</p>
-    <button onclick="resetDot()">Reset</button>
-  </div>
+  <main id="main">
+    <div id="dot"></div>
+  </main>
+</div>
 
-  <div id="dot"></div>
-</main>
+<div class="info">
+  <p>Move your phone to see motion.</p>
+  <p id="location">Location: Fetching...</p>
+  <p id="direction">Direction: Calculating...</p>
+  <button onclick="resetDot()">Reset</button>
+</div>
 
 <footer>Created by Kuldeep Gosai</footer>
 
 <script>
+  let shakeDetected = false;
   const dot = document.getElementById("dot");
-  const main = document.getElementById("main");
+  const canvas = document.getElementById("trailCanvas");
+  const ctx = canvas.getContext("2d");
   const locationText = document.getElementById("location");
+  const directionText = document.getElementById("direction");
+  const scrollContainer = document.getElementById("scrollContainer");
+  const main = document.getElementById("main");
 
-  let x = window.innerWidth / 2;
-  let y = window.innerHeight / 2;
+  let x = 1500, y = 1500;
+  let prevLat = null, prevLon = null;
+  let prevX = null, prevY = null;
 
-  let prevLat = null;
-  let prevLon = null;
+ function moveDot(newX, newY) {
+  x = newX;
+  y = newY;
 
-  function moveDot(newX, newY) {
-    dot.style.left = `${newX}px`;
-    dot.style.top = `${newY}px`;
+  dot.style.left = `${x}px`;
+  dot.style.top = `${y}px`;
 
+  const trail = document.createElement("div");
+  trail.className = "trail";
+  trail.style.left = `${x + 6}px`;
+  trail.style.top = `${y + 6}px`;
+  main.appendChild(trail);
+
+  // Expand main size dynamically as dot moves
+  main.style.width = `${Math.max(main.scrollWidth, x + 100)}px`;
+  main.style.height = `${Math.max(main.scrollHeight, y + 100)}px`;
+
+  // Auto scroll when dot is near screen edge
+  const buffer = 50;
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
+  const screenW = window.innerWidth;
+  const screenH = window.innerHeight;
+
+  if (x - scrollX < buffer || x - scrollX > screenW - buffer ||
+      y - scrollY < buffer || y - scrollY > screenH - buffer) {
+    window.scrollTo({
+      left: x - screenW / 2,
+      top: y - screenH / 2,
+      behavior: "smooth"
+    });
+  }
+}
+
+
+
+  function markVibrationPoint(x, y) {
     const trail = document.createElement("div");
     trail.className = "trail";
-    trail.style.left = `${newX + 6}px`;
-    trail.style.top = `${newY + 6}px`;
+    trail.style.left = `${x + 6}px`;
+    trail.style.top = `${y + 6}px`;
+    trail.style.background = "red";
     main.appendChild(trail);
   }
 
-  function resetDot() {
-    x = window.innerWidth / 2;
-    y = window.innerHeight / 2;
-    moveDot(x, y);
-    
-    prevLat = null;
-    prevLon = null;
+function resetDot() {
+  x = window.innerWidth / 2 + window.scrollX;
+  y = window.innerHeight / 2 + window.scrollY;
+  moveDot(x, y);
 
-    const trails = document.querySelectorAll(".trail");
-    trails.forEach(trail => trail.remove());
-  }
+  prevLat = null;
+  prevLon = null;
 
-  moveDot(x, y); // initial dot
+  const trails = document.querySelectorAll(".trail");
+  trails.forEach(trail => trail.remove());
+
+  window.scrollTo({
+    left: x - window.innerWidth / 2,
+    top: y - window.innerHeight / 2,
+    behavior: "auto"
+  });
+}
+
+        // Initial center on page load
+   window.addEventListener('load', () => {
+   resetDot();
+   });
 
   function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-    // First time: just store
-    if (prevLat === null || prevLon === null) {
-      prevLat = lat;
-      prevLon = lon;
-      console.log("First GPS coordinate stored.");
-      return;
+    if (prevLat !== null && prevLon !== null) {
+      const dx = (lon - prevLon) * 100000;
+      const dy = (lat - prevLat) * 100000;
+
+      const newX = x + dx * 2;
+      const newY = y + dy * 2;
+
+      moveDot(newX, newY);
+
+      // direction calculation
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const direction = getDirectionFromAngle(angle);
+      directionText.textContent = `Direction: ${direction}`;
     }
-
-    // Calculate distance change
-    const dx = (lon - prevLon) * 100000;
-    const dy = (lat - prevLat) * 100000;
-
-    x += dx * 2; // adjust scale for visible move
-    y += dy * 2;
-
-    const screenW = main.clientWidth;
-    const screenH = main.clientHeight;
-
-    if (x < 0) x = 0;
-    if (x > screenW) x = screenW;
-    if (y < 0) y = 0;
-    if (y > screenH) y = screenH;
-
-    moveDot(x, y);
 
     prevLat = lat;
     prevLon = lon;
-
-    console.log(`Dot moved to x=${x}, y=${y}`);
   }
 
   function showError(error) {
     console.error("GPS Error:", error);
-    locationText.textContent = "Location: Error fetching position.";
+    locationText.textContent = "Location: Error";
   }
 
-  // Call every 5 seconds
   setInterval(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(showLocation, showError);
-    } else {
-      locationText.textContent = "Geolocation not supported.";
     }
-  }, 5000);
+  }, 5000); // GPS update every 5s
+
+  // Gyroscope: Vibration Detection
+  window.addEventListener('devicemotion', function(event) {
+    if (!event.acceleration) return;
+    const ax = event.acceleration.x || 0;
+    const ay = event.acceleration.y || 0;
+    const az = event.acceleration.z || 0;
+
+    const total = Math.sqrt(ax * ax + ay * ay + az * az);
+    if (total > 15) {
+      console.log("📳 Shake detected:", total.toFixed(2));
+      shakeDetected = true;
+      markVibrationPoint(x, y);
+      navigator.vibrate(300);
+    }
+  });
+
+  function getDirectionFromAngle(angle) {
+    const directions = [
+      "East →", "North-East ↗️", "North ↑", "North-West ↖️",
+      "West ←", "South-West ↙️", "South ↓", "South-East ↘️"
+    ];
+    const index = Math.round((angle % 360 + 360) % 360 / 45) % 8;
+    return directions[index];
+  }
 </script>
+
 
 </body>
 </html>
