@@ -1,4 +1,5 @@
-a<!DOCTYPE html>
+You said:
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -278,13 +279,13 @@ sensitivityRange.addEventListener("input", () => {
     x = newX;
     y = newY;
 
-    dot.style.left = `${x}px`;
-    dot.style.top = `${y}px`;
+    dot.style.left = ${x}px;
+    dot.style.top = ${y}px;
 
     const trail = document.createElement("div");
     trail.className = "trail";
-    trail.style.left = `${x + 6}px`;
-    trail.style.top = `${y + 6}px`;
+    trail.style.left = ${x + 6}px;
+    trail.style.top = ${y + 6}px;
     main.appendChild(trail);
 
     setTimeout(() => {
@@ -293,8 +294,8 @@ sensitivityRange.addEventListener("input", () => {
       setTimeout(() => trail.remove(), 1000);
     }, 500);
 
-    main.style.width = `${Math.max(main.clientWidth, x + 100)}px`;
-    main.style.height = `${Math.max(main.clientHeight, y + 100)}px`;
+    main.style.width = ${Math.max(main.clientWidth, x + 100)}px;
+    main.style.height = ${Math.max(main.clientHeight, y + 100)}px;
 
     const buffer = 50;
     if (x - window.scrollX < buffer || x - window.scrollX > window.innerWidth - buffer ||
@@ -312,12 +313,12 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
   const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
   const line = document.createElement("div");
   line.style.position = "absolute";
-  line.style.left = `${x1}px`;
-  line.style.top = `${y1}px`;
-  line.style.width = `${length}px`;
-  line.style.height = `2px`;
+  line.style.left = ${x1}px;
+  line.style.top = ${y1}px;
+  line.style.width = ${length}px;
+  line.style.height = 2px;
   line.style.backgroundColor = isVibrated ? "red" : "blue"; // red if vibrated
-  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transform = rotate(${angle}deg);
   line.style.transformOrigin = "0 0";
   line.style.zIndex = 2;
   main.appendChild(line);
@@ -337,7 +338,7 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
   /*function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    locationText.textContent = Location: ${lat.toFixed(5)}, ${lon.toFixed(5)};
 
    // Optional angle for direction (reuse or recalculate)
    const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
@@ -362,13 +363,12 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
 
 
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+      directionText.textContent = Direction: ${getDirectionFromAngle(angle)};
     }
 
     prevLat = lat;
     prevLon = lon;
   }*/
-
 
 function showLocation(position) {
   const lat = position.coords.latitude;
@@ -377,7 +377,7 @@ function showLocation(position) {
   locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
   if (prevLat === null || prevLon === null) {
-    // First time center me place karo
+    // Start from center
     x = window.innerWidth / 2;
     y = window.innerHeight / 2;
     moveDot(x, y);
@@ -389,8 +389,7 @@ function showLocation(position) {
     return;
   }
 
-  // Small scale factor for realistic movement
-  const scaleFactor = 1000000; // pehle tum 100000000 le rahe the, bohot zyada tha
+  const scaleFactor = 1000000;
 
   const dx = (lon - prevLon) * scaleFactor;
   const dy = (lat - prevLat) * scaleFactor;
@@ -398,16 +397,19 @@ function showLocation(position) {
   const newX = x + dx;
   const newY = y - dy;
 
-  // Smooth move
-  dot.style.transition = "left 0.5s linear, top 0.5s linear";
-
-  drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
+  // Draw from center to center
+  drawLine(x, y, newX, newY, vibratedRecently);
   moveDot(newX, newY);
 
   prevLat = lat;
   prevLon = lon;
   x = newX;
   y = newY;
+}
+
+function moveDot(dotX, dotY) {
+  dot.style.left = `${dotX}px`;
+  dot.style.top = `${dotY}px`;
 }
 
   function showError(error) {
@@ -445,8 +447,8 @@ let vibratedRecently = false;
     // Optional red dot marker
     const marker = document.createElement("div");
     marker.className = "trail";
-    marker.style.left = `${x + 6}px`;
-    marker.style.top = `${y + 6}px`;
+    marker.style.left = ${x + 6}px;
+    marker.style.top = ${y + 6}px;
     marker.style.background = "red";
     main.appendChild(marker);
   } else {
@@ -471,8 +473,8 @@ window.addEventListener('devicemotion', function(event) {
     navigator.vibrate(300);
     const marker = document.createElement("div");
     marker.className = "trail";
-    marker.style.left = `${x + 6}px`;
-    marker.style.top = `${y + 6}px`;
+    marker.style.left = ${x + 6}px;
+    marker.style.top = ${y + 6}px;
     marker.style.background = "red";
     main.appendChild(marker);
   } else {
@@ -516,7 +518,7 @@ function saveDataToFile() {
 
   let fileContent = "X\tY\tZ\tVibration\tDirection\n";
   recentData.forEach(entry => {
-    fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
+    fileContent += ${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n;
   });
 
   const blob = new Blob([fileContent], { type: 'text/plain' });
@@ -564,12 +566,12 @@ function toggleHistory() {
     tbody.innerHTML = "";
     gpsHistory.forEach((entry, index) => {
       const row = document.createElement("tr");
-      row.innerHTML = `
+      row.innerHTML = 
         <td>${index + 1}</td>
         <td>${entry.lat.toFixed(5)}</td>
         <td>${entry.lon.toFixed(5)}</td>
         <td>${entry.direction}</td>
-      `;
+      ;
       tbody.appendChild(row);
     });
     tableDiv.style.display = "block";
@@ -580,4 +582,5 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
