@@ -11,6 +11,15 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j8MkRUYw35vj0IadB1iKsFcwZqTRWyd4InENa+o=" crossorigin=""></script>
 
+
+ <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+4lG+/VnS1TchktwFUPzfhvVqGZ0ZqvyyFf8H3R94="
+    crossorigin=""
+  />
+
   <style>
    * {
       margin: 0;
@@ -525,9 +534,69 @@
     const centerY = window.innerHeight / 2;
     moveDot(centerX, centerY);
   });
+
+let map, marker, watchId;
+
+  function initMap(lat, lon) {
+    map = L.map('map').setView([lat, lon], 16);
+
+    // Map tiles — yahan hum OpenStreetMap use kar rahe hain,
+    // aap chahe to Google Maps tile bhi use kar sakte hain but setup thoda complex hoga
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 20,
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+
+    marker = L.circleMarker([lat, lon], {
+      radius: 10,
+      color: '#007bff',
+      fillColor: '#3399ff',
+      fillOpacity: 0.9
+    }).addTo(map);
+  }
+
+  function updatePosition(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    if (!map) {
+      initMap(lat, lon);
+    } else {
+      map.setView([lat, lon], 16);
+      marker.setLatLng([lat, lon]);
+    }
+  }
+
+  function onError(error) {
+    alert("Error getting location: " + error.message);
+  }
+
+  document.getElementById("startBtn").addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    watchId = navigator.geolocation.watchPosition(updatePosition, onError, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 5000,
+    });
+    document.getElementById("startBtn").disabled = true;
+    document.getElementById("stopBtn").disabled = false;
+  });
+
+  document.getElementById("stopBtn").addEventListener("click", () => {
+    if (watchId != null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = true;
+  });
 </script>
 </body>
 </html>
+
 
 
 
