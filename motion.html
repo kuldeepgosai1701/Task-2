@@ -374,45 +374,54 @@ function showLocation(position) {
   const lon = position.coords.longitude;
   locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
+  // First GPS fix
   if (prevLat === null || prevLon === null) {
-    // First GPS point — dot ko center me set karo
-    x = window.scrollX + window.innerWidth / 2;
-    y = window.scrollY + window.innerHeight / 2;
+    x = window.innerWidth / 2;
+    y = window.innerHeight / 2;
     moveDot(x, y);
 
     prevLat = lat;
     prevLon = lon;
 
-    // Leaflet map init
     if (!mapInitialized) {
       initLeafletMap(lat, lon);
     }
-    return; // First time me line draw nahi karni
+    return;
   }
 
+  // Direction calculation
   const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
   const direction = getDirectionFromAngle(angle);
   gpsHistory.push({ lat, lon, direction });
 
-  // Leaflet map update
+  // Update Leaflet map
   if (mapInitialized) {
     marker.setLatLng([lat, lon]);
     map.panTo([lat, lon]);
   }
 
-  const scaleFactor = 300000;
+  // Movement calculation
+  const scaleFactor = 10000000; // 🔹 Increased for visible movement
   const dx = (lon - prevLon) * scaleFactor;
   const dy = (lat - prevLat) * scaleFactor;
-  const newX = x + dx;
-  const newY = y + dy;
 
+  const newX = x + dx;
+  const newY = y - dy; // Latitude change inverted for correct screen movement
+
+  // Draw path line
   drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
+
+  // Move dot
   moveDot(newX, newY);
 
+  // Update direction text
   directionText.textContent = `Direction: ${getDirectionFromAngle(Math.atan2(dy, dx) * (180 / Math.PI))}`;
 
+  // Store last point
   prevLat = lat;
   prevLon = lon;
+  x = newX;
+  y = newY;
 }
 
   function showError(error) {
@@ -586,6 +595,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
