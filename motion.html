@@ -372,58 +372,41 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
 function showLocation(position) {
   const lat = position.coords.latitude;
   const lon = position.coords.longitude;
+
+  console.log(`GPS Update → Lat: ${lat}, Lon: ${lon}`); // Debug
+
   locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-  // First GPS fix
   if (prevLat === null || prevLon === null) {
     x = window.innerWidth / 2;
     y = window.innerHeight / 2;
     moveDot(x, y);
-
     prevLat = lat;
     prevLon = lon;
-
     if (!mapInitialized) {
       initLeafletMap(lat, lon);
     }
     return;
   }
 
-  // Direction calculation
-  const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
-  const direction = getDirectionFromAngle(angle);
-  gpsHistory.push({ lat, lon, direction });
+  const scaleFactor = 100000000; // 🔹 100 million for visible movement
 
-  // Update Leaflet map
-  if (mapInitialized) {
-    marker.setLatLng([lat, lon]);
-    map.panTo([lat, lon]);
-  }
-
-  // Movement calculation
-  const scaleFactor = 10000000; // 🔹 Increased for visible movement
   const dx = (lon - prevLon) * scaleFactor;
   const dy = (lat - prevLat) * scaleFactor;
 
+  console.log(`Movement: dx=${dx}, dy=${dy}`); // Debug
+
   const newX = x + dx;
-  const newY = y - dy; // Latitude change inverted for correct screen movement
+  const newY = y - dy;
 
-  // Draw path line
   drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
-
-  // Move dot
   moveDot(newX, newY);
 
-  // Update direction text
-  directionText.textContent = `Direction: ${getDirectionFromAngle(Math.atan2(dy, dx) * (180 / Math.PI))}`;
-
-  // Store last point
   prevLat = lat;
   prevLon = lon;
   x = newX;
   y = newY;
 }
-
   function showError(error) {
     console.error("GPS Error:", error);
     locationText.textContent = "Location: Error fetching";
@@ -548,15 +531,14 @@ function saveDataToFile() {
 let trackingInterval = null;
 
 function startTracking() {
-  if (!trackingInterval) {
-    trackingInterval = setInterval(() => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(showLocation, showError);
-      } else {
-        locationText.textContent = "Geolocation not supported.";
-      }
-    }, 5000);
-    console.log("Tracking started");
+  if (navigator.geolocation) {
+    watchId = navigator.geolocation.watchPosition(showLocation, showError, {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    });
+  } else {
+    alert("Geolocation is not supported by this browser.");
   }
 }
 
@@ -595,6 +577,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
