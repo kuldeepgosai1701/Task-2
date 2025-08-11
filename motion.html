@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gyroscope Motion Tracker</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body, html {
       height: 100%;
       font-family: Arial, sans-serif;
@@ -14,6 +19,7 @@
       display: flex;
       flex-direction: column;
     }
+
     header {
       background: #222;
       color: #fff;
@@ -21,11 +27,13 @@
       padding: 15px;
       font-size: 1.5rem;
     }
+
     main {
       flex: 1;
       position: relative;
       overflow: hidden;
     }
+
     .info {
       position: absolute;
       top: 10px;
@@ -35,6 +43,7 @@
       border-radius: 8px;
       z-index: 10;
     }
+
     button {
       margin-top: 5px;
       padding: 5px 12px;
@@ -43,8 +52,8 @@
       background: #007bff;
       color: white;
       border-radius: 4px;
-      cursor: pointer;
     }
+
     #dot {
       width: 18px;
       height: 18px;
@@ -53,6 +62,7 @@
       position: absolute;
       z-index: 5;
     }
+
     .trail {
       width: 5px;
       height: 5px;
@@ -61,12 +71,14 @@
       position: absolute;
       z-index: 1;
     }
+
     footer {
       background: #ddd;
       text-align: center;
       padding: 10px;
       font-size: 0.9rem;
     }
+
     .compass {
       font-size: 20px;
       font-weight: bold;
@@ -78,284 +90,203 @@
 </head>
 <body>
 
-<header>Motion Tracker</header>
+  <header>Motion Tracker</header>
 
-<main id="main">
-  <div class="info">
-    <p>Move your phone to see the motion path.</p>
-    <p id="direction">Direction: Center</p>
-    <p id="location">Location: Fetching...</p>
-    <button onclick="resetData()">Reset</button>
-    <button onclick="saveGPSToFile()">Save GPS</button>
-    <div class="compass">N</div>
-  </div>
+  <main id="main">
+    <div class="info">
+      <p>Move your phone to see the motion path.</p>
+      <p id="direction">Direction: Center</p>
+      <p id="location">Location: Fetching...</p>
+      <button onclick="location.reload()">Reset</button>
+      <div class="compass">N</div>
+    </div>
+     
+    <div id="dot"></div>
+    <div style="position:absolute; bottom:0; width:100%; max-height:200px; overflow:auto; background:#fff;">
+  <table id="data-table" border="1" style="width:100%; font-size:0.8rem; border-collapse:collapse;">
+    <thead style="position:sticky; top:0; background:#007bff; color:white;">
+      <tr>
+        <th>Time</th>
+        <th>X</th>
+        <th>Y</th>
+        <th>Direction</th>
+        <th>Vibration</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      <!-- Firebase data rows will appear here -->
+    </tbody>
+  </table>
+</div>
 
-  <div id="dot"></div>
+  </main>
 
-  
-</main>
+  <footer>Created by Kuldeep Gosai</footer>
 
-<footer>Created by Kuldeep Gosai</footer>
+  <!-- ✅ Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
-<script>
-  // ✅ Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyDh77dygGxVJMc8hRgm_ruQS_DW-vq_39M",
-    authDomain: "gyroscope-explorer-1bafb.firebaseapp.com",
-    databaseURL: "https://gyroscope-explorer-1bafb-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "gyroscope-explorer-1bafb",
-    storageBucket: "gyroscope-explorer-1bafb.appspot.com",
-    messagingSenderId: "471468344921",
-    appId: "1:471468344921:web:2c944e8a3b5da71c401348",
-    measurementId: "G-MH8B0QS86S"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // ✅ Global data array for saving to text file
-  let gpsDataLog = []; // stores GPS + vibration + direction entries
-  let latestVibrationStatus = "No";
-  let latestDirection = "Center";
-
-  // ✅ Save to Firebase
-  function saveToDatabase(x, y, z, direction, vibration) {
-    const data = {
-      axis: {
-        x: x.toFixed(2),
-        y: y.toFixed(2),
-        z: z !== undefined ? z.toFixed(2) : "0.00"
-      },
-      timestamp: new Date().toISOString(),
-      direction,
-      vibration
+  <script>
+    // ✅ Firebase Config (replace with your actual config from Firebase console)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDh77dygGxVJMc8hRgm_ruQS_DW-vq_39M",
+  authDomain: "gyroscope-explorer-1bafb.firebaseapp.com",
+  databaseURL: "https://gyroscope-explorer-1bafb-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "gyroscope-explorer-1bafb",
+  storageBucket: "gyroscope-explorer-1bafb.firebasestorage.app",
+  messagingSenderId: "471468344921",
+  appId: "1:471468344921:web:2c944e8a3b5da71c401348",
+  measurementId: "G-MH8B0QS86S"
     };
-    db.ref("motionData").push(data);
-  }
 
-  // ✅ Get direction string
-  function getDirection(gamma, beta) {
-    let dir = "";
-    if (beta > 3) dir += "South ";
-    else if (beta < -3) dir += "North ";
-    if (gamma > 3) dir += "East";
-    else if (gamma < -3) dir += "West";
-    return dir.trim() || "Center";
-  }
+    // ✅ Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-  // ✅ Dot movement
-  const dot = document.getElementById("dot");
-  const main = document.getElementById("main");
-  const directionText = document.getElementById("direction");
+    // ✅ Helper: Save data to Firebase
+    function saveToDatabase(axisX, axisY, direction, vibration) {
+      const data = {
+        axis: {
+          x: axisX.toFixed(2),
+          y: axisY.toFixed(2)
+        },
+        timestamp: new Date().toISOString(),
+        direction: direction,
+        vibration: vibration
+      };
+      db.ref("motionData").push(data);
+      console.log("Saved to Firebase:", data);
+    }
 
-  let x = window.innerWidth / 2;
-  let y = window.innerHeight / 2;
+    // ✅ Helper: Get Direction from gamma/beta
+    function getDirection(gamma, beta) {
+      let dir = "";
+      if (beta > 5) dir += "South ";
+      else if (beta < -5) dir += "North ";
+      if (gamma > 5) dir += "East";
+      else if (gamma < -5) dir += "West";
+      if (dir === "") dir = "Center";
+      return dir;
+    }
 
-  function moveDot(newX, newY) {
-    dot.style.left = `${newX}px`;
-    dot.style.top = `${newY}px`;
-    const trail = document.createElement("div");
-    trail.className = "trail";
-    trail.style.left = `${newX + 6}px`;
-    trail.style.top = `${newY + 6}px`;
-    main.appendChild(trail);
-  }
+    // ✅ Dot Movement Logic
+    const dot = document.getElementById("dot");
+    const main = document.getElementById("main");
+    const directionText = document.getElementById("direction");
 
-  moveDot(x, y);
+    let x = window.innerWidth / 2;
+    let y = window.innerHeight / 2;
 
-  // ✅ Reset Button
-function resetData() {
-  // Clear Firebase data
-  db.ref("motionData").remove().then(() => {
-    // Clear the GPS log array
-    gpsDataLog = [];
+    function moveDot(newX, newY) {
+      dot.style.left = `${newX}px`;
+      dot.style.top = `${newY}px`;
 
-    // Remove all trail elements
-    const trails = document.querySelectorAll(".trail");
-    trails.forEach(trail => trail.remove());
+      const trail = document.createElement("div");
+      trail.className = "trail";
+      trail.style.left = `${newX + 6}px`;
+      trail.style.top = `${newY + 6}px`;
+      main.appendChild(trail);
+    }
 
-    // Reset previous GPS location
-    prevLat = null;
-    prevLon = null;
-
-    // Reset dot position WITHOUT leaving a trail
-    x = window.innerWidth / 2;
-    y = window.innerHeight / 2;
-    dot.style.left = `${x}px`;
-    dot.style.top = `${y}px`;
-
-    // Optional: Reset dot color too
-    dot.style.backgroundColor = "blue";
-  });
-}
-
-
-
-// ✅ Header row (CSV format)
-  let content = "Time,Latitude,Longitude,Vibration,Direction\n";
-
-  gpsDataLog.forEach(entry => {
-    content += `${entry.time}\t${entry.lat}\t${entry.lon}\t${entry.vibration}\t${entry.direction}\n`;
-  });
-
-  const blob = new Blob([content], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "gps_motion_data.txt";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-  // ✅ Show GPS on screen
-  function showLocation(position) {
-    const lat = position.coords.latitude.toFixed(5);
-    const lon = position.coords.longitude.toFixed(5);
-    document.getElementById("location").textContent = `Location: ${lat}, ${lon}`;
-  }
-  function showError(error) {
-    const txt = document.getElementById("location");
-    txt.textContent = "Location: Error getting position.";
-  }
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(showLocation, showError);
-  }
-
-  // ✅ Device Orientation
-  window.addEventListener("deviceorientation", (event) => {
-    const gamma = event.gamma;
-    const beta = event.beta;
-
-    if (gamma !== null && beta !== null) {
-      const trailX = x + gamma * 0.5;
-      const trailY = y + beta * 0.5;
-      moveTrail(trailX, trailY);
-
-
-      const screenW = window.innerWidth;
-      const screenH = window.innerHeight;
-      if (x < 0) x = screenW;
-      if (x > screenW) x = 0;
-      if (y < 0) y = screenH;
-      if (y > screenH) y = 0;
-
-      moveDot(x, y);
+    function updateDirection(gamma, beta) {
       const dir = getDirection(gamma, beta);
       directionText.textContent = `Direction: ${dir}`;
-      latestDirection = dir;
-      saveToDatabase(gamma, beta, 0, dir, false);
     }
-  });
-
-// ✅ 1. Create Function
-function findVibration(x, y, z, threshold = 2) {
-  return (Math.abs(x) > threshold || Math.abs(y) > threshold || Math.abs(z) > threshold)
-    ? "Yes"
-    : "No";
-}
-
-
-window.addEventListener("devicemotion", (event) => {
-  const acc = event.acceleration;
-  if (acc && acc.x !== null && acc.y !== null && acc.z !== null) {
-    const vibrationStatus = findVibration(acc.x, acc.y, acc.z); // ✅ calculate vibration
-    latestVibrationStatus = vibrationStatus;
-
-
-    // 🔴 Change dot color on vibration
-    if (vibrationStatus === "Yes") {
-      dot.style.backgroundColor = "red";
-    } else {
-      dot.style.backgroundColor = "blue";
-    }
-
-    x += acc.x * 2;
-    y += acc.y * 2;
-
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
 
     moveDot(x, y);
 
-    saveToDatabase(acc.x, acc.y, acc.z, latestDirection, vibrationStatus === "Yes");
+    // ✅ GPS Location
+    function showLocation(position) {
+      const latitude = position.coords.latitude.toFixed(5);
+      const longitude = position.coords.longitude.toFixed(5);
+      document.getElementById("location").textContent = `Location: ${latitude}, ${longitude}`;
+    }
 
-  }
+    function showError(error) {
+      const locationText = document.getElementById("location");
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          locationText.textContent = "Location: Permission denied.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          locationText.textContent = "Location: Not available.";
+          break;
+        case error.TIMEOUT:
+          locationText.textContent = "Location: Timeout.";
+          break;
+        default:
+          locationText.textContent = "Location: Unknown error.";
+      }
+    }
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(showLocation, showError);
+    } else {
+      document.getElementById("location").textContent = "Location: Not supported.";
+    }
+
+    // ✅ Device Orientation Handler
+    window.addEventListener("deviceorientation", (event) => {
+      const gamma = event.gamma;
+      const beta = event.beta;
+
+      if (gamma !== null && beta !== null) {
+        x += gamma * 0.05;
+        y += beta * 0.05;
+
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+
+        if (x < 0) x = screenW;
+        if (x > screenW) x = 0;
+        if (y < 0) y = screenH;
+        if (y > screenH) y = 0;
+
+        moveDot(x, y);
+        const direction = getDirection(gamma, beta);
+        updateDirection(gamma, beta);
+        saveToDatabase(gamma, beta, direction, false);
+      }
+    });
+
+    // ✅ Device Motion (Vibration Detection)
+    window.addEventListener("devicemotion", (event) => {
+      const acc = event.acceleration;
+      if (acc && acc.x !== null && acc.y !== null) {
+        x += acc.x * 2;
+        y += acc.y * 2;
+
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+
+        if (x < 0) x = screenW;
+        if (x > screenW) x = 0;
+        if (y < 0) y = screenH;
+        if (y > screenH) y = 0;
+
+        moveDot(x, y);
+        saveToDatabase(acc.x, acc.y, "N/A", true);
+      }
+    });
+// ✅ Firebase real-time listener for table
+const tableBody = document.getElementById("table-body");
+
+db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
+  const data = snapshot.val();
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
+    <td>${data.axis.x}</td>
+    <td>${data.axis.y}</td>
+    <td>${data.direction}</td>
+    <td>${data.vibration ? "Yes" : "No"}</td>
+  `;
+
+  tableBody.insertBefore(row, tableBody.firstChild); // newest on top
 });
 
-
-  // ✅ Firebase Listener: Table
-  const tableBody = document.getElementById("table-body");
-  db.ref("motionData").limitToLast(30).on("child_added", (snapshot) => {
-    const data = snapshot.val();
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${new Date(data.timestamp).toLocaleTimeString()}</td>
-      <td>${data.axis.x}</td>
-      <td>${data.axis.y}</td>
-      <td>${data.axis.z}</td>
-      <td>${data.direction}</td>
-      <td>${data.vibration ? "Yes" : "No"}</td>
-    `;
-    tableBody.insertBefore(row, tableBody.firstChild);
-  });
-
-  let prevLat = null, prevLon = null;
-
-function gpsMoveAndLog(position) {
-  const lat = position.coords.latitude;
-  const lon = position.coords.longitude;
-
-  const vibration = latestVibrationStatus;
-  const direction = latestDirection;
-
-  const data = {
-    time: new Date().toLocaleTimeString(),
-    lat: lat.toFixed(5),
-    lon: lon.toFixed(5),
-    vibration,
-    direction
-  };
-  gpsDataLog.push(data);
-
-  // Only move the dot if we have previous coordinates
-  if (prevLat !== null && prevLon !== null) {
-    const dx = (lon - prevLon) * 100000; // scale factor
-    const dy = (lat - prevLat) * 100000;
-
-    x += dx;
-    y -= dy;
-
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
-    if (x < 0) x = screenW;
-    if (x > screenW) x = 0;
-    if (y < 0) y = screenH;
-    if (y > screenH) y = 0;
-
-    moveDot(x, y);
-  }
-
-  prevLat = lat;
-  prevLon = lon;
-}
-
-// Call GPS update every 5 seconds
-setInterval(() => {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(gpsMoveAndLog);
-  }
-}, 5000);
-
-</script>
+  </script>
 </body>
 </html>
