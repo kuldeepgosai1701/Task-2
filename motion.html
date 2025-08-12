@@ -1,25 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPS Motion Tracker</title>
-
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+4lG+/VnS1TchktwFUPzfhvVqGZ0ZqvyyFf8H3R94=" crossorigin="" />
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j8MkRUYw35vj0IadB1iKsFcwZqTRWyd4InENa+o=" crossorigin=""></script>
-
-
- <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-sA+4lG+/VnS1TchktwFUPzfhvVqGZ0ZqvyyFf8H3R94="
-    crossorigin=""
-  />
-
   <style>
    * {
       margin: 0;
@@ -91,6 +76,8 @@
       transition: transform 0.2s ease;
     }
 
+   
+
     #main {
       position: relative;
       min-width: 100vw;
@@ -138,15 +125,14 @@
     }
 
     #dot {
-      width: 10px;
-      height: 10px;
-      background-color: blue;
-      border-radius: 50%;
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 2;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #007bff 30%, #003366 100%);
+      border-radius: 50%;
+      z-index: 5;
+      box-shadow: 0 0 8px rgba(0, 0, 255, 0.6);
+      animation: bounce 1s infinite;
     }
 
     .trail {
@@ -178,20 +164,11 @@
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
     }
-
-    #leafletMap {
-      margin-top: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.2);
-    }
   </style>
 </head>
 <body>
 
-<header>
-  <span>Motion Tracker</span>
-  <button onclick="toggleHistory()" style="float: right; margin-right: 10px; font-size: 0.9rem;">History</button>
-</header>
+<header>Motion Tracker</header>
 
 <!-- Sensitivity Control Slider -->
 <div class="sensitivity-box">
@@ -212,75 +189,42 @@
 </div>
 
 <main id="main">
-  <div id="leafletMap" style="height: 400px; width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 8px rgba(0,0,0,0.2);"></div>
   <div id="dot"></div>
-  <div id="historyTable" style="display:none; padding: 20px;">
-    <h2 style="margin-bottom: 10px;">GPS Movement History</h2>
-    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; background: white;">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Latitude</th>
-          <th>Longitude</th>
-          <th>Direction</th>
-        </tr>
-      </thead>
-      <tbody id="historyBody"></tbody>
-    </table>
-  </div>
 </main>
 
 <footer>Created by Kuldeep Gosai</footer>
 
 <script>
-  let x, y;
+  let x = 0;
+  let y = 0;
   let prevLat = null;
   let prevLon = null;
-  let gpsHistory = [];
-  let map, marker, mapInitialized = false;
-  let vibratedRecently = false;
-  let recordedData = [];
-  let watchId = null;
 
   const dot = document.getElementById("dot");
   const main = document.getElementById("main");
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
   const sensitivityRange = document.getElementById("sensitivityRange");
-  const sensVal = document.getElementById("sensVal");
+  const sensVal = document.getElementById("sensVal"); // add this span in HTML too
+  let sensitivityFactor = parseFloat(sensitivityRange.value);  // default: 5
 
-  let sensitivityFactor = parseFloat(sensitivityRange.value);
+sensitivityRange.addEventListener("input", () => {
+  sensitivityFactor = parseFloat(sensitivityRange.value);
+  sensVal.textContent = sensitivityRange.value;
+});
+
 
   sensitivityRange.addEventListener("input", () => {
     sensitivityFactor = parseFloat(sensitivityRange.value);
-    sensVal.textContent = sensitivityRange.value;
   });
 
-  function initLeafletMap(lat = 0, lon = 0) {
-    map = L.map('leafletMap').setView([lat, lon], 16);
+  function moveDot(newX, newY) {
+    x = newX;
+    y = newY;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 20,
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    marker = L.circleMarker([lat, lon], {
-      radius: 10,
-      color: '#003366',
-      fillColor: '#007bff',
-      fillOpacity: 0.9
-    }).addTo(map);
-
-    mapInitialized = true;
-  }
-
-  function moveDot(dotX, dotY) {
-    x = dotX;
-    y = dotY;
     dot.style.left = `${x}px`;
     dot.style.top = `${y}px`;
 
-    // Add trail
     const trail = document.createElement("div");
     trail.className = "trail";
     trail.style.left = `${x + 6}px`;
@@ -288,15 +232,14 @@
     main.appendChild(trail);
 
     setTimeout(() => {
+      trail.style.transition = "opacity 1s ease";
       trail.style.opacity = "0";
       setTimeout(() => trail.remove(), 1000);
     }, 500);
 
-    // Expand main size if needed
     main.style.width = `${Math.max(main.clientWidth, x + 100)}px`;
     main.style.height = `${Math.max(main.clientHeight, y + 100)}px`;
 
-    // Auto-scroll if near edge
     const buffer = 50;
     if (x - window.scrollX < buffer || x - window.scrollX > window.innerWidth - buffer ||
         y - window.scrollY < buffer || y - window.scrollY > window.innerHeight - buffer) {
@@ -308,30 +251,22 @@
     }
   }
 
-  function drawLine(x1, y1, x2, y2, isVibrated = false) {
-    const length = Math.hypot(x2 - x1, y2 - y1);
-    const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+function drawLine(x1, y1, x2, y2, isVibrated = false) {
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+  const line = document.createElement("div");
+  line.style.position = "absolute";
+  line.style.left = `${x1}px`;
+  line.style.top = `${y1}px`;
+  line.style.width = `${length}px`;
+  line.style.height = `2px`;
+  line.style.backgroundColor = isVibrated ? "red" : "blue"; // red if vibrated
+  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transformOrigin = "0 0";
+  line.style.zIndex = 2;
+  main.appendChild(line);
+}
 
-    const line = document.createElement("div");
-    line.style.position = "absolute";
-    line.style.left = `${x1}px`;
-    line.style.top = `${y1}px`;
-    line.style.width = `${length}px`;
-    line.style.height = "2px";
-    line.style.backgroundColor = isVibrated ? "red" : "blue";
-    line.style.transform = `rotate(${angle}deg)`;
-    line.style.transformOrigin = "0 0";
-    line.style.zIndex = 2;
-
-    main.appendChild(line);
-
-    // Optional: fade out after some time
-    setTimeout(() => {
-      line.style.transition = "opacity 1s ease";
-      line.style.opacity = "0";
-      setTimeout(() => line.remove(), 1000);
-    }, 3000);
-  }
 
   function resetDot() {
     const centerX = window.scrollX + window.innerWidth / 2;
@@ -339,73 +274,36 @@
     moveDot(centerX, centerY);
     prevLat = null;
     prevLon = null;
-    gpsHistory = [];
-    recordedData = [];
-    // Remove trails and lines
     document.querySelectorAll(".trail").forEach(el => el.remove());
-    document.querySelectorAll("main > div:not(#dot):not(#leafletMap):not(#historyTable)").forEach(el => el.remove());
-
-    if (mapInitialized) {
-      map.remove();
-      mapInitialized = false;
-    }
-
     window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
-  }
-
-  function getDirectionFromAngle(angle) {
-    const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
-                        "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
-    return directions[Math.round(((angle % 360) + 360) % 360 / 45) % 8];
   }
 
   function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 
-    if (prevLat === null || prevLon === null) {
-      x = window.innerWidth / 2;
-      y = window.innerHeight / 2;
-      moveDot(x, y);
-      prevLat = lat;
-      prevLon = lon;
-      if (!mapInitialized) {
-        initLeafletMap(lat, lon);
-      }
-      return;
+    if (prevLat !== null && prevLon !== null) {
+   const scaleFactor = 300000;
+   const dx = (lon - prevLon) * scaleFactor;
+   const dy = (lat - prevLat) * scaleFactor;
+
+      const newX = x + dx;
+      const newY = y + dy;
+      const vibrateState = vibratedRecently;  // capture current state
+      drawLine(x + 9, y + 9, newX + 9, newY + 9, vibrateState);
+      moveDot(newX, newY);
+
+      // Don't reset immediately — add delay or let devicemotion handle it
+
+
+
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
     }
-
-    const scaleFactor = 1000000;
-    const dx = (lon - prevLon) * scaleFactor;
-    const dy = (lat - prevLat) * scaleFactor;
-
-    const newX = x + dx;
-    const newY = y - dy; // y-axis inverted on screen
-
-    // Draw trail line from old to new position
-    drawLine(x, y, newX, newY, vibratedRecently);
-    moveDot(newX, newY);
-
-    // Update Leaflet marker position
-    if (mapInitialized) {
-      marker.setLatLng([lat, lon]);
-      map.panTo([lat, lon]);
-    }
-
-    // Calculate direction angle
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    const direction = getDirectionFromAngle(angle);
-    directionText.textContent = `Direction: ${direction}`;
-
-    // Save GPS history
-    gpsHistory.push({ lat, lon, direction });
 
     prevLat = lat;
     prevLon = lon;
-    x = newX;
-    y = newY;
   }
 
   function showError(error) {
@@ -413,191 +311,148 @@
     locationText.textContent = "Location: Error fetching";
   }
 
-  window.addEventListener('devicemotion', function(event) {
-    if (!event.acceleration) return;
+  function getDirectionFromAngle(angle) {
+    const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
+                        "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
+    return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
+  }
 
-    const ax = event.acceleration.x || 0;
-    const ay = event.acceleration.y || 0;
-    const az = event.acceleration.z || 0;
+let vibratedRecently = false;
 
-    const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
-    const vibrationThreshold = 5 + (sensitivityFactor * 2.5);
+/*window.addEventListener('devicemotion', function(event) {
+  if (!event.acceleration) return;
 
-    if (totalAccel > vibrationThreshold) {
-      if (!vibratedRecently) {
-        vibratedRecently = true;
-        navigator.vibrate(300);
+  const ax = event.acceleration.x || 0;
+  const ay = event.acceleration.y || 0;
+  const az = event.acceleration.z || 0;
 
-        const marker = document.createElement("div");
-        marker.className = "trail";
-        marker.style.left = `${x + 6}px`;
-        marker.style.top = `${y + 6}px`;
-        marker.style.background = "red";
-        main.appendChild(marker);
+  const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
 
-        setTimeout(() => {
-          marker.style.opacity = "0";
-          setTimeout(() => marker.remove(), 1000);
-        }, 500);
+  // Sensitivity: 0 = most sensitive (threshold = low), 10 = least sensitive (threshold = high)
+  const vibrationThreshold = 5 + (sensitivityFactor * 2.5); 
+  // 5 (min) to 30 (max) depending on slider
+
+  // If total acceleration exceeds threshold → vibrate
+  if (totalAccel > vibrationThreshold) {
+    vibratedRecently = true;
+
+    navigator.vibrate(300);
+
+    // Optional red dot marker
+    const marker = document.createElement("div");
+    marker.className = "trail";
+    marker.style.left = `${x + 6}px`;
+    marker.style.top = `${y + 6}px`;
+    marker.style.background = "red";
+    main.appendChild(marker);
+  } else {
+    vibratedRecently = false;
+  }
+});*/
+
+let recordedData = [];  // Add this at the top of your <script> if not already
+
+window.addEventListener('devicemotion', function(event) {
+  if (!event.acceleration) return;
+
+  const ax = event.acceleration.x || 0;
+  const ay = event.acceleration.y || 0;
+  const az = event.acceleration.z || 0;
+
+  const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
+  const vibrationThreshold = 5 + (sensitivityFactor * 2.5); 
+
+  if (totalAccel > vibrationThreshold) {
+    vibratedRecently = true;
+    navigator.vibrate(300);
+    const marker = document.createElement("div");
+    marker.className = "trail";
+    marker.style.left = `${x + 6}px`;
+    marker.style.top = `${y + 6}px`;
+    marker.style.background = "red";
+    main.appendChild(marker);
+  } else {
+    vibratedRecently = false;
+  }
+
+  // ✅ Store the data entry
+  recordedData.push({
+    x: ax,
+    y: ay,
+    z: az,
+    vibration: vibratedRecently ? "Yes" : "No",
+    direction: directionText.textContent.replace("Direction: ", "")
+  });
+});
+
+
+  /*window.addEventListener('load', () => {
+    resetDot();
+    setInterval(() => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(showLocation, showError);
+      } else {
+        locationText.textContent = "Geolocation not supported.";
       }
-    } else {
-      vibratedRecently = false;
-    }
+    }, 5000);
+  });*/
 
-    recordedData.push({
-      x: ax,
-      y: ay,
-      z: az,
-      vibration: vibratedRecently ? "Yes" : "No",
-      direction: directionText.textContent.replace("Direction: ", "")
-    });
-  });
+window.addEventListener('load', () => {
+  resetDot();
+});
 
-  function saveDataToFile() {
-    const numberOfEntries = 50; // Or use slider value for number of records saved
-    const recentData = recordedData.slice(-numberOfEntries);
+function saveDataToFile() {
+  const numberOfEntries = parseInt(sensitivityRange.value);  // Slider value
+  const recentData = recordedData.slice(-numberOfEntries);  // Last N entries
 
-    if (recentData.length === 0) {
-      alert("No data to save.");
-      return;
-    }
-
-    let fileContent = "X\tY\tZ\tVibration\tDirection\n";
-    recentData.forEach(entry => {
-      fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
-    });
-
-    const blob = new Blob([fileContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "motion_data.txt";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  if (recentData.length === 0) {
+    alert("No data to save.");
+    return;
   }
 
-  function startTracking() {
-    if (navigator.geolocation) {
-      if (watchId !== null) {
-        // Already tracking
-        return;
+  let fileContent = "X\tY\tZ\tVibration\tDirection\n";
+  recentData.forEach(entry => {
+    fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
+  });
+
+  const blob = new Blob([fileContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "motion_data.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+
+let trackingInterval = null;
+
+function startTracking() {
+  if (!trackingInterval) {
+    trackingInterval = setInterval(() => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(showLocation, showError);
+      } else {
+        locationText.textContent = "Geolocation not supported.";
       }
-      watchId = navigator.geolocation.watchPosition(showLocation, showError, {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      });
-    } else {
-      alert("Geolocation is not supported by this browser.");
-    }
+    }, 5000);
+    console.log("Tracking started");
   }
+}
 
-  function stopTracking() {
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
-      watchId = null;
-      console.log("Tracking stopped");
-    }
-  }
+function stopTracking() {
+  clearInterval(trackingInterval);
+  trackingInterval = null;
+  console.log("Tracking stopped");
+}
 
-  function resetPage() {
-    location.reload();
-  }
+function resetPage() {
+  location.reload();  // This reloads the page
+}
 
-  function toggleHistory() {
-    const tableDiv = document.getElementById("historyTable");
-    const tbody = document.getElementById("historyBody");
-
-    if (tableDiv.style.display === "none" || tableDiv.style.display === "") {
-      tbody.innerHTML = "";
-      gpsHistory.forEach((entry, index) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${entry.lat.toFixed(5)}</td>
-          <td>${entry.lon.toFixed(5)}</td>
-          <td>${entry.direction}</td>
-        `;
-        tbody.appendChild(row);
-      });
-      tableDiv.style.display = "block";
-    } else {
-      tableDiv.style.display = "none";
-    }
-  }
-
-  // Initialize dot center on page load
-  window.addEventListener('load', () => {
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-    moveDot(centerX, centerY);
-  });
-
-let map, marker, watchId;
-
-  function initMap(lat, lon) {
-    map = L.map('map').setView([lat, lon], 16);
-
-    // Map tiles — yahan hum OpenStreetMap use kar rahe hain,
-    // aap chahe to Google Maps tile bhi use kar sakte hain but setup thoda complex hoga
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 20,
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(map);
-
-    marker = L.circleMarker([lat, lon], {
-      radius: 10,
-      color: '#007bff',
-      fillColor: '#3399ff',
-      fillOpacity: 0.9
-    }).addTo(map);
-  }
-
-  function updatePosition(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-
-    if (!map) {
-      initMap(lat, lon);
-    } else {
-      map.setView([lat, lon], 16);
-      marker.setLatLng([lat, lon]);
-    }
-  }
-
-  function onError(error) {
-    alert("Error getting location: " + error.message);
-  }
-
-  document.getElementById("startBtn").addEventListener("click", () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
-      return;
-    }
-    watchId = navigator.geolocation.watchPosition(updatePosition, onError, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 5000,
-    });
-    document.getElementById("startBtn").disabled = true;
-    document.getElementById("stopBtn").disabled = false;
-  });
-
-  document.getElementById("stopBtn").addEventListener("click", () => {
-    if (watchId != null) {
-      navigator.geolocation.clearWatch(watchId);
-      watchId = null;
-    }
-    document.getElementById("startBtn").disabled = false;
-    document.getElementById("stopBtn").disabled = true;
-  });
 </script>
+
 </body>
 </html>
-
-
-
-
-
