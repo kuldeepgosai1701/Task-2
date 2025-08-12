@@ -213,7 +213,7 @@
 <footer>Created by Kuldeep Gosai</footer>
 
 <script>
-  let x = 0;
+ /* let x = 0;
   let y = 0;
   let prevLat = null;
   let prevLon = null;
@@ -329,6 +329,176 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
     console.error("GPS Error:", error);
     locationText.textContent = "Location: Error fetching";
   }
+*/
+
+let x = 0, y = 0;
+let startLat = null, startLon = null;
+let prevLat = null, prevLon = null;
+let gpsHistory = [];
+let recordedData = [];
+let vibratedRecently = false;
+
+const dot = document.getElementById("dot");
+const main = document.getElementById("main");
+const locationText = document.getElementById("location");
+const directionText = document.getElementById("direction");
+const sensitivityRange = document.getElementById("sensitivityRange");
+const sensVal = document.getElementById("sensVal");
+let sensitivityFactor = parseFloat(sensitivityRange.value);
+
+sensitivityRange.addEventListener("input", () => {
+  sensitivityFactor = parseFloat(sensitivityRange.value);
+  sensVal.textContent = sensitivityRange.value;
+});
+
+// Move dot smoothly
+function moveDot(newX, newY) {
+  x = newX;
+  y = newY;
+
+  dot.style.left = `${x}px`;
+  dot.style.top = `${y}px`;
+
+  const trail = document.createElement("div");
+  trail.className = "trail";
+  trail.style.left = `${x + 6}px`;
+  trail.style.top = `${y + 6}px`;
+  main.appendChild(trail);
+
+  setTimeout(() => {
+    trail.style.opacity = "0";
+    setTimeout(() => trail.remove(), 1000);
+  }, 500);
+
+  // auto-scroll
+  const buffer = 50;
+  if (x - window.scrollX < buffer || x - window.scrollX > window.innerWidth - buffer ||
+      y - window.scrollY < buffer || y - window.scrollY > window.innerHeight - buffer) {
+    window.scrollTo({
+      left: x - window.innerWidth / 2,
+      top: y - window.innerHeight / 2,
+      behavior: "smooth"
+    });
+  }
+}
+
+// Calculate distance in meters
+function getMetersBetween(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // meters
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function showLocation(position) {
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+  locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+
+  if (startLat === null) {
+    // Set initial GPS position as reference
+    startLat = lat;
+    startLon = lon;
+    prevLat = lat;
+    prevLon = lon;
+    moveDot(window.innerWidth / 2, window.innerHeight / 2);
+    return;
+  }
+
+  const dxMeters = getMetersBetween(startLat, startLon, startLat, lon);
+  const dyMeters = getMetersBetween(startLat, startLon, lat, startLon);
+  const dx = (lon > startLon ? dxMeters : -dxMeters);
+  const dy = (lat > startLat ? dyMeters : -dyMeters);
+
+  // Scale meters to pixels (1m = 5px for example)
+  const newX = window.innerWidth / 2 + dx * 5;
+  const newY = window.innerHeight / 2 - dy * 5;
+
+  // Draw movement line
+  drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
+  moveDot(newX, newY);
+
+  // Direction
+  const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+  directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+
+  prevLat = lat;
+  prevLon = lon;
+}
+
+function getDirectionFromAngle(angle) {
+  const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
+                      "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
+  return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
+}
+
+function drawLine(x1, y1, x2, y2, isVibrated = false) {
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+  const line = document.createElement("div");
+  line.style.position = "absolute";
+  line.style.left = `${x1}px`;
+  line.style.top = `${y1}px`;
+  line.style.width = `${length}px`;
+  line.style.height = `2px`;
+  line.style.backgroundColor = isVibrated ? "red" : "blue";
+  line.style.transform = `rotate(${angle}deg)`;
+  line.style.transformOrigin = "0 0";
+  main.appendChild(line);
+}
+
+// Reverse sensitivity logic for vibration
+window.addEventListener('devicemotion', function(event) {
+  if (!event.acceleration) return;
+  const ax = event.acceleration.x || 0;
+  const ay = event.acceleration.y || 0;
+  const az = event.acceleration.z || 0;
+  const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
+
+  // Slider near 10 => low threshold (high sensitivity)
+  const vibrationThreshold = 30 - (sensitivityFactor * 2.8);
+
+  if (totalAccel > vibrationThreshold) {
+    vibratedRecently = true;
+    navigator.vibrate(300);
+    const marker = document.createElement("div");
+    marker.className = "trail";
+    marker.style.left = `${x + 6}px`;
+    marker.style.top = `${y + 6}px`;
+    marker.style.background = "red";
+    main.appendChild(marker);
+  } else {
+    vibratedRecently = false;
+  }
+
+  recordedData.push({
+    x: ax, y: ay, z: az,
+    vibration: vibratedRecently ? "Yes" : "No",
+    direction: directionText.textContent.replace("Direction: ", "")
+  });
+});
+
+// Start tracking
+let trackingInterval = null;
+function startTracking() {
+  if (!trackingInterval) {
+    trackingInterval = setInterval(() => {
+      navigator.geolocation.getCurrentPosition(showLocation, showError);
+    }, 3000);
+  }
+}
+
+function stopTracking() {
+  clearInterval(trackingInterval);
+  trackingInterval = null;
+}
+
+function showError(error) {
+  locationText.textContent = "Location: Error fetching";
+}
 
   function getDirectionFromAngle(angle) {
     const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
@@ -475,6 +645,7 @@ function resetPage() {
 
 </body>
 </html>
+
 
 
 
