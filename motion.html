@@ -1,10 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPS Motion Tracker</title>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+4lG+/VnS1TchktwFUPzfhvVqGZ0ZqvyyFf8H3R94=" crossorigin="" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j8MkRUYw35vj0IadB1iKsFcwZqTRWyd4InENa+o=" crossorigin=""></script>
+
   <style>
    * {
       margin: 0;
@@ -164,11 +170,21 @@
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
     }
+
+#leafletMap {
+  margin-top: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+}
+
   </style>
 </head>
 <body>
 
-<header>Motion Tracker</header>
+<header>
+  <span>Motion Tracker</span>
+  <button onclick="toggleHistory()" style="float: right; margin-right: 10px; font-size: 0.9rem;">History</button>
+</header>
 
 <!-- Sensitivity Control Slider -->
 <div class="sensitivity-box">
@@ -189,7 +205,23 @@
 </div>
 
 <main id="main">
+<div id="leafletMap" style="height: 400px; width: 100%; margin-top: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 8px rgba(0,0,0,0.2);"></div>
   <div id="dot"></div>
+  <div id="historyTable" style="display:none; padding: 20px;">
+  <h2 style="margin-bottom: 10px;">GPS Movement History</h2>
+  <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; background: white;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Direction</th>
+      </tr>
+    </thead>
+    <tbody id="historyBody">
+    </tbody>
+  </table>
+</div>
 </main>
 
 <footer>Created by Kuldeep Gosai</footer>
@@ -199,6 +231,28 @@
   let y = 0;
   let prevLat = null;
   let prevLon = null;
+  let gpsHistory = [];  // ✅ This line stores the GPS movement historylet map, marker, mapInitialized = false;
+
+function initLeafletMap(lat = 0, lon = 0) {
+  map = L.map('leafletMap').setView([lat, lon], 16);
+
+  // Add OpenStreetMap tile layer
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 20,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  // Dot Marker
+  marker = L.circleMarker([lat, lon], {
+    radius: 10,
+    color: '#003366',
+    fillColor: '#007bff',
+    fillOpacity: 0.9
+  }).addTo(map);
+
+  mapInitialized = true;
+}
+
 
   const dot = document.getElementById("dot");
   const main = document.getElementById("main");
@@ -278,10 +332,17 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
     window.scrollTo({ left: centerX - window.innerWidth / 2, top: centerY - window.innerHeight / 2 });
   }
 
-  function showLocation(position) {
+  /*function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+
+   // Optional angle for direction (reuse or recalculate)
+   const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
+   const direction = getDirectionFromAngle(angle);
+
+    // 📌 Save this entry into GPS history
+    gpsHistory.push({ lat, lon, direction });
 
     if (prevLat !== null && prevLon !== null) {
    const scaleFactor = 300000;
@@ -304,7 +365,43 @@ function drawLine(x1, y1, x2, y2, isVibrated = false) {
 
     prevLat = lat;
     prevLon = lon;
+  }*/
+
+function showLocation(position) {
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+  locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+
+  const angle = Math.atan2(lat - prevLat, lon - prevLon) * (180 / Math.PI);
+  const direction = getDirectionFromAngle(angle);
+  gpsHistory.push({ lat, lon, direction });
+
+  // 💡 Update Leaflet map
+  if (!mapInitialized) {
+    initLeafletMap(lat, lon);
+  } else {
+    marker.setLatLng([lat, lon]);
+    map.panTo([lat, lon]);
   }
+
+  if (prevLat !== null && prevLon !== null) {
+    const scaleFactor = 300000;
+    const dx = (lon - prevLon) * scaleFactor;
+    const dy = (lat - prevLat) * scaleFactor;
+    const newX = x + dx;
+    const newY = y + dy;
+
+    drawLine(x + 9, y + 9, newX + 9, newY + 9, vibratedRecently);
+    moveDot(newX, newY);
+
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+  }
+
+  prevLat = lat;
+  prevLon = lon;
+}
+
 
   function showError(error) {
     console.error("GPS Error:", error);
@@ -452,7 +549,61 @@ function resetPage() {
   location.reload();  // This reloads the page
 }
 
-</script>
+function toggleHistory() {
+  const tableDiv = document.getElementById("historyTable");
+  const tbody = document.getElementById("historyBody");
 
+  if (tableDiv.style.display === "none") {
+    // Populate table with history
+    tbody.innerHTML = "";
+    gpsHistory.forEach((entry, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${entry.lat.toFixed(5)}</td>
+        <td>${entry.lon.toFixed(5)}</td>
+        <td>${entry.direction}</td>
+      `;
+      tbody.appendChild(row);
+    });
+    tableDiv.style.display = "block";
+  } else {
+    tableDiv.style.display = "none";
+  }
+}
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
