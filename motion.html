@@ -10,7 +10,10 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { height: 100%; font-family: 'Segoe UI', sans-serif; background: #e6f0ff; }
+    body, html {
+     height: 100%;
+     display: flex;
+     flex-direction: column; }
 
     header {
       background: #004080;
@@ -65,28 +68,22 @@
     }
 
     #map {
-      height: 100vh;
-      width: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 0;
+     flex: 1;
+     width: 100%;
+     position: relative; /* remove absolute positioning */
     }
 
     footer {
       background: linear-gradient(90deg, #004080, #0066cc);
-      color: white;
-      text-align: center;
-      padding: 14px;
-      font-size: 1rem;
-      position: sticky;
-      bottom: 0;
-      z-index: 1000;
+       color: white;
+  text-align: center;
+  padding: 14px;
+  font-size: 1rem;
     }
   </style>
 </head>
-<body>
 
+<body>
 <header>
  </h1> Motion Tracker</h1>
   <button onclick="toggleHistory()" style="float: right; margin-right: 10px;">History</button>
@@ -114,6 +111,7 @@
 <footer>
 <p>Created by Kuldeep Gosai</p>
 </footer>
+</body>
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -266,6 +264,7 @@
 
 </body>
 </html>
+
 
 
 
