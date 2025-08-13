@@ -152,6 +152,8 @@
 
   let pathCoords = [];
   let pathLine = L.polyline(pathCoords, { color: 'blue' }).addTo(map);
+  let vibrationCoords = [];
+  let vibrationLine = L.polyline(vibrationCoords, { color: 'red', weight: 3 }).addTo(map);
 
   function showLocation(position) {
     const lat = position.coords.latitude;
@@ -170,16 +172,24 @@
       directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
     }
 
-    if (vibratedRecently) {
-      L.circleMarker([lat, lon], {
-        radius: 5,
-        fillColor: "red",
-        color: "darkred",
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.9
-      }).addTo(map);
-    }
+if (vibratedRecently) {
+  // Add red dot
+  L.circleMarker([lat, lon], {
+    radius: 5,
+    fillColor: "red",
+    color: "darkred",
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.9
+  }).addTo(map);
+
+  // Save vibration point
+  vibrationCoords.push([lat, lon]);
+
+  // Draw red line between vibration points
+  vibrationLine.setLatLngs(vibrationCoords);
+}
+
 
     prevLat = lat;
     prevLon = lon;
@@ -261,9 +271,8 @@
     location.reload();
   }
 </script>
-
-</body>
 </html>
+
 
 
 
