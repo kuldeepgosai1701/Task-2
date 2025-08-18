@@ -221,26 +221,34 @@
     });
   });
 
-  function saveDataToFile() {
-    const numberOfEntries = parseInt(sensitivityRange.value);
-    const recentData = recordedData.slice(-numberOfEntries);
-    if (recentData.length === 0) {
-      alert("No data to save.");
-      return;
-    }
-    let fileContent = "X\tY\tZ\tVibration\tDirection\n";
-    recentData.forEach(entry => {
-      fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
-    });
-    const blob = new Blob([fileContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "motion_data.txt";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+function saveDataToFile() {
+  // sensitivity box ka value hi number of entries decide karega
+  const numberOfEntries = parseInt(sensitivityRange.value);
+
+  // last N entries select karo
+  const recentData = recordedData.slice(-numberOfEntries);
+
+  if (recentData.length === 0) {
+    alert("No data to save.");
+    return;
   }
+
+  // text file content banao
+  let fileContent = "X\tY\tZ\tVibration\tDirection\n";
+  recentData.forEach(entry => {
+    fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
+  });
+
+  // download trigger karo
+  const blob = new Blob([fileContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `motion_data_last_${numberOfEntries}.txt`; // filename me bhi show karega
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 
   function startTracking() {
     if (!trackingInterval) {
@@ -263,6 +271,7 @@
 </script>
 </body>
 </html>
+
 
 
 
