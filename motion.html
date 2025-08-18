@@ -204,7 +204,7 @@
     const ay = event.acceleration.y || 0;
     const az = event.acceleration.z || 0;
     const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
-    const vibrationThreshold = 20 - (sensitivityFactor * 1.5);
+    const vibrationThreshold = sensitivityFactor;
 
 
     vibratedRecently = totalAccel > vibrationThreshold;
@@ -272,6 +272,7 @@ function saveDataToFile() {
 </script>
 </body>
 </html>
+
 
 
 
