@@ -172,7 +172,10 @@ function showLocation(position) {
     // GPS history me store karo
     gpsHistory.push({lat, lon, time: timestamp});
 
-    // existing code
+   // ✅ localStorage me bhi save karo
+    localStorage.setItem("gpsHistory", JSON.stringify(gpsHistory));
+
+   // existing code
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
     pathCoords.push([lat, lon]);
     pathLine.setLatLngs(pathCoords);
@@ -226,6 +229,8 @@ function showLocation(position) {
       vibration: vibratedRecently ? "Yes" : "No",
       direction: directionText.textContent.replace("Direction: ", "")
     });
+  // ✅ localStorage me bhi save karo
+    localStorage.setItem("recordedData", JSON.stringify(recordedData));
   });
 
 function saveDataToFile() {
@@ -272,9 +277,19 @@ function saveDataToFile() {
     trackingInterval = null;
   }
 
-  function resetPage() {
-    location.reload();
-  }
+ function resetPage() {
+  // Path clear karo (screen se)
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+
+  // Dot ko center me set karo
+  dotMarker.setLatLng([0,0]);
+  map.setView([0,0], 18);
+
+  // ❌ NOTE: gpsHistory ko clear NAHI karna 
+  // Matlab purana data localStorage me safe hai
+}
+
 
 function toggleHistory() {
     const modal = document.getElementById("historyModal");
@@ -324,10 +339,29 @@ function showHistoryPath(startTime, endTime) {
     map.fitBounds(filteredPath);
     closeHistory();
 }
+window.onload = function() {
+  const savedHistory = localStorage.getItem("gpsHistory");
+  const savedRecorded = localStorage.getItem("recordedData");
 
+  if (savedHistory) {
+    gpsHistory = JSON.parse(savedHistory);
+    // Map pe purana path show karo
+    pathCoords = gpsHistory.map(p => [p.lat, p.lon]);
+    pathLine.setLatLngs(pathCoords);
+    if (pathCoords.length > 0) {
+      dotMarker.setLatLng(pathCoords[pathCoords.length - 1]);
+      map.fitBounds(pathCoords);
+    }
+  }
+
+  if (savedRecorded) {
+    recordedData = JSON.parse(savedRecorded);
+  }
+};
 </script>
 </body>
 </html>
+
 
 
 
