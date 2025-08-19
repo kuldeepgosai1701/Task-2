@@ -106,8 +106,19 @@
 </div>
 
 <!-- Map container -->
-<div id="map"></div>
-
+<div id="map"></div><!-- Mini History Map (hidden by default) -->
+<div id="historyMap" style="
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  height: 200px;
+  border: 2px solid #004080;
+  border-radius: 10px;
+  overflow: hidden;
+  display: none; /* by default hidden */
+  z-index: 1002;
+"></div>
 <footer>
 <p>Created by Kuldeep Gosai</p>
 </footer>
@@ -140,6 +151,47 @@
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
+
+// Mini-map setup
+let historyMap = L.map('historyMap').setView([0, 0], 15);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19
+}).addTo(historyMap);
+
+// History layers for mini-map
+let historyPath = L.polyline([], { color: 'blue' }).addTo(historyMap);
+let historyDots = L.layerGroup().addTo(historyMap);
+
+let historyVisible = false;
+
+// Toggle function for History Button
+function toggleHistory() {
+  const historyDiv = document.getElementById("historyMap");
+  historyVisible = !historyVisible;
+  historyDiv.style.display = historyVisible ? "block" : "none";
+
+  if (historyVisible && pathCoords.length > 0) {
+    historyPath.setLatLngs(pathCoords);
+    historyDots.clearLayers();
+
+    pathCoords.forEach(([lat, lon], i) => {
+      // yaha aap apne vibration condition use karo
+      if (i < pathCoords.length - 1 && vibratedRecently) {
+        L.circleMarker([lat, lon], {
+          radius: 4,
+          fillColor: "red",
+          color: "darkred",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.9
+        }).addTo(historyDots);
+      }
+    });
+
+    historyMap.fitBounds(historyPath.getBounds());
+  }
+}
+
 
   let dotMarker = L.circleMarker([0, 0], {
     radius: 10,
@@ -291,6 +343,7 @@ function toggleHistory() {
 </script>
 </body>
 </html>
+
 
 
 
