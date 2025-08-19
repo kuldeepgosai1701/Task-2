@@ -153,11 +153,16 @@
   let pathCoords = [];
   let pathLine = L.polyline(pathCoords, { color: 'blue' }).addTo(map);
 
-  function showLocation(position) {
+function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    const timestamp = new Date();  // current time
 
+    // GPS history me store karo
+    gpsHistory.push({lat, lon, time: timestamp});
+
+    // existing code
+    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
     pathCoords.push([lat, lon]);
     pathLine.setLatLngs(pathCoords);
     dotMarker.setLatLng([lat, lon]);
@@ -170,20 +175,10 @@
       directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
     }
 
-    if (vibratedRecently) {
-      L.circleMarker([lat, lon], {
-        radius: 5,
-        fillColor: "red",
-        color: "darkred",
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.9
-      }).addTo(map);
-    }
-
     prevLat = lat;
     prevLon = lon;
-  }
+}
+
 
   function getDirectionFromAngle(angle) {
     const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
@@ -269,9 +264,60 @@ function saveDataToFile() {
   function resetPage() {
     location.reload();
   }
+
+function toggleHistory() {
+    const modal = document.getElementById("historyModal");
+    const list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    if (modal.style.display === "none") {
+        if (gpsHistory.length === 0) {
+            alert("No history available yet.");
+            return;
+        }
+
+        // 1 minute ya 5 minute interval ke basis pe group kar sakte ho
+        // yaha simple approach: poora session ko 1 entry ke liye consider kar rahe hain
+        const startTime = gpsHistory[0].time;
+        const endTime = gpsHistory[gpsHistory.length - 1].time;
+
+        const li = document.createElement("li");
+        li.style.cursor = "pointer";
+        li.textContent = `${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString()} – ${endTime.toLocaleTimeString()}`;
+        li.onclick = () => showHistoryPath(startTime, endTime);
+        list.appendChild(li);
+
+        modal.style.display = "block";
+    } else {
+        modal.style.display = "none";
+    }
+}
+
+function closeHistory() {
+    document.getElementById("historyModal").style.display = "none";
+}
+
+function showHistoryPath(startTime, endTime) {
+    // filter gpsHistory for selected time range
+    const filteredPath = gpsHistory.filter(p => p.time >= startTime && p.time <= endTime)
+                                   .map(p => [p.lat, p.lon]);
+
+    if (filteredPath.length === 0) {
+        alert("No movement in this interval.");
+        return;
+    }
+
+    // clear existing path
+    pathLine.setLatLngs(filteredPath);
+    dotMarker.setLatLng(filteredPath[filteredPath.length - 1]);
+    map.fitBounds(filteredPath);
+    closeHistory();
+}
+
 </script>
 </body>
 </html>
+
 
 
 
