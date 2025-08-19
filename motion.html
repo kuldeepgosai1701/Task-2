@@ -108,6 +108,17 @@
 <!-- Map container -->
 <div id="map"></div>
 
+<!-- History Modal -->
+<div id="historyModal" 
+     style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+            background:#fff; padding:20px; border-radius:12px; box-shadow:0px 4px 15px rgba(0,0,0,0.3);
+            z-index:2000; width:300px; max-height:400px; overflow:auto;">
+  <h3>📌 History</h3>
+  <ul id="historyList" style="list-style:none; padding-left:0;"></ul>
+  <button onclick="closeHistory()" 
+          style="margin-top:10px; background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:6px;">Close</button>
+</div>
+
 <footer>
 <p>Created by Kuldeep Gosai</p>
 </footer>
@@ -317,6 +328,7 @@ function showHistoryPath(startTime, endTime) {
 </script>
 </body>
 </html>
+
 
 
 
