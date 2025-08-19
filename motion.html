@@ -86,7 +86,7 @@
 <body>
 <header>
  </h1> Motion Tracker</h1>
-  <button onclick="toggleHistory()" style="float: right; margin-right: 10px;">History</button>
+<button onclick="openHistoryPage()" style="float: right; margin-right: 10px;">History</button>
 </header>
 
 <div class="sensitivity-box">
@@ -339,6 +339,13 @@ function showHistoryPath(startTime, endTime) {
     map.fitBounds(filteredPath);
     closeHistory();
 }
+
+
+  function openHistoryPage() {
+    window.location.href = "history.html"; // नया पेज खुलेगा
+  }
+
+
 window.onload = function() {
   const savedHistory = localStorage.getItem("gpsHistory");
   const savedRecorded = localStorage.getItem("recordedData");
@@ -361,6 +368,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
