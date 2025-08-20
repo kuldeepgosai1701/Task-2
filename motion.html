@@ -85,7 +85,7 @@
 
 <body>
 <header>
- </h1> Motion Tracker</h1>
+ </h1>Motion Tracker</h1>
 <button onclick="openHistoryPage()" style="float: right; margin-right: 10px;">History</button>
 </header>
 
@@ -184,8 +184,8 @@ function showLocation(position) {
       const dx = lon - prevLon;
       const dy = lat - prevLat;
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
-    }
+    directionText.textContent = `Direction: ${getDirectionFromAngle(angle)} (${Math.round(angle)}°)`;
+ }
 
     prevLat = lat;
     prevLon = lon;
@@ -209,6 +209,21 @@ function showError(error) {
   }
 }
 
+function getDirectionFromAngle(angle) {
+  // Normalize angle (-180 se 180 ko 0–360 me convert)
+  angle = (angle + 360) % 360;
+
+  if (angle >= 337.5 || angle < 22.5) return "East";
+  if (angle >= 22.5 && angle < 67.5) return "North-East";
+  if (angle >= 67.5 && angle < 112.5) return "North";
+  if (angle >= 112.5 && angle < 157.5) return "North-West";
+  if (angle >= 157.5 && angle < 202.5) return "West";
+  if (angle >= 202.5 && angle < 247.5) return "South-West";
+  if (angle >= 247.5 && angle < 292.5) return "South";
+  if (angle >= 292.5 && angle < 337.5) return "South-East";
+  
+  return "Unknown";
+}
 
 function saveDataToFile() {
   // sensitivity box ka value hi number of entries decide karega
@@ -285,8 +300,7 @@ function toggleHistory() {
             return;
         }
 
-        // 1 minute ya 5 minute interval ke basis pe group kar sakte ho
-        // yaha simple approach: poora session ko 1 entry ke liye consider kar rahe hain
+       
         const startTime = gpsHistory[0].time;
         const endTime = gpsHistory[gpsHistory.length - 1].time;
 
@@ -351,6 +365,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
