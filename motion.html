@@ -167,15 +167,13 @@
 function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-    const timestamp = new Date();  // current time
+    const timestamp = new Date().toISOString();  // <-- store string format
 
     // GPS history me store karo
     gpsHistory.push({lat, lon, time: timestamp});
-
-   // ✅ localStorage me bhi save karo
     localStorage.setItem("gpsHistory", JSON.stringify(gpsHistory));
 
-   // existing code
+    // UI update
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
     pathCoords.push([lat, lon]);
     pathLine.setLatLngs(pathCoords);
@@ -194,57 +192,22 @@ function showLocation(position) {
 }
 
 
-  function getDirectionFromAngle(angle) {
-    const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
-                        "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
-    return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
+function showError(error) {
+  console.error("GPS Error:", error);
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      locationText.textContent = "Location: Permission denied ❌";
+      break;
+    case error.POSITION_UNAVAILABLE:
+      locationText.textContent = "Location: Position unavailable 📡";
+      break;
+    case error.TIMEOUT:
+      locationText.textContent = "Location: Timeout ⏳";
+      break;
+    default:
+      locationText.textContent = "Location: Unknown error ⚠️";
   }
-
-  function showError(error) {
-    console.error("GPS Error:", error);
-    locationText.textContent = "Location: Error fetching";
-  }
-
-  // Vibration detection
-window.addEventListener('devicemotion', function(event) {
-    if (!event.rotationRate) return;
-
-    const rx = event.rotationRate.alpha || 0;  // Z axis (compass-like)
-    const ry = event.rotationRate.beta || 0;   // X axis (front-back tilt)
-    const rz = event.rotationRate.gamma || 0;  // Y axis (side tilt)
-
-    // total angular velocity
-    const totalRotation = Math.sqrt(rx * rx + ry * ry + rz * rz);
-
-    const vibrationThreshold = sensitivityFactor * 5; 
-    // (scale factor because gyroscope values are usually smaller)
-
-    vibratedRecently = totalRotation > vibrationThreshold;
-
-if (vibratedRecently && prevLat !== null && prevLon !== null) {
-  navigator.vibrate(300);
-  L.circleMarker([prevLat, prevLon], {
-    radius: 8,
-    color: "red",
-    fillColor: "red",
-    fillOpacity: 0.9
-  }).addTo(map);
 }
-
-      // plot normal blue line
-      pathLine.setStyle({ color: "blue" });
-    }
-
-    recordedData.push({
-      alpha: rx.toFixed(2),
-      beta: ry.toFixed(2),
-      gamma: rz.toFixed(2),
-      vibration: vibratedRecently ? "Yes" : "No",
-      direction: directionText.textContent.replace("Direction: ", "")
-    });
-
-    localStorage.setItem("recordedData", JSON.stringify(recordedData));
-});
 
 
 function saveDataToFile() {
@@ -299,21 +262,15 @@ function stopTracking() {
 }
 
 
- function resetPage() {
-  // Path clear karo (screen se)
+function resetPage() {
+  // Path clear karo
   pathCoords = [];
   pathLine.setLatLngs(pathCoords);
 
-  
-  // update only the marker position
-dotMarker.setLatLng([lat, lon]);
-
-// map view ko zoom ke saath smoothly adjust karo
-map.panTo([lat, lon], {animate: true, duration: 0.5});
-
-
-  // ❌ NOTE: gpsHistory ko clear NAHI karna 
-  // Matlab purana data localStorage me safe hai
+  if (prevLat && prevLon) {
+    dotMarker.setLatLng([prevLat, prevLon]);
+    map.panTo([prevLat, prevLon], {animate: true, duration: 0.5});
+  }
 }
 
 
@@ -394,6 +351,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
