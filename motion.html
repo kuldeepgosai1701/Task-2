@@ -259,11 +259,12 @@ function saveDataToFile() {
     return;
   }
 
-  // text file content banao
-  let fileContent = "X\tY\tZ\tVibration\tDirection\n";
-  recentData.forEach(entry => {
-    fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
-  });
+let fileContent = "Alpha\tBeta\tGamma\tVibration\tDirection\n";
+recentData.forEach(entry => {
+  fileContent += `${entry.alpha.toFixed(2)}\t${entry.beta.toFixed(2)}\t${entry.gamma.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
+});
+
+
 
   // download trigger karo
   const blob = new Blob([fileContent], { type: 'text/plain' });
@@ -276,20 +277,27 @@ function saveDataToFile() {
   document.body.removeChild(a);
 }
 
-  function startTracking() {
-    if (!trackingInterval) {
-      trackingInterval = setInterval(() => {
-        if ("geolocation" in navigator) {
-          navigator.geolocation.getCurrentPosition(showLocation, showError);
-        }
-      }, 5000);
-    }
-  }
+  let watchId = null;
 
-  function stopTracking() {
-    clearInterval(trackingInterval);
-    trackingInterval = null;
+function startTracking() {
+  if ("geolocation" in navigator) {
+    watchId = navigator.geolocation.watchPosition(showLocation, showError, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 5000
+    });
+  } else {
+    alert("GPS not supported on this device/browser.");
   }
+}
+
+function stopTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+}
+
 
  function resetPage() {
   // Path clear karo (screen se)
@@ -382,6 +390,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
