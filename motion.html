@@ -200,38 +200,24 @@ function showLocation(position) {
     return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
 
-  function showError(error) {
-    console.error("GPS Error:", error);
-    locationText.textContent = "Location: Error fetching";
+ function showError(error) {
+  console.error("GPS Error:", error);
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      locationText.textContent = "Location: Permission denied";
+      break;
+    case error.POSITION_UNAVAILABLE:
+      locationText.textContent = "Location: Position unavailable";
+      break;
+    case error.TIMEOUT:
+      locationText.textContent = "Location: Timeout";
+      break;
+    default:
+      locationText.textContent = "Location: Unknown error";
+      break;
   }
+}
 
-  // Vibration detection
-  window.addEventListener('devicemotion', function(event) {
-    if (!event.acceleration) return;
-
-    const ax = event.acceleration.x || 0;
-    const ay = event.acceleration.y || 0;
-    const az = event.acceleration.z || 0;
-    const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
-    const vibrationThreshold = sensitivityFactor;
-
-
-    vibratedRecently = totalAccel > vibrationThreshold;
-
-    if (vibratedRecently) {
-      navigator.vibrate(300);
-    }
-
-    recordedData.push({
-      x: ax,
-      y: ay,
-      z: az,
-      vibration: vibratedRecently ? "Yes" : "No",
-      direction: directionText.textContent.replace("Direction: ", "")
-    });
-  // ✅ localStorage me bhi save karo
-    localStorage.setItem("recordedData", JSON.stringify(recordedData));
-  });
 
 function saveDataToFile() {
   // sensitivity box ka value hi number of entries decide karega
@@ -262,20 +248,29 @@ function saveDataToFile() {
   document.body.removeChild(a);
 }
 
-  function startTracking() {
-    if (!trackingInterval) {
-      trackingInterval = setInterval(() => {
-        if ("geolocation" in navigator) {
-          navigator.geolocation.getCurrentPosition(showLocation, showError);
-        }
-      }, 5000);
-    }
+ function startTracking() {
+  if ("geolocation" in navigator) {
+    // ✅ continuous GPS tracking
+    trackingInterval = navigator.geolocation.watchPosition(
+      showLocation,
+      showError,
+      {
+        enableHighAccuracy: true,   // GPS chip use karega
+        timeout: 10000,             // max wait 10 sec
+        maximumAge: 0               // purana cache use na kare
+      }
+    );
+  } else {
+    alert("Geolocation not supported in this browser.");
   }
+}
 
-  function stopTracking() {
-    clearInterval(trackingInterval);
+function stopTracking() {
+  if (trackingInterval) {
+    navigator.geolocation.clearWatch(trackingInterval);
     trackingInterval = null;
   }
+}
 
  function resetPage() {
   // Path clear karo (screen se)
@@ -368,6 +363,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
