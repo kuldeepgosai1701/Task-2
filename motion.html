@@ -206,32 +206,46 @@ function showLocation(position) {
   }
 
   // Vibration detection
-  window.addEventListener('devicemotion', function(event) {
-    if (!event.acceleration) return;
+window.addEventListener('devicemotion', function(event) {
+    if (!event.rotationRate) return;
 
-    const ax = event.acceleration.x || 0;
-    const ay = event.acceleration.y || 0;
-    const az = event.acceleration.z || 0;
-    const totalAccel = Math.sqrt(ax * ax + ay * ay + az * az);
-    const vibrationThreshold = sensitivityFactor;
+    const rx = event.rotationRate.alpha || 0;  // Z axis (compass-like)
+    const ry = event.rotationRate.beta || 0;   // X axis (front-back tilt)
+    const rz = event.rotationRate.gamma || 0;  // Y axis (side tilt)
 
+    // total angular velocity
+    const totalRotation = Math.sqrt(rx * rx + ry * ry + rz * rz);
 
-    vibratedRecently = totalAccel > vibrationThreshold;
+    const vibrationThreshold = sensitivityFactor * 5; 
+    // (scale factor because gyroscope values are usually smaller)
+
+    vibratedRecently = totalRotation > vibrationThreshold;
 
     if (vibratedRecently) {
       navigator.vibrate(300);
+      // plot red marker at current location
+      L.circleMarker([prevLat, prevLon], {
+        radius: 8,
+        color: "red",
+        fillColor: "red",
+        fillOpacity: 0.9
+      }).addTo(map);
+    } else {
+      // plot normal blue line
+      pathLine.setStyle({ color: "blue" });
     }
 
     recordedData.push({
-      x: ax,
-      y: ay,
-      z: az,
+      alpha: rx.toFixed(2),
+      beta: ry.toFixed(2),
+      gamma: rz.toFixed(2),
       vibration: vibratedRecently ? "Yes" : "No",
       direction: directionText.textContent.replace("Direction: ", "")
     });
-  // ✅ localStorage me bhi save karo
+
     localStorage.setItem("recordedData", JSON.stringify(recordedData));
-  });
+});
+
 
 function saveDataToFile() {
   // sensitivity box ka value hi number of entries decide karega
@@ -368,6 +382,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
