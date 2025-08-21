@@ -132,6 +132,26 @@
   let gpsHistory = [];
   let recordedData = [];
   let sensitivityFactor = 5;
+
+  // Gyroscope values track karne ke liye
+window.addEventListener("deviceorientation", function(event) {
+    let alpha = event.alpha; // rotation around z-axis
+    let beta = event.beta;   // rotation around x-axis
+    let gamma = event.gamma; // rotation around y-axis
+
+    // Save recorded data
+    recordedData.push({ alpha, beta, gamma, time: Date.now() });
+    localStorage.setItem("recordedData", JSON.stringify(recordedData));
+
+    // Sudden change detection (pothole condition)
+    if (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5) {
+        vibratedRecently = true;
+        if (navigator.vibrate) navigator.vibrate(300); // vibrate for 0.3s
+    } else {
+        vibratedRecently = false;
+    }
+}, true);
+
   let vibratedRecently = false;
   let trackingInterval = null;
 
@@ -186,8 +206,18 @@ function showLocation(position) {
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
     directionText.textContent = `Direction: ${getDirectionFromAngle(angle)} (${Math.round(angle)}°)`;
  }
-
-    prevLat = lat;
+    // Agar pothole detect hua hai → red marker add karo
+if (vibratedRecently) {
+    L.circleMarker([lat, lon], {
+        radius: 6,
+        fillColor: "red",
+        color: "darkred",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.9
+    }).addTo(map);
+}
+prevLat = lat;
     prevLon = lon;
 }
 
