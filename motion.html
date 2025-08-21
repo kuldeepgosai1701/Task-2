@@ -130,6 +130,7 @@
 <script>
   let prevLat = null, prevLon = null;
   let gpsHistory = [];
+  let sessionStartTime = null;
   let recordedData = [];
   let sensitivityFactor = 5;
 
@@ -189,9 +190,21 @@ function showLocation(position) {
     const lon = position.coords.longitude;
     const timestamp = new Date().toISOString();  // <-- store string format
 
-    // GPS history me store karo
-    gpsHistory.push({lat, lon, time: timestamp});
-    localStorage.setItem("gpsHistory", JSON.stringify(gpsHistory));
+    // Get sessions array from localStorage
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+
+    if (sessions.length === 0) {
+        // If no session exists, create one
+        sessions.push({
+            start: timestamp,
+            end: null,
+            data: []
+        });
+    }
+
+    sessions[sessions.length - 1].data.push({ lat, lon, time: timestamp });
+
+     localStorage.setItem("sessions", JSON.stringify(sessions));
 
     // UI update
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
@@ -289,6 +302,22 @@ recentData.forEach(entry => {
 
 function startTracking() {
   if ("geolocation" in navigator) {
+    // Check if sessions already exist
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+
+    // Start a new session
+    sessionStartTime = new Date();
+    gpsHistory = []; // reset for new session
+    localStorage.setItem("currentSession", JSON.stringify(gpsHistory));
+
+    // Save to main sessions array with placeholder for end
+    sessions.push({
+      start: sessionStartTime.toISOString(),
+      end: null,
+      data: []
+    });
+    localStorage.setItem("sessions", JSON.stringify(sessions));
+
     watchId = navigator.geolocation.watchPosition(showLocation, showError, {
       enableHighAccuracy: true,
       maximumAge: 0,
@@ -303,8 +332,17 @@ function stopTracking() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
+
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+    let current = sessions[sessions.length - 1];
+    if (current && !current.end) {
+      current.end = new Date().toISOString();
+      current.data = gpsHistory;
+      localStorage.setItem("sessions", JSON.stringify(sessions));
+    }
   }
 }
+
 
 
 function resetPage() {
