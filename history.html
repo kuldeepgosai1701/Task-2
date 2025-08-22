@@ -40,8 +40,6 @@
 
   let pathLine = L.polyline([], {color:'blue'}).addTo(map);
   let dotMarker = L.circleMarker([0,0], {radius:6, fillColor:'red', color:'darkred', weight:1}).addTo(map);
-
-  // LocalStorage से sessions पढ़ो
   const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
 const tbody = document.getElementById("sessionTable");

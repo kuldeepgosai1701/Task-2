@@ -85,7 +85,7 @@
 
 <body>
 <header>
- </h1>Motion Tracker</h1>
+ <h1>Motion Tracker</h1>
 <button onclick="openHistoryPage()" style="float: right; margin-right: 10px;">History</button>
 </header>
 
@@ -141,8 +141,17 @@
   let recordedData = [];
   let sensitivityFactor = 5;
 
+   localStorage.removeItem("currentSession");
+
+  gpsHistory = [];
+  recordedData = [];
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+  dotMarker.setLatLng([0, 0]);
+  map.setView([0, 0], 18);
+
   // Gyroscope values track karne ke liye
-window.addEventListener("deviceorientation", function(event) {
+/*window.addEventListener("deviceorientation", function(event) {
     let alpha = event.alpha; // rotation around z-axis
     let beta = event.beta;   // rotation around x-axis
     let gamma = event.gamma; // rotation around y-axis
@@ -158,8 +167,30 @@ window.addEventListener("deviceorientation", function(event) {
     } else {
         vibratedRecently = false;
     }
-}, true);
+}, true);*/
+window.addEventListener("deviceorientation", function(event) {
+    let alpha = event.alpha;
+    let beta = event.beta;
+    let gamma = event.gamma;
 
+    let vibration = (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5);
+
+    recordedData.push({ alpha, beta, gamma, time: Date.now(), vibration, direction: null });
+
+     // 🔹 Prevent unlimited growth (memory crash fix)
+    if (recordedData.length > 1000) {
+        recordedData.shift(); // purana data hatao
+    }
+    
+    localStorage.setItem("recordedData", JSON.stringify(recordedData));
+
+    if (vibration) {
+        vibratedRecently = true;
+        if (navigator.vibrate) navigator.vibrate(300);
+    } else {
+        vibratedRecently = false;
+    }
+}, true);
   let vibratedRecently = false;
   let trackingInterval = null;
 
@@ -403,7 +434,7 @@ function toggleHistory() {
             return;
         }
 
-        // Har session ke liye list item create karo
+        
         sessions.forEach((session, index) => {
             const startTime = new Date(session.start);
             const endTime = session.end ? new Date(session.end) : null;
@@ -458,12 +489,12 @@ function showHistoryPath(startTime, endTime) {
 
 
   function openHistoryPage() {
-    window.location.href = "history.html"; // नया पेज खुलेगा
+    window.location.href = "history.html"; 
   }
 
 
-window.onload = function() {
-/*  const savedHistory = localStorage.getItem("gpsHistory");
+/*window.onload = function() {
+  const savedHistory = localStorage.getItem("gpsHistory");
   const savedRecorded = localStorage.getItem("recordedData");
 
   if (savedHistory) {
@@ -479,7 +510,7 @@ window.onload = function() {
 
   if (savedRecorded) {
     recordedData = JSON.parse(savedRecorded);
-  }*/
+  }
 
      localStorage.removeItem("currentSession");
 
@@ -489,7 +520,7 @@ window.onload = function() {
   pathLine.setLatLngs(pathCoords);
   dotMarker.setLatLng([0, 0]);
   map.setView([0, 0], 18);
-};
+};*/
 </script>
 </body>
 </html>
