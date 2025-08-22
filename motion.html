@@ -276,10 +276,10 @@ function getDirectionFromAngle(angle) {
 }
 
 function saveDataToFile() {
-  // sensitivity box ka value hi number of entries decide karega
+
   const numberOfEntries = parseInt(sensitivityRange.value);
 
-  // last N entries select karo
+  // last N entries select 
   const recentData = recordedData.slice(-numberOfEntries);
 
   if (recentData.length === 0) {
@@ -294,12 +294,12 @@ recentData.forEach(entry => {
 
 
 
-  // download trigger karo
+  // download trigger 
   const blob = new Blob([fileContent], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `motion_data_last_${numberOfEntries}.txt`; // filename me bhi show karega
+  a.download = `motion_data_last_${numberOfEntries}.txt`; 
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -353,7 +353,6 @@ function stopTracking() {
 
 
 function resetPage() {
-  // Path clear karo
   pathCoords = [];
   pathLine.setLatLngs(pathCoords);
 
@@ -364,7 +363,7 @@ function resetPage() {
 }
 
 
-function toggleHistory() {
+/*function toggleHistory() {
     const modal = document.getElementById("historyModal");
     const list = document.getElementById("historyList");
     list.innerHTML = "";
@@ -384,6 +383,51 @@ function toggleHistory() {
         li.textContent = `${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString()} – ${endTime.toLocaleTimeString()}`;
         li.onclick = () => showHistoryPath(startTime, endTime);
         list.appendChild(li);
+
+        modal.style.display = "block";
+    } else {
+        modal.style.display = "none";
+    }
+}*/
+
+function toggleHistory() {
+    const modal = document.getElementById("historyModal");
+    const list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    if (modal.style.display === "none") {
+        const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+
+        if (sessions.length === 0) {
+            alert("No history available yet.");
+            return;
+        }
+
+        // Har session ke liye list item create karo
+        sessions.forEach((session, index) => {
+            const startTime = new Date(session.start);
+            const endTime = session.end ? new Date(session.end) : null;
+
+            const li = document.createElement("li");
+            li.style.cursor = "pointer";
+            li.textContent = endTime
+                ? `Session ${index + 1}: ${startTime.toLocaleString()} - ${endTime.toLocaleString()}`
+                : `Session ${index + 1}: ${startTime.toLocaleString()} - Ongoing`;
+
+            li.onclick = () => {
+                const path = session.data.map(p => [p.lat, p.lon]);
+                if (path.length > 0) {
+                    pathLine.setLatLngs(path);
+                    dotMarker.setLatLng(path[path.length - 1]);
+                    map.fitBounds(path);
+                } else {
+                    alert("No data in this session.");
+                }
+                closeHistory();
+            };
+
+            list.appendChild(li);
+        });
 
         modal.style.display = "block";
     } else {
