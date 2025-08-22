@@ -128,6 +128,13 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+  // --- Clear previous session data on every page load ---
+window.onload = function() {
+  localStorage.removeItem("gpsHistory");
+  localStorage.removeItem("recordedData");
+  localStorage.removeItem("sessions");
+};
+
   let prevLat = null, prevLon = null;
   let gpsHistory = [];
   let sessionStartTime = null;
