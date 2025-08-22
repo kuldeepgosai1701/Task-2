@@ -128,8 +128,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  // --- Clear previous session data on every page load ---
-window.onload = function() {
+
+  window.onload = function() {
   localStorage.removeItem("gpsHistory");
   localStorage.removeItem("recordedData");
   localStorage.removeItem("sessions");
@@ -419,7 +419,7 @@ function showHistoryPath(startTime, endTime) {
 
 
 window.onload = function() {
-  const savedHistory = localStorage.getItem("gpsHistory");
+/*  const savedHistory = localStorage.getItem("gpsHistory");
   const savedRecorded = localStorage.getItem("recordedData");
 
   if (savedHistory) {
@@ -435,7 +435,18 @@ window.onload = function() {
 
   if (savedRecorded) {
     recordedData = JSON.parse(savedRecorded);
-  }
+  }*/
+
+   localStorage.removeItem("gpsHistory");
+  localStorage.removeItem("recordedData");
+  localStorage.removeItem("sessions");
+
+  gpsHistory = [];
+  recordedData = [];
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+  dotMarker.setLatLng([0, 0]);
+  map.setView([0, 0], 18);
 };
 </script>
 </body>
