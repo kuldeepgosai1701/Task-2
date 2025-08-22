@@ -85,7 +85,7 @@
 
 <body>
 <header>
- <h1>Motion Tracker</h1>
+</h1>Motion Tracker</h1>
 <button onclick="openHistoryPage()" style="float: right; margin-right: 10px;">History</button>
 </header>
 
@@ -141,17 +141,17 @@
   let recordedData = [];
   let sensitivityFactor = 5;
 
-   localStorage.removeItem("currentSession");
+   /*localStorage.removeItem("currentSession");
 
   gpsHistory = [];
   recordedData = [];
   pathCoords = [];
   pathLine.setLatLngs(pathCoords);
   dotMarker.setLatLng([0, 0]);
-  map.setView([0, 0], 18);
+  map.setView([0, 0], 18);*/
 
   // Gyroscope values track karne ke liye
-/*window.addEventListener("deviceorientation", function(event) {
+window.addEventListener("deviceorientation", function(event) {
     let alpha = event.alpha; // rotation around z-axis
     let beta = event.beta;   // rotation around x-axis
     let gamma = event.gamma; // rotation around y-axis
@@ -168,7 +168,7 @@
         vibratedRecently = false;
     }
 }, true);*/
-window.addEventListener("deviceorientation", function(event) {
+  /*window.addEventListener("deviceorientation", function(event) {
     let alpha = event.alpha;
     let beta = event.beta;
     let gamma = event.gamma;
@@ -181,7 +181,7 @@ window.addEventListener("deviceorientation", function(event) {
     if (recordedData.length > 1000) {
         recordedData.shift(); // purana data hatao
     }
-    
+
     localStorage.setItem("recordedData", JSON.stringify(recordedData));
 
     if (vibration) {
@@ -190,7 +190,8 @@ window.addEventListener("deviceorientation", function(event) {
     } else {
         vibratedRecently = false;
     }
-}, true);
+}, true);*/
+  
   let vibratedRecently = false;
   let trackingInterval = null;
 
@@ -493,7 +494,7 @@ function showHistoryPath(startTime, endTime) {
   }
 
 
-/*window.onload = function() {
+window.onload = function() {
   const savedHistory = localStorage.getItem("gpsHistory");
   const savedRecorded = localStorage.getItem("recordedData");
 
@@ -520,7 +521,7 @@ function showHistoryPath(startTime, endTime) {
   pathLine.setLatLngs(pathCoords);
   dotMarker.setLatLng([0, 0]);
   map.setView([0, 0], 18);
-};*/
+};
 </script>
 </body>
 </html>
