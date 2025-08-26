@@ -370,12 +370,18 @@ function startTracking() {
 }
 
 function startGPS() {
-  trackingInterval = navigator.geolocation.watchPosition(
+  // Pehle ek baar current position fetch karo
+  navigator.geolocation.getCurrentPosition(showLocation, showError, {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 0
+  });
+
+  // Phir watchPosition ka use karo continuous tracking ke liye
+  watchId = navigator.geolocation.watchPosition(
     showLocation,
     showError,
-    navigator.geolocation.getCurrentPosition(showLocation, showError);
-    navigator.geolocation.watchPosition(showLocation, showError);
-     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 }
 
@@ -576,6 +582,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
