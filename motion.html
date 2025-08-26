@@ -246,7 +246,7 @@ function showLocation(position) {
      localStorage.setItem("sessions", JSON.stringify(sessions));
 
     // UI update`
-    locationText.textContent ='Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}';
+    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
     pathCoords.push([lat, lon]);
     pathLine.setLatLngs(pathCoords);
     dotMarker.setLatLng([lat, lon]);
@@ -494,8 +494,10 @@ function toggleHistory() {
             const li = document.createElement("li");
             li.style.cursor = "pointer";
             li.textContent = endTime
-                ? 'Session ${index + 1}: ${startTime.toLocaleString()} - ${endTime.toLocaleString()}'
-                : 'Session ${index + 1}: ${startTime.toLocaleString()} - Ongoing';
+                ?`Session ${index + 1}: ${startTime.toLocaleString()} - ${endTime.toLocaleString()}`;
+
+                :`Session ${index + 1}: ${startTime.toLocaleString()} - Ongoing`;
+
 
             li.onclick = () => {
                 const path = session.data.map(p => [p.lat, p.lon]);
@@ -582,6 +584,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
