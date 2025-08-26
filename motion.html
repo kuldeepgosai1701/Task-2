@@ -493,10 +493,8 @@ function toggleHistory() {
 
             const li = document.createElement("li");
             li.style.cursor = "pointer";
-            li.textContent = endTime
-                ?`Session ${index + 1}: ${startTime.toLocaleString()} - ${endTime.toLocaleString()}`;
-
-                :`Session ${index + 1}: ${startTime.toLocaleString()} - Ongoing`;
+           li.textContent = `Session ${index + 1}: ${startTime.toLocaleString()} - ${endTime.toLocaleString()}`;
+         li.textContent = `Session ${index + 1}: ${startTime.toLocaleString()} - Ongoing`;
 
 
             li.onclick = () => {
@@ -584,6 +582,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
