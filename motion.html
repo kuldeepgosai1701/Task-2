@@ -275,33 +275,40 @@ function getDirectionName(angle) {
   return "Unknown";
 }
 
+// --- Direction calculation and permission setup ---
 function handleOrientation(event) {
   if (event.alpha !== null) {
-    let heading = 360 - event.alpha; // Normalize to 0° = North
+    let heading = 360 - event.alpha; // Normalize to make 0° = North
     if (heading < 0) heading += 360;
 
     const direction = getDirectionName(heading);
     document.getElementById("direction").textContent =
       `Direction: ${direction} (${Math.round(heading)}°)`;
+  } else {
+    document.getElementById("direction").textContent =
+      "Direction: Unavailable";
   }
 }
 
-// iOS Safari Permission
+// iOS Safari Permission Handling
 if (typeof DeviceOrientationEvent !== "undefined" &&
     typeof DeviceOrientationEvent.requestPermission === "function") {
   document.body.addEventListener("click", () => {
-    DeviceOrientationEvent.requestPermission().then((permissionState) => {
-      if (permissionState === "granted") {
-        window.addEventListener("deviceorientation", handleOrientation);
-      } else {
-        alert("Direction sensor permission denied!");
-      }
-    }).catch(console.error);
+    DeviceOrientationEvent.requestPermission()
+      .then(permissionState => {
+        if (permissionState === "granted") {
+          window.addEventListener("deviceorientation", handleOrientation);
+        } else {
+          alert("Direction sensor permission denied!");
+        }
+      })
+      .catch(console.error);
   });
 } else {
-  // Android or non-iOS browsers
+  // For Android and non-iOS browsers
   window.addEventListener("deviceorientation", handleOrientation);
 }
+
 
 function showLocation(position) {
     const lat = position.coords.latitude;
@@ -411,37 +418,6 @@ function getDirectionFromAngle(angle) {
   if (angle >= 292.5 && angle < 337.5) return "South-East";
   
   return "Unknown";
-}
-function handleOrientation(event) {
-  if (event.alpha !== null) {
-    let heading = 360 - event.alpha; // normalize so 0° = North
-    if (heading < 0) heading += 360;
-
-    const direction = getDirectionName(heading);
-    document.getElementById("direction").textContent =
-      `Direction: ${direction} (${Math.round(heading)}°)`;
-  } else {
-    document.getElementById("direction").textContent = "Direction: Unavailable";
-  }
-
-// iOS and Android Permission Handling for Compass
-if (typeof DeviceOrientationEvent !== "undefined" &&
-    typeof DeviceOrientationEvent.requestPermission === "function") {
-  // iOS Safari - needs a user click
-  document.body.addEventListener("click", () => {
-    DeviceOrientationEvent.requestPermission().then(permissionState => {
-      if (permissionState === "granted") {
-        window.addEventListener("deviceorientation", handleOrientation);
-      } else {
-        alert("Direction sensor permission denied!");
-      }
-    }).catch(console.error);
-  });
-} else {
-  // Android or other browsers
-  window.addEventListener("deviceorientation", handleOrientation);
-}
-
 }
 
 function saveDataToFile() {
@@ -684,6 +660,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
