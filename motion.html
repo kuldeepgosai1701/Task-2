@@ -164,6 +164,29 @@
   let pathCoords = [];
   let pathLine = L.polyline(pathCoords, { color: 'blue' }).addTo(map);
 
+function deg2rad(d) { return d * Math.PI / 180; }
+function rad2deg(r) { return r * 180 / Math.PI; }
+
+// True bearing from (lat1,lon1) -> (lat2,lon2)
+function bearingBetween(lat1, lon1, lat2, lon2) {
+  const φ1 = deg2rad(lat1), φ2 = deg2rad(lat2);
+  const Δλ = deg2rad(lon2 - lon1);
+
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+  let θ = Math.atan2(y, x);                 // radians
+  let brg = (rad2deg(θ) + 360) % 360;       // 0..360
+  return brg;
+}
+
+function compassLabel(bearingDeg) {
+  const dirs = ["North ↑","North-East ↗️","East →","South-East ↘️",
+                "South ↓","South-West ↙️","West ←","North-West ↖️"];
+  // center the 8 sectors on N, NE, E, ...
+  const idx = Math.floor(((bearingDeg + 22.5) % 360) / 45);
+  return dirs[idx];
+}
+
 function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
@@ -182,12 +205,19 @@ function showLocation(position) {
     dotMarker.setLatLng([lat, lon]);
     map.setView([lat, lon]);
 
-    if (prevLat !== null && prevLon !== null) {
-      const dx = lon - prevLon;
-      const dy = lat - prevLat;
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
-    }
+   if (prevLat !== null && prevLon !== null) {
+  // identical point → keep previous text
+  if (lat === prevLat && lon === prevLon) {
+    // do nothing – no movement yet
+  } else {
+    const bearing = bearingBetween(prevLat, prevLon, lat, lon); // 0..360
+    const label = compassLabel(bearing);
+    directionText.textContent = `Direction: ${label} (${Math.round(bearing)}°)`;
+  }
+} else {
+  directionText.textContent = "Direction: Calculating...";
+}
+
 
     prevLat = lat;
     prevLon = lon;
@@ -371,6 +401,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
