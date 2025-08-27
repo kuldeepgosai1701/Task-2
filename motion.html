@@ -413,30 +413,37 @@ function getDirectionFromAngle(angle) {
   return "Unknown";
 }
 function handleOrientation(event) {
-  if (event.absolute && event.alpha !== null) {
-    const heading = 360 - event.alpha; // 0° North, clockwise
-    const direction = getCompassDirection(heading);
+  if (event.alpha !== null) {
+    let heading = 360 - event.alpha; // normalize so 0° = North
+    if (heading < 0) heading += 360;
+
+    const direction = getDirectionName(heading);
     document.getElementById("direction").textContent =
       `Direction: ${direction} (${Math.round(heading)}°)`;
+  } else {
+    document.getElementById("direction").textContent = "Direction: Unavailable";
   }
-}
 
-// iPhone (Safari) ke liye permission
-if (typeof DeviceOrientationEvent !== 'undefined' &&
-    typeof DeviceOrientationEvent.requestPermission === 'function') {
-  document.body.addEventListener('click', () => {
+// iOS and Android Permission Handling for Compass
+if (typeof DeviceOrientationEvent !== "undefined" &&
+    typeof DeviceOrientationEvent.requestPermission === "function") {
+  // iOS Safari - needs a user click
+  document.body.addEventListener("click", () => {
     DeviceOrientationEvent.requestPermission().then(permissionState => {
-      if (permissionState === 'granted') {
-        window.addEventListener('deviceorientation', handleOrientation);
+      if (permissionState === "granted") {
+        window.addEventListener("deviceorientation", handleOrientation);
       } else {
         alert("Direction sensor permission denied!");
       }
     }).catch(console.error);
   });
 } else {
-  // Android browsers ke liye
-  window.addEventListener('deviceorientation', handleOrientation);
+  // Android or other browsers
+  window.addEventListener("deviceorientation", handleOrientation);
 }
+
+}
+
 function saveDataToFile() {
 
   const numberOfEntries = parseInt(sensitivityRange.value);
@@ -677,6 +684,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
