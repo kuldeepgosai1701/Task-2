@@ -244,6 +244,36 @@ window.addEventListener("deviceorientation", function(event) {
   });
 }
 
+function calculateDirection(lat1, lon1, lat2, lon2) {
+  // degrees → radians
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  lat1 = toRad(lat1);
+  lon1 = toRad(lon1);
+  lat2 = toRad(lat2);
+  lon2 = toRad(lon2);
+
+  // formula for bearing
+  const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+  const x =
+    Math.cos(lat1) * Math.sin(lat2) -
+    Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+
+  let brng = Math.atan2(y, x) * (180 / Math.PI);
+  brng = (brng + 360) % 360; // normalize to 0–360
+  return brng;
+}
+
+function getDirectionName(angle) {
+  if (angle >= 337.5 || angle < 22.5) return "North";
+  if (angle >= 22.5 && angle < 67.5) return "North-East";
+  if (angle >= 67.5 && angle < 112.5) return "East";
+  if (angle >= 112.5 && angle < 157.5) return "South-East";
+  if (angle >= 157.5 && angle < 202.5) return "South";
+  if (angle >= 202.5 && angle < 247.5) return "South-West";
+  if (angle >= 247.5 && angle < 292.5) return "West";
+  if (angle >= 292.5 && angle < 337.5) return "North-West";
+  return "Unknown";
+}
 
 function showLocation(position) {
     const lat = position.coords.latitude;
@@ -283,10 +313,17 @@ function showLocation(position) {
 
     // Calculate direction based on previous position
     if (prevLat !== null && prevLon !== null) {
-        const dx = lon - prevLon;
+       /* const dx = lon - prevLon;
         const dy = lat - prevLat;
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-        directionText.textContent = `Direction: ${getDirectionFromAngle(angle)} (${Math.round(angle)}°)`;
+        directionText.textContent = `Direction: ${getDirectionFromAngle(angle)} (${Math.round(angle)}°)`;*/
+if (prevLat !== null && prevLon !== null) {
+    const bearing = calculateDirection(prevLat, prevLon, lat, lon);
+    directionText.textContent = `Direction: ${getDirectionName(bearing)} (${Math.round(bearing)}°)`;
+} else {
+    directionText.textContent = "Direction: Calculating...";
+}
+
     }
 
     // 🔴 Vibration detection logic
@@ -588,6 +625,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
