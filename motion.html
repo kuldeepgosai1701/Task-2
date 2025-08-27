@@ -248,27 +248,35 @@ function saveDataToFile() {
   document.body.removeChild(a);
 }
 
- function startTracking() {
+ let watchId = null;
+
+function startTracking() {
   if ("geolocation" in navigator) {
-    // ✅ continuous GPS tracking
-    trackingInterval = navigator.geolocation.watchPosition(
-      showLocation,
-      showError,
-      {
-        enableHighAccuracy: true,   // GPS chip use karega
-        timeout: 10000,             // max wait 10 sec
-        maximumAge: 0               // purana cache use na kare
-      }
-    );
+    sessionStartTime = new Date();
+    gpsHistory = [];
+
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+    sessions.push({
+      start: sessionStartTime.toISOString(),
+      end: null,
+      data: []
+    });
+    localStorage.setItem("sessions", JSON.stringify(sessions));
+
+    watchId = navigator.geolocation.watchPosition(showLocation, showError, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 5000
+    });
   } else {
-    alert("Geolocation not supported in this browser.");
+    alert("GPS not supported on this device/browser.");
   }
 }
 
 function stopTracking() {
-  if (trackingInterval) {
-    navigator.geolocation.clearWatch(trackingInterval);
-    trackingInterval = null;
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
   }
 }
 
@@ -363,6 +371,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
