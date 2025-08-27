@@ -293,11 +293,11 @@ function showLocation(position) {
     const sliderVal = parseInt(sensitivityRange.value);
 let analyzeCount = 10 - sliderVal;
 if (analyzeCount < 1) analyzeCount = 1; // ensure at least one entry is analyzed
-const analyzeData = recordedData.slice(-analyzeCount);
+const analyzeDataGyro = recordedData.slice(-analyzeCount);
 
 
     // Extract recent entries for analysis
-    const analyzeData = currentSession.data.slice(-analyzeCount);
+    const analyzeDataGPS = currentSession.data.slice(-analyzeCount);
 
     // If vibration is detected in analyzed data → mark red dot
     if (checkVibration(analyzeData)) {
@@ -332,24 +332,6 @@ const analyzeData = recordedData.slice(-analyzeCount);
       break;
   }
 }
-
-function showError(error) {
-  console.error("GPS Error:", error);
-  switch(error.code) {
-    case error.PERMISSION_DENIED:
-      locationText.textContent = "Location: Permission denied ❌";
-      break;
-    case error.POSITION_UNAVAILABLE:
-      locationText.textContent = "Location: Position unavailable 📡";
-      break;
-    case error.TIMEOUT:
-      locationText.textContent = "Location: Timeout ⏳";
-      break;
-    default:
-      locationText.textContent = "Location: Unknown error ⚠️";
-  }
-}
-
 function getDirectionFromAngle(angle) {
   // Normalize angle (-180 se 180 ko 0–360 me convert)
   angle = (angle + 360) % 360;
@@ -606,6 +588,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
