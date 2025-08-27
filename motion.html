@@ -85,7 +85,7 @@
 
 <body>
 <header>
- </h1> Motion Tracker</h1>
+</h1>Motion Tracker</h1>
 <button onclick="openHistoryPage()" style="float: right; margin-right: 10px;">History</button>
 </header>
 
@@ -102,7 +102,7 @@
   <button onclick="startTracking()">Start</button>
   <button onclick="stopTracking()">Stop</button>
   <button onclick="resetPage()">Reset</button>
-  <button onclick="saveDataToFile()">Save</button>
+  
 </div>
 
 <!-- Map container -->
@@ -128,10 +128,76 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+
+  window.onload = function() {
+  localStorage.removeItem("gpsHistory");
+  localStorage.removeItem("recordedData");
+  localStorage.removeItem("sessions");
+};
+
   let prevLat = null, prevLon = null;
   let gpsHistory = [];
+  let sessionStartTime = null;
   let recordedData = [];
   let sensitivityFactor = 5;
+
+   /*localStorage.removeItem("currentSession");
+
+  gpsHistory = [];
+  recordedData = [];
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+  dotMarker.setLatLng([0, 0]);
+  map.setView([0, 0], 18);*/
+
+  // Gyroscope values track karne ke liye
+window.addEventListener("deviceorientation", function(event) {
+    let alpha = event.alpha; // rotation around z-axis
+    let beta = event.beta;   // rotation around x-axis
+    let gamma = event.gamma; // rotation around y-axis
+
+    recordedData.push({ alpha, beta, gamma, time: Date.now() });
+     // Keep only the last 10 entries in memory
+    if (recordedData.length > 10) {
+     recordedData.shift();
+     }
+
+    // Save automatically in localStorage (hidden background saving)
+    localStorage.setItem("recordedData", JSON.stringify(recordedData));
+
+    
+    // Sudden change detection (pothole condition)
+    if (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5) {
+        vibratedRecently = true;
+        if (navigator.vibrate) navigator.vibrate(300); // vibrate for 0.3s
+    } else {
+        vibratedRecently = false;
+    }
+}, true);
+  /*window.addEventListener("deviceorientation", function(event) {
+    let alpha = event.alpha;
+    let beta = event.beta;
+    let gamma = event.gamma;
+
+    let vibration = (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5);
+
+    recordedData.push({ alpha, beta, gamma, time: Date.now(), vibration, direction: null });
+
+     // 🔹 Prevent unlimited growth (memory crash fix)
+    if (recordedData.length > 1000) {
+        recordedData.shift(); // purana data hatao
+    }
+
+    localStorage.setItem("recordedData", JSON.stringify(recordedData));
+
+    if (vibration) {
+        vibratedRecently = true;
+        if (navigator.vibrate) navigator.vibrate(300);
+    } else {
+        vibratedRecently = false;
+    }
+}, true);*/
+  
   let vibratedRecently = false;
   let trackingInterval = null;
 
@@ -164,41 +230,90 @@
   let pathCoords = [];
   let pathLine = L.polyline(pathCoords, { color: 'blue' }).addTo(map);
 
+  function analyzeVibrations() {
+  const sliderValue = parseInt(sensitivityRange.value);
+
+  // Select last N entries based on slider
+  const entriesToAnalyze = recordedData.slice(-sliderValue);
+
+  // Perform vibration check only on these entries
+  entriesToAnalyze.forEach(entry => {
+    if (entry.vibration === "Yes") {
+      console.log("Vibration detected in last", sliderValue, "entries");
+    }
+  });
+}
+
+
 function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-    const timestamp = new Date();  // current time
+    const timestamp = new Date().toISOString(); // store in ISO format
 
-    // GPS history me store karo
-    gpsHistory.push({lat, lon, time: timestamp});
+    // Get sessions array from localStorage
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
-   // ✅ localStorage me bhi save karo
-    localStorage.setItem("gpsHistory", JSON.stringify(gpsHistory));
+    // If no session exists, create one
+    if (sessions.length === 0) {
+        sessions.push({
+            start: timestamp,
+            end: null,
+            data: []
+        });
+    }
 
-   // existing code
+    // Reference current session
+    let currentSession = sessions[sessions.length - 1];
+
+    // ✅ Always keep only the last 10 entries in current session
+    currentSession.data.push({ lat, lon, time: timestamp });
+    if (currentSession.data.length > 10) {
+        currentSession.data.shift();
+    }
+
+    // Save back to localStorage
+    localStorage.setItem("sessions", JSON.stringify(sessions));
+
+    // UI update
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
     pathCoords.push([lat, lon]);
     pathLine.setLatLngs(pathCoords);
     dotMarker.setLatLng([lat, lon]);
     map.setView([lat, lon]);
 
+    // Calculate direction based on previous position
     if (prevLat !== null && prevLon !== null) {
-      const dx = lon - prevLon;
-      const dy = lat - prevLat;
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+        const dx = lon - prevLon;
+        const dy = lat - prevLat;
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        directionText.textContent = `Direction: ${getDirectionFromAngle(angle)} (${Math.round(angle)}°)`;
+    }
+
+    // 🔴 Vibration detection logic
+    const sliderVal = parseInt(sensitivityRange.value);
+let analyzeCount = 10 - sliderVal;
+if (analyzeCount < 1) analyzeCount = 1; // ensure at least one entry is analyzed
+const analyzeData = recordedData.slice(-analyzeCount);
+
+
+    // Extract recent entries for analysis
+    const analyzeData = currentSession.data.slice(-analyzeCount);
+
+    // If vibration is detected in analyzed data → mark red dot
+    if (checkVibration(analyzeData)) {
+        L.circleMarker([lat, lon], {
+            radius: 6,
+            fillColor: "red",
+            color: "darkred",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).addTo(map);
     }
 
     prevLat = lat;
     prevLon = lon;
 }
-
-
-  function getDirectionFromAngle(angle) {
-    const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
-                        "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
-    return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
-  }
 
  function showError(error) {
   console.error("GPS Error:", error);
@@ -218,12 +333,44 @@ function showLocation(position) {
   }
 }
 
+function showError(error) {
+  console.error("GPS Error:", error);
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      locationText.textContent = "Location: Permission denied ❌";
+      break;
+    case error.POSITION_UNAVAILABLE:
+      locationText.textContent = "Location: Position unavailable 📡";
+      break;
+    case error.TIMEOUT:
+      locationText.textContent = "Location: Timeout ⏳";
+      break;
+    default:
+      locationText.textContent = "Location: Unknown error ⚠️";
+  }
+}
+
+function getDirectionFromAngle(angle) {
+  // Normalize angle (-180 se 180 ko 0–360 me convert)
+  angle = (angle + 360) % 360;
+
+  if (angle >= 337.5 || angle < 22.5) return "East";
+  if (angle >= 22.5 && angle < 67.5) return "North-East";
+  if (angle >= 67.5 && angle < 112.5) return "North";
+  if (angle >= 112.5 && angle < 157.5) return "North-West";
+  if (angle >= 157.5 && angle < 202.5) return "West";
+  if (angle >= 202.5 && angle < 247.5) return "South-West";
+  if (angle >= 247.5 && angle < 292.5) return "South";
+  if (angle >= 292.5 && angle < 337.5) return "South-East";
+  
+  return "Unknown";
+}
 
 function saveDataToFile() {
-  // sensitivity box ka value hi number of entries decide karega
+
   const numberOfEntries = parseInt(sensitivityRange.value);
 
-  // last N entries select karo
+  // last N entries select 
   const recentData = recordedData.slice(-numberOfEntries);
 
   if (recentData.length === 0) {
@@ -231,22 +378,25 @@ function saveDataToFile() {
     return;
   }
 
-  // text file content banao
-  let fileContent = "X\tY\tZ\tVibration\tDirection\n";
-  recentData.forEach(entry => {
-    fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
-  });
+let fileContent = "Alpha\tBeta\tGamma\tVibration\tDirection\n";
+recentData.forEach(entry => {
+  fileContent += `${entry.alpha.toFixed(2)}\t${entry.beta.toFixed(2)}\t${entry.gamma.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
+});
 
-  // download trigger karo
+
+
+  // download trigger 
   const blob = new Blob([fileContent], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `motion_data_last_${numberOfEntries}.txt`; // filename me bhi show karega
+  a.download = `motion_data_last_${numberOfEntries}.txt`; 
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 }
+
+  let watchId = null;
 
  function startTracking() {
   if ("geolocation" in navigator) {
@@ -264,6 +414,33 @@ function saveDataToFile() {
     alert("Geolocation not supported in this browser.");
   }
 }
+function startTracking() {
+  if ("geolocation" in navigator) {
+    // Check if sessions already exist
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+
+    // Start a new session
+    sessionStartTime = new Date();
+    gpsHistory = []; // reset for new session
+    localStorage.setItem("currentSession", JSON.stringify(gpsHistory));
+
+    // Save to main sessions array with placeholder for end
+    sessions.push({
+      start: sessionStartTime.toISOString(),
+      end: null,
+      data: []
+    });
+    localStorage.setItem("sessions", JSON.stringify(sessions));
+
+    watchId = navigator.geolocation.watchPosition(showLocation, showError, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 5000
+    });
+  } else {
+    alert("GPS not supported on this device/browser.");
+  }
+}
 
 function stopTracking() {
   if (trackingInterval) {
@@ -271,22 +448,35 @@ function stopTracking() {
     trackingInterval = null;
   }
 }
+function stopTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
 
- function resetPage() {
-  // Path clear karo (screen se)
-  pathCoords = [];
-  pathLine.setLatLngs(pathCoords);
-
-  // Dot ko center me set karo
-  dotMarker.setLatLng([0,0]);
-  map.setView([0,0], 18);
-
-  // ❌ NOTE: gpsHistory ko clear NAHI karna 
-  // Matlab purana data localStorage me safe hai
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+    let current = sessions[sessions.length - 1];
+    if (current && !current.end) {
+      current.end = new Date().toISOString();
+      current.data = gpsHistory;
+      localStorage.setItem("sessions", JSON.stringify(sessions));
+    }
+  }
 }
 
 
-function toggleHistory() {
+
+function resetPage() {
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+
+  if (prevLat && prevLon) {
+    dotMarker.setLatLng([prevLat, prevLon]);
+    map.panTo([prevLat, prevLon], {animate: true, duration: 0.5});
+  }
+}
+
+
+/*function toggleHistory() {
     const modal = document.getElementById("historyModal");
     const list = document.getElementById("historyList");
     list.innerHTML = "";
@@ -297,8 +487,7 @@ function toggleHistory() {
             return;
         }
 
-        // 1 minute ya 5 minute interval ke basis pe group kar sakte ho
-        // yaha simple approach: poora session ko 1 entry ke liye consider kar rahe hain
+       
         const startTime = gpsHistory[0].time;
         const endTime = gpsHistory[gpsHistory.length - 1].time;
 
@@ -307,6 +496,51 @@ function toggleHistory() {
         li.textContent = `${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString()} – ${endTime.toLocaleTimeString()}`;
         li.onclick = () => showHistoryPath(startTime, endTime);
         list.appendChild(li);
+
+        modal.style.display = "block";
+    } else {
+        modal.style.display = "none";
+    }
+}*/
+
+function toggleHistory() {
+    const modal = document.getElementById("historyModal");
+    const list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    if (modal.style.display === "none") {
+        const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+
+        if (sessions.length === 0) {
+            alert("No history available yet.");
+            return;
+        }
+
+        
+        sessions.forEach((session, index) => {
+            const startTime = new Date(session.start);
+            const endTime = session.end ? new Date(session.end) : null;
+
+            const li = document.createElement("li");
+            li.style.cursor = "pointer";
+            li.textContent = endTime
+                ? `Session ${index + 1}: ${startTime.toLocaleString()} - ${endTime.toLocaleString()}`
+                : `Session ${index + 1}: ${startTime.toLocaleString()} - Ongoing`;
+
+            li.onclick = () => {
+                const path = session.data.map(p => [p.lat, p.lon]);
+                if (path.length > 0) {
+                    pathLine.setLatLngs(path);
+                    dotMarker.setLatLng(path[path.length - 1]);
+                    map.fitBounds(path);
+                } else {
+                    alert("No data in this session.");
+                }
+                closeHistory();
+            };
+
+            list.appendChild(li);
+        });
 
         modal.style.display = "block";
     } else {
@@ -337,7 +571,7 @@ function showHistoryPath(startTime, endTime) {
 
 
   function openHistoryPage() {
-    window.location.href = "history.html"; // नया पेज खुलेगा
+    window.location.href = "history.html"; 
   }
 
 
@@ -359,10 +593,40 @@ window.onload = function() {
   if (savedRecorded) {
     recordedData = JSON.parse(savedRecorded);
   }
+
+     localStorage.removeItem("currentSession");
+
+  gpsHistory = [];
+  recordedData = [];
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+  dotMarker.setLatLng([0, 0]);
+  map.setView([0, 0], 18);
 };
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
