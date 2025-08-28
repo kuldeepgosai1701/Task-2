@@ -309,6 +309,9 @@ if (typeof DeviceOrientationEvent !== "undefined" &&
   window.addEventListener("deviceorientation", handleOrientation);
 }
 
+function checkVibration(data) {
+    return data.some(entry => entry.vibration === true);
+}
 
 function showLocation(position) {
     const lat = position.coords.latitude;
@@ -331,10 +334,16 @@ function showLocation(position) {
     let currentSession = sessions[sessions.length - 1];
 
     // ✅ Always keep only the last 10 entries in current session
-    currentSession.data.push({ lat, lon, time: timestamp });
-    if (currentSession.data.length > 10) {
-        currentSession.data.shift();
-    }
+    currentSession.data.push({
+    lat, 
+    lon, 
+    time: timestamp,
+    vibration: vibratedRecently // <-- store vibration state here
+});
+if (currentSession.data.length > 10) {
+    currentSession.data.shift();
+}
+
 
     // Save back to localStorage
     localStorage.setItem("sessions", JSON.stringify(sessions));
@@ -363,25 +372,26 @@ if (prevLat !== null && prevLon !== null) {
 
     // 🔴 Vibration detection logic
     const sliderVal = parseInt(sensitivityRange.value);
-let analyzeCount = 10 - sliderVal;
-if (analyzeCount < 1) analyzeCount = 1; // ensure at least one entry is analyzed
-const analyzeDataGyro = recordedData.slice(-analyzeCount);
+    const analyzeCount = Math.max(10 - sliderVal, 1);  // Always analyze 1 to 10 points
+    const analyzeData = currentSession.data.slice(-analyzeCount);
+
 
 
     // Extract recent entries for analysis
     const analyzeDataGPS = currentSession.data.slice(-analyzeCount);
 
     // If vibration is detected in analyzed data → mark red dot
-    if (checkVibration(analyzeData)) {
-        L.circleMarker([lat, lon], {
-            radius: 6,
-            fillColor: "red",
-            color: "darkred",
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.9
-        }).addTo(map);
-    }
+   // If vibration detected in any of those entries → mark red dot on map
+if (checkVibration(analyzeData)) {
+    L.circleMarker([lat, lon], {
+        radius: 6,
+        fillColor: "red",
+        color: "darkred",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.9
+    }).addTo(map);
+}
 
     prevLat = lat;
     prevLon = lon;
@@ -660,6 +670,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
