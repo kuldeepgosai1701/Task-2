@@ -41,18 +41,55 @@
   let pathLine = L.polyline([], {color:'blue'}).addTo(map);
   let dotMarker = L.circleMarker([0,0], {radius:6, fillColor:'red', color:'darkred', weight:1}).addTo(map);
 
-  // LocalStorage से sessions पढ़ो
-  const gpsHistory = JSON.parse(localStorage.getItem("gpsHistory")) || [];
-  let sessions = [];
+// ===== Add Start, Stop, and Refresh Functions =====
 
-  // Simple grouping: हर बार reset करने पर एक नया session बनाना होगा (future update)
-  if (gpsHistory.length > 0) {
-    sessions.push({ 
-      start: new Date(gpsHistory[0].time), 
-      end: new Date(gpsHistory[gpsHistory.length-1].time),
-      data: gpsHistory
-    });
-  }
+// Array to store session data
+let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+let isRecording = false;
+let currentSession = { start: null, end: null, data: [] };
+const tbody = document.getElementById("sessionTable");
+
+// Refresh table dynamically
+function refreshTable() {
+  tbody.innerHTML = '';
+  sessions.forEach((s, index) => {
+    let row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${new Date(s.start).toLocaleTimeString()}</td>
+      <td>${new Date(s.end).toLocaleTimeString()}</td>
+      <td><button onclick="openSession(${index})">Open</button></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+document.getElementById("showHistory").addEventListener("click", refreshTable);
+
+// Start recording session
+function startSession() {
+  if (isRecording) return;
+  isRecording = true;
+  currentSession = { start: new Date().toISOString(), data: [] };
+}
+
+// Stop and save session
+function stopSession() {
+  if (!isRecording) return;
+  isRecording = false;
+  currentSession.end = new Date().toISOString();
+  sessions.push(currentSession);
+  localStorage.setItem("sessions", JSON.stringify(sessions));
+  currentSession = { start: null, end: null, data: [] };
+  refreshTable();
+}
+
+
+// Load sessions if saved earlier
+let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+let isRecording = false;
+let currentSession = { start: null, end: null, data: [] };
+const tbody = document.getElementById("sessionTable");
+
 
   // Table में show करो
   const tbody = document.getElementById("sessionTable");
@@ -66,15 +103,20 @@
     tbody.appendChild(row);
   });
 
-  function openSession(index) {
-    const session = sessions[index];
-    if (!session || session.data.length === 0) return;
-    
-    const coords = session.data.map(p => [p.lat, p.lon]);
-    pathLine.setLatLngs(coords);
-    dotMarker.setLatLng(coords[coords.length-1]);
-    map.fitBounds(coords);
-  }
+
+
+
+ function openSession(index) {
+  const session = sessions[index];
+  if (!session || session.data.length === 0) return;
+  
+  const coords = session.data.map(p => [p.lat, p.lon]);
+  pathLine.setLatLngs(coords);
+  dotMarker.setLatLng(coords[coords.length-1]);
+  map.fitBounds(coords);
+}
+window.openSession = openSession;
+
 </script>
 </body>
 </html>
