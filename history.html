@@ -86,36 +86,46 @@ function stopSession() {
 
 // Load sessions if saved earlier
 let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
-let isRecording = false;
-let currentSession = { start: null, end: null, data: [] };
 const tbody = document.getElementById("sessionTable");
 
-
-  // Table में show करो
-  const tbody = document.getElementById("sessionTable");
+// Render table rows
+function refreshTable() {
+  tbody.innerHTML = '';
   sessions.forEach((s, index) => {
-    let row = document.createElement("tr");
+    const startTime = new Date(s.start);
+    const endTime = s.end ? new Date(s.end) : null;
+
+    const row = document.createElement("tr");
     row.innerHTML = `
-      <td>${s.start.toLocaleTimeString()}</td>
-      <td>${s.end.toLocaleTimeString()}</td>
+      <td>${startTime.toLocaleString()}</td>
+      <td>${endTime ? endTime.toLocaleString() : 'Ongoing'}</td>
       <td><button onclick="openSession(${index})">Open</button></td>
     `;
     tbody.appendChild(row);
   });
+}
+
+// Call this on page load
+refreshTable();
+
 
 
 
 
  function openSession(index) {
   const session = sessions[index];
-  if (!session || session.data.length === 0) return;
-  
+  if (!session || session.data.length === 0) {
+    alert("No data found for this session.");
+    return;
+  }
+
   const coords = session.data.map(p => [p.lat, p.lon]);
   pathLine.setLatLngs(coords);
-  dotMarker.setLatLng(coords[coords.length-1]);
+  dotMarker.setLatLng(coords[coords.length - 1]);
   map.fitBounds(coords);
 }
 window.openSession = openSession;
+
 
 </script>
 </body>
