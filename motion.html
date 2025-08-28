@@ -318,35 +318,30 @@ function showLocation(position) {
     const lon = position.coords.longitude;
     const timestamp = new Date().toISOString(); // store in ISO format
 
-    // Get sessions array from localStorage
-    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+  let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
-    // If no session exists, create one
-    if (sessions.length === 0) {
-        sessions.push({
-            start: timestamp,
-            end: null,
-            data: []
-        });
-    }
-
-    // Reference current session
-    let currentSession = sessions[sessions.length - 1];
-
-    // ✅ Always keep only the last 10 entries in current session
-    currentSession.data.push({
-    lat, 
-    lon, 
-    time: timestamp,
-    vibration: vibratedRecently // <-- store vibration state here
-});
-if (currentSession.data.length > 10) {
-    currentSession.data.shift();
+// Always work with the last session
+if (sessions.length === 0 || sessions[sessions.length - 1].end) {
+    sessions.push({
+        start: sessionStartTime || timestamp,  // Use start time when session started
+        end: null,
+        data: []
+    });
 }
 
+let currentSession = sessions[sessions.length - 1];
 
-    // Save back to localStorage
-    localStorage.setItem("sessions", JSON.stringify(sessions));
+// Push current point into active session
+currentSession.data.push({
+    lat,
+    lon,
+    time: timestamp,
+    vibration: vibratedRecently
+});
+
+// Save back updated sessions
+localStorage.setItem("sessions", JSON.stringify(sessions));
+
 
     // UI update
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
@@ -507,25 +502,20 @@ function startTracking() {
 }
 
 function stopTracking() {
-  if (trackingInterval) {
-    navigator.geolocation.clearWatch(trackingInterval);
-    trackingInterval = null;
-  }
-}
-function stopTracking() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
 
     let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
     let current = sessions[sessions.length - 1];
+
     if (current && !current.end) {
-      current.end = new Date().toISOString();
-      current.data = gpsHistory;
+      current.end = new Date().toISOString(); // close the session
       localStorage.setItem("sessions", JSON.stringify(sessions));
     }
   }
 }
+
 
 
 
@@ -670,6 +660,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
