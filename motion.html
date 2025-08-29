@@ -128,6 +128,12 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+let smoothHeading = 0;
+function smooth(value) {
+  const alpha = 0.2; // smoothing factor (0.1 = zyada smooth, 0.5 = fast response)
+  smoothHeading = alpha * value + (1 - alpha) * smoothHeading;
+  return smoothHeading;
+}
 
   window.onload = function() {
   localStorage.removeItem("gpsHistory");
@@ -277,18 +283,33 @@ function getDirectionName(angle) {
 
 // --- Direction calculation and permission setup ---
 function handleOrientation(event) {
-  if (event.alpha !== null) {
-    let heading = 360 - event.alpha; // Normalize to make 0° = North
-    if (heading < 0) heading += 360;
+  if (event.alpha !== null && event.beta !== null && event.gamma !== null) {
+    // Convert degrees to radians
+    const alphaRad = event.alpha * Math.PI / 180;
+    const betaRad = event.beta * Math.PI / 180;
+    const gammaRad = event.gamma * Math.PI / 180;
+
+    // Tilt-compensated heading calculation
+    const cA = Math.cos(alphaRad);
+    const sA = Math.sin(alphaRad);
+    const sB = Math.sin(betaRad);
+
+    let heading = Math.atan2(sA, cA);
+    heading = heading * 180 / Math.PI;
+
+    if (heading < 0) heading += 360; // Normalize to 0-360°
+     
+     heading = smooth(heading);
 
     const direction = getDirectionName(heading);
     document.getElementById("direction").textContent =
       `Direction: ${direction} (${Math.round(heading)}°)`;
   } else {
-    document.getElementById("direction").textContent =
-      "Direction: Unavailable";
+    document.getElementById("direction").textContent = "Direction: Unavailable";
   }
 }
+
+
 
 // iOS Safari Permission Handling
 if (typeof DeviceOrientationEvent !== "undefined" &&
@@ -318,30 +339,35 @@ function showLocation(position) {
     const lon = position.coords.longitude;
     const timestamp = new Date().toISOString(); // store in ISO format
 
-  let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+    // Get sessions array from localStorage
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
-// Always work with the last session
-if (sessions.length === 0 || sessions[sessions.length - 1].end) {
-    sessions.push({
-        start: sessionStartTime || timestamp,  // Use start time when session started
-        end: null,
-        data: []
-    });
+    // If no session exists, create one
+    if (sessions.length === 0) {
+        sessions.push({
+            start: timestamp,
+            end: null,
+            data: []
+        });
+    }
+
+    // Reference current session
+    let currentSession = sessions[sessions.length - 1];
+
+    // ✅ Always keep only the last 10 entries in current session
+    currentSession.data.push({
+    lat, 
+    lon, 
+    time: timestamp,
+    vibration: vibratedRecently // <-- store vibration state here
+});
+if (currentSession.data.length > 10) {
+    currentSession.data.shift();
 }
 
-let currentSession = sessions[sessions.length - 1];
 
-// Push current point into active session
-currentSession.data.push({
-    lat,
-    lon,
-    time: timestamp,
-    vibration: vibratedRecently
-});
-
-// Save back updated sessions
-localStorage.setItem("sessions", JSON.stringify(sessions));
-
+    // Save back to localStorage
+    localStorage.setItem("sessions", JSON.stringify(sessions));
 
     // UI update
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
@@ -502,20 +528,25 @@ function startTracking() {
 }
 
 function stopTracking() {
+  if (trackingInterval) {
+    navigator.geolocation.clearWatch(trackingInterval);
+    trackingInterval = null;
+  }
+}
+function stopTracking() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
 
     let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
     let current = sessions[sessions.length - 1];
-
     if (current && !current.end) {
-      current.end = new Date().toISOString(); // close the session
+      current.end = new Date().toISOString();
+      current.data = gpsHistory;
       localStorage.setItem("sessions", JSON.stringify(sessions));
     }
   }
 }
-
 
 
 
@@ -660,6 +691,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
