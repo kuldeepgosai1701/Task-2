@@ -480,20 +480,18 @@ recentData.forEach(entry => {
 }
 function startTracking() {
   if ("geolocation" in navigator) {
-    // Check if sessions already exist
     let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
-    // Start a new session
     sessionStartTime = new Date();
     gpsHistory = []; // reset for new session
     localStorage.setItem("currentSession", JSON.stringify(gpsHistory));
 
-    // Save to main sessions array with placeholder for end
     sessions.push({
       start: sessionStartTime.toISOString(),
       end: null,
       data: []
     });
+
     localStorage.setItem("sessions", JSON.stringify(sessions));
 
     watchId = navigator.geolocation.watchPosition(showLocation, showError, {
@@ -668,6 +666,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
