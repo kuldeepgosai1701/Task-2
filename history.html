@@ -32,47 +32,47 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  let map = L.map('map').setView([0,0], 2);
+  // Initialize map
+  let map = L.map('map').setView([0, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom:19,
-    attribution:'&copy; OpenStreetMap contributors'
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  let pathLine = L.polyline([], {color:'blue'}).addTo(map);
-  let dotMarker = L.circleMarker([0,0], {radius:6, fillColor:'red', color:'darkred', weight:1}).addTo(map);
+  let pathLine = L.polyline([], { color: 'blue' }).addTo(map);
+  let dotMarker = L.circleMarker([0, 0], { radius: 6, fillColor: 'red', color: 'darkred', weight: 1 }).addTo(map);
 
-  // LocalStorage से sessions पढ़ो
-  const gpsHistory = JSON.parse(localStorage.getItem("gpsHistory")) || [];
-  let sessions = [];
+  // Load all sessions from localStorage
+  const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
-  // Simple grouping: हर बार reset करने पर एक नया session बनाना होगा (future update)
-  if (gpsHistory.length > 0) {
-    sessions.push({ 
-      start: new Date(gpsHistory[0].time), 
-      end: new Date(gpsHistory[gpsHistory.length-1].time),
-      data: gpsHistory
-    });
-  }
-
-  // Table में show करो
   const tbody = document.getElementById("sessionTable");
-  sessions.forEach((s, index) => {
+  tbody.innerHTML = "";
+
+  // Populate table with sessions
+  sessions.forEach((session, index) => {
+    const startTime = new Date(session.start);
+    const endTime = session.end ? new Date(session.end) : null;
+
     let row = document.createElement("tr");
     row.innerHTML = `
-      <td>${s.start.toLocaleTimeString()}</td>
-      <td>${s.end.toLocaleTimeString()}</td>
+      <td>${startTime.toLocaleString()}</td>
+      <td>${endTime ? endTime.toLocaleString() : "Ongoing"}</td>
       <td><button onclick="openSession(${index})">Open</button></td>
     `;
     tbody.appendChild(row);
   });
 
+  // Function to show path for a selected session
   function openSession(index) {
     const session = sessions[index];
-    if (!session || session.data.length === 0) return;
-    
+    if (!session || session.data.length === 0) {
+      alert("No data available for this session.");
+      return;
+    }
+
     const coords = session.data.map(p => [p.lat, p.lon]);
     pathLine.setLatLngs(coords);
-    dotMarker.setLatLng(coords[coords.length-1]);
+    dotMarker.setLatLng(coords[coords.length - 1]);
     map.fitBounds(coords);
   }
 </script>
