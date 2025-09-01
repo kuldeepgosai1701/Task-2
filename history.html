@@ -46,40 +46,40 @@
   let dotMarker = L.circleMarker([0, 0], { radius: 6, fillColor: 'red', color: 'darkred', weight: 1 }).addTo(map);
 
   // Load all sessions from localStorage
-  const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+const tbody = document.getElementById("sessionTable");
+tbody.innerHTML = "";
 
-  const tbody = document.getElementById("sessionTable");
-  tbody.innerHTML = "";
+// Reverse the session array but keep a reference for the correct index
+const reversedSessions = [...sessions].reverse();
 
-  // Populate table with sessions
- 
-[...sessions].reverse().forEach((session, index) => {
-    const startTime = new Date(session.start);
-    const stopTime = session.end ? new Date(session.end) : null;
+reversedSessions.forEach((session, index) => {
+  const startTime = new Date(session.start);
+  const stopTime = session.end ? new Date(session.end) : null;
 
-    let row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${startTime.toLocaleString()}</td>
-      <td>${stopTime ? stopTime.toLocaleString() : "Ongoing"}</td>
+  let row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${startTime.toLocaleString()}</td>
+    <td>${stopTime ? stopTime.toLocaleString() : "Ongoing"}</td>
+    <td><button onclick="openSession(${index})">Open</button></td>
+  `;
+  tbody.appendChild(row);
+});
 
-      <td><button onclick="openSession(${index})">Open</button></td>
-    `;
-    tbody.appendChild(row);
-  });
-
-  // Function to show path for a selected session
-  function openSession(index) {
-    const session = sessions[index];
-    if (!session || session.data.length === 0) {
-      alert("No data available for this session.");
-      return;
-    }
-
-    const coords = session.data.map(p => [p.lat, p.lon]);
-    pathLine.setLatLngs(coords);
-    dotMarker.setLatLng(coords[coords.length - 1]);
-    map.fitBounds(coords);
+// Fix openSession to use reversedSessions array
+function openSession(index) {
+  const session = reversedSessions[index];
+  if (!session || session.data.length === 0) {
+    alert("No data available for this session.");
+    return;
   }
+
+  const coords = session.data.map(p => [p.lat, p.lon]);
+  pathLine.setLatLngs(coords);
+  dotMarker.setLatLng(coords[coords.length - 1]);
+  map.fitBounds(coords);
+}
+
 </script>
 </body>
 </html>
