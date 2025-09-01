@@ -56,7 +56,8 @@
     let row = document.createElement("tr");
     row.innerHTML = `
       <td>${startTime.toLocaleString()}</td>
-      <td>${stopTime ? endTime.toLocaleString() : "Ongoing"}</td>
+      <td>${stopTime ? stopTime.toLocaleString() : "Ongoing"}</td>
+
       <td><button onclick="openSession(${index})">Open</button></td>
     `;
     tbody.appendChild(row);
