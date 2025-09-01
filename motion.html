@@ -140,58 +140,6 @@
   let sessionStartTime = null;
   let recordedData = [];
   let sensitivityFactor = 5;
-
-   /*localStorage.removeItem("currentSession");
-
-  gpsHistory = [];
-  recordedData = [];
-  pathCoords = [];
-  pathLine.setLatLngs(pathCoords);
-  dotMarker.setLatLng([0, 0]);
-  map.setView([0, 0], 18);*/
-
-  // Gyroscope values track karne ke liye
-window.addEventListener("deviceorientation", function(event) {
-    let alpha = event.alpha; // rotation around z-axis
-    let beta = event.beta;   // rotation around x-axis
-    let gamma = event.gamma; // rotation around y-axis
-
-    // Save recorded data
-    recordedData.push({ alpha, beta, gamma, time: Date.now() });
-    localStorage.setItem("recordedData", JSON.stringify(recordedData));
-
-    // Sudden change detection (pothole condition)
-    if (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5) {
-        vibratedRecently = true;
-        if (navigator.vibrate) navigator.vibrate(300); // vibrate for 0.3s
-    } else {
-        vibratedRecently = false;
-    }
-}, true);
-  /*window.addEventListener("deviceorientation", function(event) {
-    let alpha = event.alpha;
-    let beta = event.beta;
-    let gamma = event.gamma;
-
-    let vibration = (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5);
-
-    recordedData.push({ alpha, beta, gamma, time: Date.now(), vibration, direction: null });
-
-     // 🔹 Prevent unlimited growth (memory crash fix)
-    if (recordedData.length > 1000) {
-        recordedData.shift(); // purana data hatao
-    }
-
-    localStorage.setItem("recordedData", JSON.stringify(recordedData));
-
-    if (vibration) {
-        vibratedRecently = true;
-        if (navigator.vibrate) navigator.vibrate(300);
-    } else {
-        vibratedRecently = false;
-    }
-}, true);*/
-  
   let vibratedRecently = false;
   let trackingInterval = null;
 
@@ -224,41 +172,16 @@ window.addEventListener("deviceorientation", function(event) {
   let pathCoords = [];
   let pathLine = L.polyline(pathCoords, { color: 'blue' }).addTo(map);
 
-  function analyzeVibrations() {
-  const sliderValue = parseInt(sensitivityRange.value);
-
-  // Select last N entries based on slider
-  const entriesToAnalyze = recordedData.slice(-sliderValue);
-
-  // Perform vibration check only on these entries
-  entriesToAnalyze.forEach(entry => {
-    if (entry.vibration === "Yes") {
-      console.log("Vibration detected in last", sliderValue, "entries");
-    }
-  });
-}
-
-
 function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-    const timestamp = new Date().toISOString();  // <-- store string format
+    const timestamp = new Date();  // current time
 
-    // Get sessions array from localStorage
-    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+    // GPS history me store karo
+    gpsHistory.push({lat, lon, time: timestamp});
 
-    if (sessions.length === 0) {
-        // If no session exists, create one
-        sessions.push({
-            start: timestamp,
-            end: null,
-            data: []
-        });
-    }
-
-    sessions[sessions.length - 1].data.push({ lat, lon, time: timestamp });
-
-     localStorage.setItem("sessions", JSON.stringify(sessions));
+   // ✅ localStorage me bhi save karo
+    localStorage.setItem("gpsHistory", JSON.stringify(gpsHistory));
 
     // UI update
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
@@ -272,56 +195,20 @@ function showLocation(position) {
       const dx = lon - prevLon;
       const dy = lat - prevLat;
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    directionText.textContent = `Direction: ${getDirectionFromAngle(angle)} (${Math.round(angle)}°)`;
- }
-    // Agar pothole detect hua hai → red marker add karo
-if (vibratedRecently) {
-    L.circleMarker([lat, lon], {
-        radius: 6,
-        fillColor: "red",
-        color: "darkred",
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 0.9
-    }).addTo(map);
-}
-prevLat = lat;
+      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+    }
+
+    prevLat = lat;
     prevLon = lon;
 }
 
 
-function showError(error) {
-  console.error("GPS Error:", error);
-  switch(error.code) {
-    case error.PERMISSION_DENIED:
-      locationText.textContent = "Location: Permission denied ❌";
-      break;
-    case error.POSITION_UNAVAILABLE:
-      locationText.textContent = "Location: Position unavailable 📡";
-      break;
-    case error.TIMEOUT:
-      locationText.textContent = "Location: Timeout ⏳";
-      break;
-    default:
-      locationText.textContent = "Location: Unknown error ⚠️";
+  function getDirectionFromAngle(angle) {
+    const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
+                        "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
+    return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
   }
-}
 
-function getDirectionFromAngle(angle) {
-  // Normalize angle (-180 se 180 ko 0–360 me convert)
-  angle = (angle + 360) % 360;
-
-  if (angle >= 337.5 || angle < 22.5) return "East";
-  if (angle >= 22.5 && angle < 67.5) return "North-East";
-  if (angle >= 67.5 && angle < 112.5) return "North";
-  if (angle >= 112.5 && angle < 157.5) return "North-West";
-  if (angle >= 157.5 && angle < 202.5) return "West";
-  if (angle >= 202.5 && angle < 247.5) return "South-West";
-  if (angle >= 247.5 && angle < 292.5) return "South";
-  if (angle >= 292.5 && angle < 337.5) return "South-East";
-  
-  return "Unknown";
-}
  function showError(error) {
   console.error("GPS Error:", error);
   switch(error.code) {
@@ -339,7 +226,21 @@ function getDirectionFromAngle(angle) {
       break;
   }
 }
+function getDirectionFromAngle(angle) {
+  // Normalize angle (-180 se 180 ko 0–360 me convert)
+  angle = (angle + 360) % 360;
 
+  if (angle >= 337.5 || angle < 22.5) return "East";
+  if (angle >= 22.5 && angle < 67.5) return "North-East";
+  if (angle >= 67.5 && angle < 112.5) return "North";
+  if (angle >= 112.5 && angle < 157.5) return "North-West";
+  if (angle >= 157.5 && angle < 202.5) return "West";
+  if (angle >= 202.5 && angle < 247.5) return "South-West";
+  if (angle >= 247.5 && angle < 292.5) return "South";
+  if (angle >= 292.5 && angle < 337.5) return "South-East";
+  
+  return "Unknown";
+}
 
 function saveDataToFile() {
 
@@ -581,11 +482,6 @@ window.onload = function() {
 </script>
 </body>
 </html>
-
-
-
-
-
 
 
 
