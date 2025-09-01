@@ -40,41 +40,31 @@
 
   let pathLine = L.polyline([], {color:'blue'}).addTo(map);
   let dotMarker = L.circleMarker([0,0], {radius:6, fillColor:'red', color:'darkred', weight:1}).addTo(map);
+  const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
-  // LocalStorage से sessions पढ़ो
-  const gpsHistory = JSON.parse(localStorage.getItem("gpsHistory")) || [];
-  let sessions = [];
+const tbody = document.getElementById("sessionTable");
+sessions.forEach((s, index) => {
+  let start = new Date(s.start);
+  let end = s.end ? new Date(s.end) : new Date();
+  let row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${start.toLocaleTimeString()}</td>
+    <td>${end.toLocaleTimeString()}</td>
+    <td><button onclick="openSession(${index})">Open</button></td>
+  `;
+  tbody.appendChild(row);
+});
 
-  // Simple grouping: हर बार reset करने पर एक नया session बनाना होगा (future update)
-  if (gpsHistory.length > 0) {
-    sessions.push({ 
-      start: new Date(gpsHistory[0].time), 
-      end: new Date(gpsHistory[gpsHistory.length-1].time),
-      data: gpsHistory
-    });
-  }
+function openSession(index) {
+  const session = sessions[index];
+  if (!session || session.data.length === 0) return;
 
-  // Table में show करो
-  const tbody = document.getElementById("sessionTable");
-  sessions.forEach((s, index) => {
-    let row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${s.start.toLocaleTimeString()}</td>
-      <td>${s.end.toLocaleTimeString()}</td>
-      <td><button onclick="openSession(${index})">Open</button></td>
-    `;
-    tbody.appendChild(row);
-  });
+  const coords = session.data.map(p => [p.lat, p.lon]);
+  pathLine.setLatLngs(coords);
+  dotMarker.setLatLng(coords[coords.length - 1]);
+  map.fitBounds(coords);
+}
 
-  function openSession(index) {
-    const session = sessions[index];
-    if (!session || session.data.length === 0) return;
-    
-    const coords = session.data.map(p => [p.lat, p.lon]);
-    pathLine.setLatLngs(coords);
-    dotMarker.setLatLng(coords[coords.length-1]);
-    map.fitBounds(coords);
-  }
 </script>
 </body>
 </html>
