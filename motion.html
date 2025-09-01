@@ -507,25 +507,23 @@ function startTracking() {
 }
 
 function stopTracking() {
-  if (trackingInterval) {
-    navigator.geolocation.clearWatch(trackingInterval);
-    trackingInterval = null;
-  }
-}
-function stopTracking() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
 
     let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
     let current = sessions[sessions.length - 1];
+
     if (current && !current.end) {
+      // Set the stop time correctly
       current.end = new Date().toISOString();
-      current.data = gpsHistory;
+      // Merge any current path data into the session data
+      current.data = [...current.data, ...gpsHistory];
       localStorage.setItem("sessions", JSON.stringify(sessions));
     }
   }
 }
+
 
 
 
@@ -670,6 +668,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
