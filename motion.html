@@ -85,7 +85,7 @@
 
 <body>
 <header>
- </h1> Motion Tracker</h1>
+</h1>Motion Tracker</h1>
 <button onclick="openHistoryPage()" style="float: right; margin-right: 10px;">History</button>
 </header>
 
@@ -102,7 +102,7 @@
   <button onclick="startTracking()">Start</button>
   <button onclick="stopTracking()">Stop</button>
   <button onclick="resetPage()">Reset</button>
-  <button onclick="saveDataToFile()">Save</button>
+  
 </div>
 
 <!-- Map container -->
@@ -128,8 +128,16 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+
+  window.onload = function() {
+  localStorage.removeItem("gpsHistory");
+  localStorage.removeItem("recordedData");
+  localStorage.removeItem("sessions");
+};
+
   let prevLat = null, prevLon = null;
   let gpsHistory = [];
+  let sessionStartTime = null;
   let recordedData = [];
   let sensitivityFactor = 5;
   let vibratedRecently = false;
@@ -164,29 +172,6 @@
   let pathCoords = [];
   let pathLine = L.polyline(pathCoords, { color: 'blue' }).addTo(map);
 
-function deg2rad(d) { return d * Math.PI / 180; }
-function rad2deg(r) { return r * 180 / Math.PI; }
-
-// True bearing from (lat1,lon1) -> (lat2,lon2)
-function bearingBetween(lat1, lon1, lat2, lon2) {
-  const φ1 = deg2rad(lat1), φ2 = deg2rad(lat2);
-  const Δλ = deg2rad(lon2 - lon1);
-
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
-  let θ = Math.atan2(y, x);                 // radians
-  let brg = (rad2deg(θ) + 360) % 360;       // 0..360
-  return brg;
-}
-
-function compassLabel(bearingDeg) {
-  const dirs = ["North ↑","North-East ↗️","East →","South-East ↘️",
-                "South ↓","South-West ↙️","West ←","North-West ↖️"];
-  // center the 8 sectors on N, NE, E, ...
-  const idx = Math.floor(((bearingDeg + 22.5) % 360) / 45);
-  return dirs[idx];
-}
-
 function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
@@ -198,26 +183,20 @@ function showLocation(position) {
    // ✅ localStorage me bhi save karo
     localStorage.setItem("gpsHistory", JSON.stringify(gpsHistory));
 
-   // existing code
+    // UI update
     locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
     pathCoords.push([lat, lon]);
     pathLine.setLatLngs(pathCoords);
     dotMarker.setLatLng([lat, lon]);
     map.setView([lat, lon]);
 
-   if (prevLat !== null && prevLon !== null) {
-  // identical point → keep previous text
-  if (lat === prevLat && lon === prevLon) {
-    // do nothing – no movement yet
-  } else {
-    const bearing = bearingBetween(prevLat, prevLon, lat, lon); // 0..360
-    const label = compassLabel(bearing);
-    directionText.textContent = `Direction: ${label} (${Math.round(bearing)}°)`;
-  }
-} else {
-  directionText.textContent = "Direction: Calculating...";
-}
-
+    // Calculate direction based on previous position
+    if (prevLat !== null && prevLon !== null) {
+      const dx = lon - prevLon;
+      const dy = lat - prevLat;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
+    }
 
     prevLat = lat;
     prevLon = lon;
@@ -247,13 +226,27 @@ function showLocation(position) {
       break;
   }
 }
+function getDirectionFromAngle(angle) {
+  // Normalize angle (-180 se 180 ko 0–360 me convert)
+  angle = (angle + 360) % 360;
 
+  if (angle >= 337.5 || angle < 22.5) return "East";
+  if (angle >= 22.5 && angle < 67.5) return "North-East";
+  if (angle >= 67.5 && angle < 112.5) return "North";
+  if (angle >= 112.5 && angle < 157.5) return "North-West";
+  if (angle >= 157.5 && angle < 202.5) return "West";
+  if (angle >= 202.5 && angle < 247.5) return "South-West";
+  if (angle >= 247.5 && angle < 292.5) return "South";
+  if (angle >= 292.5 && angle < 337.5) return "South-East";
+  
+  return "Unknown";
+}
 
 function saveDataToFile() {
-  // sensitivity box ka value hi number of entries decide karega
+
   const numberOfEntries = parseInt(sensitivityRange.value);
 
-  // last N entries select karo
+  // last N entries select 
   const recentData = recordedData.slice(-numberOfEntries);
 
   if (recentData.length === 0) {
@@ -261,31 +254,53 @@ function saveDataToFile() {
     return;
   }
 
-  // text file content banao
-  let fileContent = "X\tY\tZ\tVibration\tDirection\n";
-  recentData.forEach(entry => {
-    fileContent += `${entry.x.toFixed(2)}\t${entry.y.toFixed(2)}\t${entry.z.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
-  });
+let fileContent = "Alpha\tBeta\tGamma\tVibration\tDirection\n";
+recentData.forEach(entry => {
+  fileContent += `${entry.alpha.toFixed(2)}\t${entry.beta.toFixed(2)}\t${entry.gamma.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
+});
 
-  // download trigger karo
+
+
+  // download trigger 
   const blob = new Blob([fileContent], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `motion_data_last_${numberOfEntries}.txt`; // filename me bhi show karega
+  a.download = `motion_data_last_${numberOfEntries}.txt`; 
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 }
 
- let watchId = null;
+  let watchId = null;
 
+ function startTracking() {
+  if ("geolocation" in navigator) {
+    // ✅ continuous GPS tracking
+    trackingInterval = navigator.geolocation.watchPosition(
+      showLocation,
+      showError,
+      {
+        enableHighAccuracy: true,   // GPS chip use karega
+        timeout: 10000,             // max wait 10 sec
+        maximumAge: 0               // purana cache use na kare
+      }
+    );
+  } else {
+    alert("Geolocation not supported in this browser.");
+  }
+}
 function startTracking() {
   if ("geolocation" in navigator) {
-    sessionStartTime = new Date();
-    gpsHistory = [];
-
+    // Check if sessions already exist
     let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+
+    // Start a new session
+    sessionStartTime = new Date();
+    gpsHistory = []; // reset for new session
+    localStorage.setItem("currentSession", JSON.stringify(gpsHistory));
+
+    // Save to main sessions array with placeholder for end
     sessions.push({
       start: sessionStartTime.toISOString(),
       end: null,
@@ -304,27 +319,40 @@ function startTracking() {
 }
 
 function stopTracking() {
+  if (trackingInterval) {
+    navigator.geolocation.clearWatch(trackingInterval);
+    trackingInterval = null;
+  }
+}
+function stopTracking() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
+
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+    let current = sessions[sessions.length - 1];
+    if (current && !current.end) {
+      current.end = new Date().toISOString();
+      current.data = gpsHistory;
+      localStorage.setItem("sessions", JSON.stringify(sessions));
+    }
   }
 }
 
- function resetPage() {
-  // Path clear karo (screen se)
+
+
+function resetPage() {
   pathCoords = [];
   pathLine.setLatLngs(pathCoords);
 
-  // Dot ko center me set karo
-  dotMarker.setLatLng([0,0]);
-  map.setView([0,0], 18);
-
-  // ❌ NOTE: gpsHistory ko clear NAHI karna 
-  // Matlab purana data localStorage me safe hai
+  if (prevLat && prevLon) {
+    dotMarker.setLatLng([prevLat, prevLon]);
+    map.panTo([prevLat, prevLon], {animate: true, duration: 0.5});
+  }
 }
 
 
-function toggleHistory() {
+/*function toggleHistory() {
     const modal = document.getElementById("historyModal");
     const list = document.getElementById("historyList");
     list.innerHTML = "";
@@ -335,8 +363,7 @@ function toggleHistory() {
             return;
         }
 
-        // 1 minute ya 5 minute interval ke basis pe group kar sakte ho
-        // yaha simple approach: poora session ko 1 entry ke liye consider kar rahe hain
+       
         const startTime = gpsHistory[0].time;
         const endTime = gpsHistory[gpsHistory.length - 1].time;
 
@@ -345,6 +372,51 @@ function toggleHistory() {
         li.textContent = `${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString()} – ${endTime.toLocaleTimeString()}`;
         li.onclick = () => showHistoryPath(startTime, endTime);
         list.appendChild(li);
+
+        modal.style.display = "block";
+    } else {
+        modal.style.display = "none";
+    }
+}*/
+
+function toggleHistory() {
+    const modal = document.getElementById("historyModal");
+    const list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    if (modal.style.display === "none") {
+        const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+
+        if (sessions.length === 0) {
+            alert("No history available yet.");
+            return;
+        }
+
+        
+        sessions.forEach((session, index) => {
+            const startTime = new Date(session.start);
+            const endTime = session.end ? new Date(session.end) : null;
+
+            const li = document.createElement("li");
+            li.style.cursor = "pointer";
+            li.textContent = endTime
+                ? `Session ${index + 1}: ${startTime.toLocaleString()} - ${endTime.toLocaleString()}`
+                : `Session ${index + 1}: ${startTime.toLocaleString()} - Ongoing`;
+
+            li.onclick = () => {
+                const path = session.data.map(p => [p.lat, p.lon]);
+                if (path.length > 0) {
+                    pathLine.setLatLngs(path);
+                    dotMarker.setLatLng(path[path.length - 1]);
+                    map.fitBounds(path);
+                } else {
+                    alert("No data in this session.");
+                }
+                closeHistory();
+            };
+
+            list.appendChild(li);
+        });
 
         modal.style.display = "block";
     } else {
@@ -375,7 +447,7 @@ function showHistoryPath(startTime, endTime) {
 
 
   function openHistoryPage() {
-    window.location.href = "history.html"; // नया पेज खुलेगा
+    window.location.href = "history.html"; 
   }
 
 
@@ -397,10 +469,22 @@ window.onload = function() {
   if (savedRecorded) {
     recordedData = JSON.parse(savedRecorded);
   }
+
+     localStorage.removeItem("currentSession");
+
+  gpsHistory = [];
+  recordedData = [];
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+  dotMarker.setLatLng([0, 0]);
+  map.setView([0, 0], 18);
 };
 </script>
 </body>
 </html>
+
+
+
 
 
 
