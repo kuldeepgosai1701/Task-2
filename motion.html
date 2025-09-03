@@ -10,86 +10,113 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html {
+     body, html {
      height: 100%;
+     font-family: "Inter", sans-serif;
      display: flex;
-     flex-direction: column; }
+     flex-direction: column;
+     background: #f7f9fc;
+    }
 
     header {
-      background: #004080;
-      color: #fff;
-      text-align: center;
-      padding: 15px;
-      font-size: 1.6rem;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .sensitivity-box {
-      position: fixed;
-      top: 70px;
-      right: 20px;
-      background: rgba(36, 0, 128, 0.9);
-      color: #fff;
-      padding: 12px 16px;
-      border-radius: 12px;
-      z-index: 1001;
-    }
-
-    .sensitivity-box input[type="range"] {
-      width: 150px;
-    }
-
-   .info {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 15px;
-  border-radius: 12px;
-  z-index: 1001;
-  width: 250px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: none;
 }
+
+.info {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  width: 270px;
+}
+
+.info p:first-child {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.info h3 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #222;
+}
+.info h3::before {
+  content: "📍";
+  font-size: 1.3rem;
+}
+
+.info p {
+  margin: 6px 0;
+  font-size: 0.95rem;
+  color: #444;
+}
+.info span.value {
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* ✅ Buttons Group */
 .button-group {
   margin-top: 10px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .button-group button {
   flex: 1;
-  padding: 8px 12px;
+  padding: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   color: white;
-  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
 
-.button-group .start {
-  background: linear-gradient(120deg, #007bff, #0056b3);
+.start { background: linear-gradient(120deg, #28a745, #218838); }
+.stop  { background: linear-gradient(120deg, #ffc107, #e0a800); }
+.reset { background: linear-gradient(120deg, #dc3545, #c82333); }
+
+
+    .sensitivity-box {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #2a3b8f, #001f54);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 16px;
+  z-index: 1001;
+  width: 200px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  font-size: 14px;
 }
 
-.button-group .stop {
-  background: linear-gradient(120deg, #ff4d4d, #cc4100);
+.sensitivity-box h3 {
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
-.button-group .reset {
-  background: linear-gradient(120deg, #6c757d, #343a40);
+.sensitivity-box input[type="range"] {
+  width: 100%;
+  margin: 8px 0;
 }
-
-.button-group button:hover {
-  opacity: 0.85;
+  #map {
+  flex: 1;
+  width: 100%;
 }
-
-    #map {
-     flex: 1;
-     width: 100%;
-     position: relative; /* remove absolute positioning */
-    }
 
     /*footer {
       background: linear-gradient(90deg, #004080, #0066cc);
@@ -115,13 +142,15 @@
 
 <div class="info">
   <p>📍 Tracker Info</p>
-  <p id="location">Location: Fetching...</p>
-  <p id="direction">Direction: Calculating...</p>
+  <p>Location: <span id="location" class="value">22.29394, 70.74606</span></p>
+<p>Direction: <span id="direction" class="value">East</span></p>
+
 
   <div class="button-group">
-  <button class="start" onclick="startTracking()">▶ Start</button>
-  <button class="stop">⏸ Stop</button>
-  <button class="reset">⟳ Reset</button>
+  <button class="start">▶ Start</button>
+<button class="stop">⏸ Stop</button>
+<button class="reset">⟳ Reset</button>
+
  </div> 
 </div>
 
