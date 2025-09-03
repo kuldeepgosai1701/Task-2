@@ -9,135 +9,101 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
   <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+     height: 100%;
+     display: flex;
+     flex-direction: column; }
 
+    header {
+      background: #004080;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      font-size: 1.6rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
 
-   header {
-  background: linear-gradient(135deg, #1a3cff, #0044cc);
-  padding: 12px 20px;
-  color: white;
-  font-size: 1.2rem;
-  font-weight: 600;
-  border-bottom: none;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  border-radius: 0 0 12px 12px;
-}
-body{
-  font-family: 'Poppins', sans-serif;
-  background: #f4f6fb;
-}
+    .sensitivity-box {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: rgba(36, 0, 128, 0.9);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 12px;
+      z-index: 1001;
+    }
 
-button {
-  border: none;
-  padding: 10px 16px;
-  font-weight: 600;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #1a3cff, #0044cc);
-  color: white;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
+    .sensitivity-box input[type="range"] {
+      width: 150px;
+    }
 
-button:hover {
-  transform: scale(1.05);
-  background: linear-gradient(135deg, #0033aa, #002080);
-}
-
-.sensitivity-box {
-  backdrop-filter: blur(10px);
-  background: rgba(0, 68, 204, 0.8);
-  border: 1px solid rgba(255,255,255,0.3);
-}
-
-
-.sensitivity-box h3 {
-  font-size: 1rem;
-  margin-bottom: 10px;
-}
-
-.sensitivity-box input[type="range"] {
-  width: 100%;
-  accent-color: #ffffff;
-}
-
-.sensitivity-box div {
-  text-align: right;
-  margin-top: 8px;
-  font-weight: bold;
-}
-
-
-  .info {
+   .info {
   position: fixed;
   top: 20px;
   left: 20px;
-  background: #fff;
-  padding: 18px;
-  border-radius: 18px;
-  width: 250px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  z-index: 1001;
-  font-size: 0.95rem;
-}
-
-.info p {
-  margin-bottom: 6px;
-  font-weight: 500;
-  color: #333;
-}
-
-
-.info button {
-  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 15px;
   border-radius: 12px;
-  border: none;
-  font-weight: bold;
-  font-size: 0.9rem;
-  margin: 5px 4px 0 0;
-  background: linear-gradient(120deg, #1a3cff, #0044cc);
-  color: white;
-  cursor: pointer;
-  transition: transform 0.2s ease, background 0.3s;
+  z-index: 1001;
+  width: 250px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.button-group {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
 }
 
-.info button:hover {
-  transform: scale(1.05);
-  background: linear-gradient(120deg, #0035a5, #002d80);
-}
-
-
-  /* ---------- MAP ---------- */
-#map {
+.button-group button {
   flex: 1;
-  width: 100%;
-  height: 100%;
-  border-radius: 0;
-  z-index: 0;
-}
-
-
-  footer {
-  background: linear-gradient(135deg, #1a3cff, #0044cc);
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
   color: white;
-  text-align: center;
-  padding: 10px;
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+  transition: 0.2s;
 }
 
+.button-group .start {
+  background: linear-gradient(120deg, #007bff, #0056b3);
+}
 
+.button-group .stop {
+  background: linear-gradient(120deg, #ff4d4d, #cc4100);
+}
+
+.button-group .reset {
+  background: linear-gradient(120deg, #6c757d, #343a40);
+}
+
+.button-group button:hover {
+  opacity: 0.85;
+}
+
+    #map {
+     flex: 1;
+     width: 100%;
+     position: relative; /* remove absolute positioning */
+    }
+
+    /*footer {
+      background: linear-gradient(90deg, #004080, #0066cc);
+       color: white;
+  text-align: center;
+  padding: 14px;
+  font-size: 1rem;
+    }*/
   </style>
 </head>
 
 <body>
 <header>
-</h1>Motion Tracker</h1>
+
 <button onclick="openHistoryPage()" style="float: right; margin-right: 10px;">History</button>
 </header>
 
@@ -151,10 +117,12 @@ button:hover {
   <p>📍 Tracker Info</p>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
-  <button onclick="startTracking()">Start</button>
-  <button onclick="stopTracking()">Stop</button>
-  <button onclick="resetPage()">Reset</button>
-  
+
+  <div class="button-group">
+  <button class="start" onclick="startTracking()">▶ Start</button>
+  <button class="stop">⏸ Stop</button>
+  <button class="reset">⟳ Reset</button>
+ </div> 
 </div>
 
 <!-- Map container -->
@@ -534,6 +502,13 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
