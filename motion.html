@@ -17,54 +17,43 @@
 }
 
 
-    header {
-  background: linear-gradient(90deg, #1a3cff, #0044cc);
-  color: #fff;
-  text-align: center;
-  padding: 14px;
-  font-size: 1.4rem;
-  font-weight: bold;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-body, html {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: #f7f9fb;
-}
-header button {
-  float: right;
-  margin-right: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-header button:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
-  .sensitivity-box {
-  position: fixed;
-  top: 80px;
-  right: 20px;
+   header {
   background: linear-gradient(135deg, #1a3cff, #0044cc);
-  color: #fff;
-  padding: 16px;
-  border-radius: 16px;
-  width: 200px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  z-index: 1001;
+  padding: 12px 20px;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-bottom: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border-radius: 0 0 12px 12px;
 }
+body{
+  font-family: 'Poppins', sans-serif;
+  background: #f4f6fb;
+}
+
+button {
+  border: none;
+  padding: 10px 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1a3cff, #0044cc);
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #0033aa, #002080);
+}
+
+.sensitivity-box {
+  backdrop-filter: blur(10px);
+  background: rgba(0, 68, 204, 0.8);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
 
 .sensitivity-box h3 {
   font-size: 1rem;
@@ -73,6 +62,7 @@ header button:hover {
 
 .sensitivity-box input[type="range"] {
   width: 100%;
+  accent-color: #ffffff;
 }
 
 .sensitivity-box div {
@@ -87,54 +77,60 @@ header button:hover {
   top: 20px;
   left: 20px;
   background: #fff;
-  padding: 16px;
-  border-radius: 16px;
-  width: 260px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  padding: 18px;
+  border-radius: 18px;
+  width: 250px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   z-index: 1001;
-}
-   .info p {
-  margin-bottom: 8px;
   font-size: 0.95rem;
+}
+
+.info p {
+  margin-bottom: 6px;
+  font-weight: 500;
   color: #333;
 }
 
-/* Buttons inside tracker info */
+
 .info button {
-  margin-right: 6px;
-  margin-top: 6px;
   padding: 8px 14px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: 12px;
   border: none;
-  border-radius: 10px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin: 5px 4px 0 0;
   background: linear-gradient(120deg, #1a3cff, #0044cc);
-  color: #fff;
+  color: white;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: transform 0.2s ease, background 0.3s;
 }
 
 .info button:hover {
+  transform: scale(1.05);
   background: linear-gradient(120deg, #0035a5, #002d80);
 }
+
 
   /* ---------- MAP ---------- */
 #map {
   flex: 1;
   width: 100%;
-  position: relative;
-  z-index: 0;
+  height: 100%;
   border-radius: 0;
+  z-index: 0;
 }
 
+
   footer {
-  background: linear-gradient(90deg, #1a3cff, #0044cc);
-  color: #fff;
+  background: linear-gradient(135deg, #1a3cff, #0044cc);
+  color: white;
   text-align: center;
-  padding: 12px;
+  padding: 10px;
   font-size: 0.85rem;
-  font-weight: 500;
+  letter-spacing: 0.5px;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
 }
+
 
   </style>
 </head>
