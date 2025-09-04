@@ -224,7 +224,7 @@
   localStorage.removeItem("gpsHistory");
   localStorage.removeItem("recordedData");
   localStorage.removeItem("sessions");
-};
+}
 
   let prevLat = null, prevLon = null;
   let gpsHistory = [];
@@ -234,6 +234,7 @@
   let vibratedRecently = false;
   let trackingInterval = null;
 
+  
   const locationText = document.getElementById("location");
   const directionText = document.getElementById("direction");
   const sensitivityRange = document.getElementById("sensitivityRange");
@@ -243,7 +244,7 @@
     sensitivityFactor = parseFloat(sensitivityRange.value);
     sensVal.textContent = sensitivityRange.value;
   });
-
+    
   // Leaflet map setup
   let map = L.map('map').setView([0, 0], 18);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -555,7 +556,7 @@ document.addEventListener("click", function(event) {
   }
 });
 
-let sensitivityFactor = 5;       // Active value (dot movement isi pe chalega)
+/*let sensitivityFactor = 5;       // Active value (dot movement isi pe chalega)
   let tempSensitivity = 5;         // Slider  temporary value
 
   const sensitivityRange = document.getElementById("sensitivityRange");
@@ -572,7 +573,7 @@ let sensitivityFactor = 5;       // Active value (dot movement isi pe chalega)
   saveBtn.addEventListener("click", () => {
     sensitivityFactor = tempSensitivity;
     alert("✅ Sensitivity saved: " + sensitivityFactor);
-  });
+  });*/
 
 
 window.onload = function() {
