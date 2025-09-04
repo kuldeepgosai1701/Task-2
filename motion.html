@@ -166,7 +166,6 @@
     }*/
   </style>
 </head>
-
 <body>
 <header>
 
@@ -176,7 +175,11 @@
 <div class="sensitivity-box">
   <h3>Sensitivity</h3>
   <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="5">
-  <div>Value: <span id="sensVal">5</span></div>
+    <div>Value: <span id="sensVal">5</span></div>
+      <button id="saveSensitivity" style="margin-top:8px; padding:6px 10px; border:none;
+          border-radius:8px; background:#28a745; color:#fff; font-weight:600; cursor:pointer;">
+    💾 Save
+  </button>
 </div>
 
 <div class="info">
@@ -538,7 +541,7 @@ function showHistoryPath(startTime, endTime) {
     window.location.href = "history.html"; 
   }
 
-  function toggleSettings() {
+function toggleSettings() {
   const box = document.querySelector(".sensitivity-box");
   box.classList.toggle("open");
 }
@@ -551,6 +554,25 @@ document.addEventListener("click", function(event) {
     box.classList.remove("open");
   }
 });
+
+let sensitivityFactor = 5;       // Active value (dot movement isi pe chalega)
+  let tempSensitivity = 5;         // Slider  temporary value
+
+  const sensitivityRange = document.getElementById("sensitivityRange");
+  const sensVal = document.getElementById("sensVal");
+  const saveBtn = document.getElementById("saveSensitivity");
+
+  // Slider chalate hi temporary value update karo
+  sensitivityRange.addEventListener("input", () => {
+    tempSensitivity = parseFloat(sensitivityRange.value);
+    sensVal.textContent = sensitivityRange.value;
+  });
+
+  // Save button pe hi actual value apply karo
+  saveBtn.addEventListener("click", () => {
+    sensitivityFactor = tempSensitivity;
+    alert("✅ Sensitivity saved: " + sensitivityFactor);
+  });
 
 
 window.onload = function() {
