@@ -73,7 +73,21 @@
 .button-group button:hover {
   opacity: 0.9;
 }
-    .sensitivity-box {
+
+
+/*.settings-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.settings-btn:hover {
+  color: #2a9df4;
+}
+
+    /*.sensitivity-box {
   position: fixed;
   top: 20px;
   right: 20px;
@@ -86,6 +100,47 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.25);
   font-size: 14px;
 }
+
+.sensitivity-box.open {
+  right: 20px;   /* slides in */
+
+
+  .settings-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  font-size: 16px;
+  background: linear-gradient(135deg, #2a9df4, #6c63ff); /* blue-purple gradient */
+  transition: 0.2s;
+}
+
+.settings-btn:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+  .sensitivity-box {
+  position: fixed;
+  top: 20px;
+  right: -250px; /* hide off screen */
+  background: linear-gradient(135deg, #2a3b8f, #001f54);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 16px;
+  z-index: 1001;
+  width: 200px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  font-size: 14px;
+  transition: right 0.3s ease; /* smooth slide effect */
+}
+
+.sensitivity-box.open {
+  right: 20px; /* slide in when open */
+}
+
 
 .sensitivity-box h3 {
   margin-bottom: 6px;
@@ -125,7 +180,9 @@
 </div>
 
 <div class="info">
-  <p>📍 Tracker Info</p>
+  <p>📍 Tracker Info
+   <button class="settings-btn" onclick="toggleSettings()">⚙ Setting</button>
+   </p>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
 
@@ -480,6 +537,20 @@ function showHistoryPath(startTime, endTime) {
   function openHistoryPage() {
     window.location.href = "history.html"; 
   }
+
+  function toggleSettings() {
+  const box = document.querySelector(".sensitivity-box");
+  box.classList.toggle("open");
+}
+// Close sensitivity box if clicked outside
+document.addEventListener("click", function(event) {
+  const box = document.querySelector(".sensitivity-box");
+  const settingsBtn = document.querySelector(".settings-btn");
+
+  if (!box.contains(event.target) && !settingsBtn.contains(event.target)) {
+    box.classList.remove("open");
+  }
+});
 
 
 window.onload = function() {
