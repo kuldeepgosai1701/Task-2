@@ -250,7 +250,9 @@
   let sessionStartTime = null;
   let recordedData = [];
   let sensitivityFactor = 5;
- 
+   let vibratedRecently = false;
+  let trackingInterval = null;
+
   // Gyroscope values track karne ke liye
 window.addEventListener("deviceorientation", function(event) {
     let alpha = event.alpha; // rotation around z-axis
@@ -307,11 +309,21 @@ window.addEventListener("deviceorientation", function(event) {
   const sensitivityRange = document.getElementById("sensitivityRange");
   const sensVal = document.getElementById("sensVal");
 
-  sensitivityRange.addEventListener("input", () => {
-    sensitivityFactor = parseFloat(sensitivityRange.value);
-    sensVal.textContent = sensitivityRange.value;
-  });
+  
+ let tempSensitivity = sensitivityFactor;  // start with current active value
 
+    // Slider chalate hi sirf temporary value update karo
+   sensitivityRange.addEventListener("input", () => {
+   tempSensitivity = parseFloat(sensitivityRange.value);
+   sensVal.textContent = sensitivityRange.value;
+   });
+
+    // Save button pe hi actual value apply karo
+    const saveBtn = document.getElementById("saveSensitivity");
+    saveBtn.addEventListener("click", () => {
+    sensitivityFactor = tempSensitivity;
+    alert("✅ Sensitivity saved: " + sensitivityFactor);
+    });
   // Leaflet map setup
   let map = L.map('map').setView([0, 0], 18);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -785,6 +797,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
