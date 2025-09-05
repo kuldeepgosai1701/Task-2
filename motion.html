@@ -308,7 +308,12 @@ window.addEventListener("deviceorientation", function(event) {
   const sensitivityRange = document.getElementById("sensitivityRange");
   const sensVal = document.getElementById("sensVal");
 
-  
+  // ✅ Save button event
+document.getElementById("saveSensitivity").addEventListener("click", function () {
+  sensitivityFactor = parseInt(sensitivityRange.value); // slider value ko logic me save karo
+  sensVal.textContent = sensitivityFactor;              // UI me update karo
+  alert("Sensitivity saved: " + sensitivityFactor);
+});
 
   // Leaflet map setup
   let map = L.map('map').setView([0, 0], 18);
@@ -783,6 +788,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
