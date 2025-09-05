@@ -9,8 +9,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
   <style>
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
      body, html {
      height: 100%;
      font-family: "Inter", sans-serif;
@@ -172,13 +171,13 @@
   opacity: 0.9;
   transform: scale(1.05);
 }
+    #map {
+     flex: 1;
+     width: 100%;
+     position: relative; /* remove absolute positioning */
+    }
 
-  #map {
-  flex: 1;
-  width: 100%;
-}
-
-    /*footer {
+   /* footer {
       background: linear-gradient(90deg, #004080, #0066cc);
        color: white;
   text-align: center;
@@ -187,13 +186,18 @@
     }*/
   </style>
 </head>
+
 <body>
+<header>
+</h1>Motion Tracker</h1>
+<button onclick="openHistoryPage()" style="float: right; margin-right: 10px;">History</button>
+</header>
 
 <div class="sensitivity-box">
   <h3>Sensitivity</h3>
   <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="5">
-    <div>Value: <span id="sensVal">5</span></div>
-      <button id="saveSensitivity" style="margin-top:8px; padding:6px 10px; border:none;
+  <div>Value: <span id="sensVal">5</span></div>
+<button id="saveSensitivity" style="margin-top:8px; padding:6px 10px; border:none;
           border-radius:8px; background:#28a745; color:#fff; font-weight:600; cursor:pointer;">
     💾 Save
   </button>
@@ -201,17 +205,14 @@
 
 <div class="info">
   <p>📍 Tracker Info
-   <button class="settings-btn" onclick="toggleSettings()">⚙ Setting</button>
-   <button class="history-btn" onclick="openHistoryPage()">📜 History</button>
-  </p>
+  <button class="settings-btn" onclick="toggleSettings()">⚙ Setting</button>
+   <button class="history-btn" onclick="openHistoryPage()">📜 History</button></p>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
-
   <div class="button-group">
   <button class="start" onclick="startTracking()">▶ Start</button>
   <button class="stop"  onclick="stopTracking()">⏸ Stop</button>
-  <button class="reset" onclick="resetPage()">⟳ Reset</button>
- </div> 
+  <button class="reset" onclick="resetPage()">⟳ Reset</button></div>
 </div>
 
 <!-- Map container -->
@@ -237,6 +238,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+
   window.onload = function() {
   localStorage.removeItem("gpsHistory");
   localStorage.removeItem("recordedData");
@@ -249,7 +251,16 @@
   let recordedData = [];
   let sensitivityFactor = 5;
 
-    // Gyroscope values track karne ke liye
+   /*localStorage.removeItem("currentSession");
+
+  gpsHistory = [];
+  recordedData = [];
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+  dotMarker.setLatLng([0, 0]);
+  map.setView([0, 0], 18);*/
+
+  // Gyroscope values track karne ke liye
 window.addEventListener("deviceorientation", function(event) {
     let alpha = event.alpha; // rotation around z-axis
     let beta = event.beta;   // rotation around x-axis
@@ -273,7 +284,30 @@ window.addEventListener("deviceorientation", function(event) {
         vibratedRecently = false;
     }
 }, true);
+  /*window.addEventListener("deviceorientation", function(event) {
+    let alpha = event.alpha;
+    let beta = event.beta;
+    let gamma = event.gamma;
 
+    let vibration = (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5);
+
+    recordedData.push({ alpha, beta, gamma, time: Date.now(), vibration, direction: null });
+
+     // 🔹 Prevent unlimited growth (memory crash fix)
+    if (recordedData.length > 1000) {
+        recordedData.shift(); // purana data hatao
+    }
+
+    localStorage.setItem("recordedData", JSON.stringify(recordedData));
+
+    if (vibration) {
+        vibratedRecently = true;
+        if (navigator.vibrate) navigator.vibrate(300);
+    } else {
+        vibratedRecently = false;
+    }
+}, true);*/
+  
   let vibratedRecently = false;
   let trackingInterval = null;
 
@@ -282,21 +316,11 @@ window.addEventListener("deviceorientation", function(event) {
   const sensitivityRange = document.getElementById("sensitivityRange");
   const sensVal = document.getElementById("sensVal");
 
-  let tempSensitivity = sensitivityFactor;  // start with current active value
+  sensitivityRange.addEventListener("input", () => {
+    sensitivityFactor = parseFloat(sensitivityRange.value);
+    sensVal.textContent = sensitivityRange.value;
+  });
 
-    // Slider chalate hi sirf temporary value update karo
-   sensitivityRange.addEventListener("input", () => {
-   tempSensitivity = parseFloat(sensitivityRange.value);
-   sensVal.textContent = sensitivityRange.value;
-   });
-
-    // Save button pe hi actual value apply karo
-    const saveBtn = document.getElementById("saveSensitivity");
-    saveBtn.addEventListener("click", () => {
-    sensitivityFactor = tempSensitivity;
-    alert("✅ Sensitivity saved: " + sensitivityFactor);
-    });
-    
   // Leaflet map setup
   let map = L.map('map').setView([0, 0], 18);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -402,9 +426,9 @@ function checkVibration(data) {
 function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
-    const timestamp = new Date();  // current time
+    const timestamp = new Date().toISOString(); // store in ISO format
 
-      // Get sessions array from localStorage
+    // Get sessions array from localStorage
     let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
     // If no session exists, create one
@@ -416,10 +440,10 @@ function showLocation(position) {
         });
     }
 
-     // Reference current session
+    // Reference current session
     let currentSession = sessions[sessions.length - 1];
 
-    //✅ Always keep only the last 10 entries in current session
+    // ✅ Always keep only the last 10 entries in current session
     currentSession.data.push({
     lat, 
     lon, 
@@ -429,6 +453,7 @@ function showLocation(position) {
 if (currentSession.data.length > 10) {
     currentSession.data.shift();
 }
+
 
     // Save back to localStorage
     localStorage.setItem("sessions", JSON.stringify(sessions));
@@ -442,8 +467,11 @@ if (currentSession.data.length > 10) {
 
     // Calculate direction based on previous position
     if (prevLat !== null && prevLon !== null) {
-
-      if (prevLat !== null && prevLon !== null) {
+       /* const dx = lon - prevLon;
+        const dy = lat - prevLat;
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        directionText.textContent = `Direction: ${getDirectionFromAngle(angle)} (${Math.round(angle)}°)`;*/
+if (prevLat !== null && prevLon !== null) {
     const bearing = calculateDirection(prevLat, prevLon, lat, lon);
     directionText.textContent = `Direction: ${getDirectionName(bearing)} (${Math.round(bearing)}°)`;
 } else {
@@ -456,7 +484,10 @@ if (currentSession.data.length > 10) {
     const sliderVal = parseInt(sensitivityRange.value);
     const analyzeCount = Math.max(10 - sliderVal, 1);  // Always analyze 1 to 10 points
     const analyzeData = currentSession.data.slice(-analyzeCount);
-// Extract recent entries for analysis
+
+
+
+    // Extract recent entries for analysis
     const analyzeDataGPS = currentSession.data.slice(-analyzeCount);
 
     // If vibration is detected in analyzed data → mark red dot
@@ -471,41 +502,10 @@ if (checkVibration(analyzeData)) {
         fillOpacity: 0.9
     }).addTo(map);
 }
-     prevLat = lat;
-     prevLon = lon;
-}
-
-
-    // GPS history me store karo
-    gpsHistory.push({lat, lon, time: timestamp});
-
-   // ✅ localStorage me bhi save karo
-    localStorage.setItem("gpsHistory", JSON.stringify(gpsHistory));
-
-    // UI update
-    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-    pathCoords.push([lat, lon]);
-    pathLine.setLatLngs(pathCoords);
-    dotMarker.setLatLng([lat, lon]);
-    map.setView([lat, lon]);
-
-    // Calculate direction based on previous position
-    if (prevLat !== null && prevLon !== null) {
-      const dx = lon - prevLon;
-      const dy = lat - prevLat;
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
-    }
 
     prevLat = lat;
     prevLon = lon;
 }
-
-  /*function getDirectionFromAngle(angle) {
-    const directions = ["East →", "North-East ↗️", "North ↑", "North-West ↖️",
-                        "West ←", "South-West ↙️", "South ↓", "South-East ↘️"];
-    return directions[Math.round((angle % 360 + 360) % 360 / 45) % 8];
-  }*/
 
  function showError(error) {
   console.error("GPS Error:", error);
@@ -631,11 +631,13 @@ function stopTracking() {
     let current = sessions[sessions.length - 1];
     if (current && !current.end) {
       current.end = new Date().toISOString();
-      current.data = [...gpsHistory]; 
+      current.data = gpsHistory;
       localStorage.setItem("sessions", JSON.stringify(sessions));
     }
   }
 }
+
+
 
 function resetPage() {
   pathCoords = [];
@@ -746,22 +748,6 @@ function showHistoryPath(startTime, endTime) {
     window.location.href = "history.html"; 
   }
 
-function toggleSettings() {
-  const box = document.querySelector(".sensitivity-box");
-  box.classList.toggle("open");
-}
-
-// Close sensitivity box if clicked outside
-document.addEventListener("click", function(event) {
-  const box = document.querySelector(".sensitivity-box");
-  const settingsBtn = document.querySelector(".settings-btn");
-
-  if (!box.contains(event.target) && !settingsBtn.contains(event.target)) {
-    box.classList.remove("open");
-  }
-});
-
-
 
 window.onload = function() {
   const savedHistory = localStorage.getItem("gpsHistory");
@@ -794,3 +780,89 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
+
+histooy.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History Sessions</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:20px; }
+    h2 { text-align:center; margin-bottom:20px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+    th { background:#004080; color:#fff; }
+    #map { height:400px; margin-top:20px; border-radius:10px; }
+  </style>
+</head>
+<body>
+
+<h2>📌 Motion History</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Start Time</th>
+      <th>END time</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="sessionTable"></tbody>
+</table>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  let map = L.map('map').setView([0,0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:19,
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  let pathLine = L.polyline([], {color:'blue'}).addTo(map);
+  let dotMarker = L.circleMarker([0,0], {radius:6, fillColor:'red', color:'darkred', weight:1}).addTo(map);
+
+  // LocalStorage से sessions पढ़ो
+  const gpsHistory = JSON.parse(localStorage.getItem("gpsHistory")) || [];
+  let sessions = [];
+
+  // Simple grouping: हर बार reset करने पर एक नया session बनाना होगा (future update)
+  if (gpsHistory.length > 0) {
+    sessions.push({ 
+      start: new Date(gpsHistory[0].time), 
+      end: new Date(gpsHistory[gpsHistory.length-1].time),
+      data: gpsHistory
+    });
+  }
+
+  // Table में show करो
+  const tbody = document.getElementById("sessionTable");
+  sessions.forEach((s, index) => {
+    let row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${s.start.toLocaleTimeString()}</td>
+      <td>${s.end.toLocaleTimeString()}</td>
+      <td><button onclick="openSession(${index})">Open</button></td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  function openSession(index) {
+    const session = sessions[index];
+    if (!session || session.data.length === 0) return;
+    
+    const coords = session.data.map(p => [p.lat, p.lon]);
+    pathLine.setLatLngs(coords);
+    dotMarker.setLatLng(coords[coords.length-1]);
+    map.fitBounds(coords);
+  }
+</script>
+</body>
+</html>
+
+
