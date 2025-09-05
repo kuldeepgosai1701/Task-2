@@ -250,16 +250,7 @@
   let sessionStartTime = null;
   let recordedData = [];
   let sensitivityFactor = 5;
-
-   /*localStorage.removeItem("currentSession");
-
-  gpsHistory = [];
-  recordedData = [];
-  pathCoords = [];
-  pathLine.setLatLngs(pathCoords);
-  dotMarker.setLatLng([0, 0]);
-  map.setView([0, 0], 18);*/
-
+ 
   // Gyroscope values track karne ke liye
 window.addEventListener("deviceorientation", function(event) {
     let alpha = event.alpha; // rotation around z-axis
@@ -748,6 +739,20 @@ function showHistoryPath(startTime, endTime) {
     window.location.href = "history.html"; 
   }
 
+function toggleSettings() {
+  const box = document.querySelector(".sensitivity-box");
+  box.classList.toggle("open");
+}
+
+// Close sensitivity box if clicked outside
+document.addEventListener("click", function(event) {
+  const box = document.querySelector(".sensitivity-box");
+  const settingsBtn = document.querySelector(".settings-btn");
+
+  if (!box.contains(event.target) && !settingsBtn.contains(event.target)) {
+    box.classList.remove("open");
+  }
+});
 
 window.onload = function() {
   const savedHistory = localStorage.getItem("gpsHistory");
@@ -780,5 +785,6 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
