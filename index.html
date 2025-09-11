@@ -110,23 +110,54 @@ footer {
   }
 }
 
-#installBtn {
-  background: linear-gradient(135deg, #ff7f50, #ff4500);
-  padding: 14px 28px;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  cursor: pointer;
-  color: #fff;
-  box-shadow: 0 0 15px rgba(255, 69, 0, 0.6);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+    /* Popup box (top of screen) */
+    #installPopup {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border: 2px solid #ff4500;
+      border-radius: 12px;
+      padding: 15px 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      display: none; /* hidden by default */
+      z-index: 1000;
+      text-align: center;
+    }
 
-#installBtn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 0 25px rgba(255, 69, 0, 0.8);
-}
+    #installPopup h3 {
+      margin: 0 0 10px;
+      color: #ff4500;
+    }
+
+    .popup-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+    }
+
+    .popup-buttons button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    .yes-btn {
+      background: #ff4500;
+      color: #fff;
+    }
+
+    .no-btn {
+      background: #ddd;
+      color: #333;
+    }
+
 
   </style>
 </head>
@@ -138,8 +169,17 @@ footer {
 
   <main>
     <button onclick="location.href='motion.html'">Start</button>
-    <button id="installBtn" style="display:none; margin-top:20px;">⬇ Install App</button>
+  
  </main>
+
+  <!-- 🔹 Install Popup -->
+  <div id="installPopup">
+    <h3>Install this app?</h3>
+    <div class="popup-buttons">
+      <button class="yes-btn" id="yesInstall">Yes</button>
+      <button class="no-btn" id="noInstall">No</button>
+    </div>
+  </div>
 
   <footer>
     Created by Kuldeep Gosai
@@ -150,25 +190,35 @@ footer {
     .then(() => console.log("Service Worker registered"))
     .catch(error => console.log("SW registration failed:", error));
 }
-let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
 
-window.addEventListener("beforeinstallprompt", (e) => {
-  // Stop default mini infobar
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = "block"; // Show install button
-});
+ let deferredPrompt;
+    const popup = document.getElementById("installPopup");
+    const yesBtn = document.getElementById("yesInstall");
+    const noBtn = document.getElementById("noInstall");
 
-installBtn.addEventListener("click", async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt(); // Show install prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log("User response:", outcome);
-    deferredPrompt = null; // Reset
-    installBtn.style.display = "none"; // Hide button after use
-  }
-});
+    // Show popup when install is available
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      popup.style.display = "block"; // show popup box
+    });
+
+    // If user clicks Yes → trigger install
+    yesBtn.addEventListener("click", async () => {
+      popup.style.display = "none"; // hide popup
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log("User choice:", outcome);
+        deferredPrompt = null;
+      }
+    });
+
+    // If user clicks No → just close popup
+    noBtn.addEventListener("click", () => {
+      popup.style.display = "none";
+    });
+
 </script>
 </body>
 </html>
