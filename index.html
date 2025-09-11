@@ -110,6 +110,24 @@ footer {
   }
 }
 
+#installBtn {
+  background: linear-gradient(135deg, #ff7f50, #ff4500);
+  padding: 14px 28px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(255, 69, 0, 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#installBtn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 25px rgba(255, 69, 0, 0.8);
+}
+
   </style>
 </head>
 <body>
@@ -120,7 +138,8 @@ footer {
 
   <main>
     <button onclick="location.href='motion.html'">Start</button>
-  </main>
+    <button id="installBtn" style="display:none; margin-top:20px;">⬇ Install App</button>
+ </main>
 
   <footer>
     Created by Kuldeep Gosai
@@ -131,6 +150,25 @@ footer {
     .then(() => console.log("Service Worker registered"))
     .catch(error => console.log("SW registration failed:", error));
 }
+let deferredPrompt;
+const installBtn = document.getElementById("installBtn");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  // Stop default mini infobar
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = "block"; // Show install button
+});
+
+installBtn.addEventListener("click", async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt(); // Show install prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log("User response:", outcome);
+    deferredPrompt = null; // Reset
+    installBtn.style.display = "none"; // Hide button after use
+  }
+});
 </script>
 </body>
 </html>
