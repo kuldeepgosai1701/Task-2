@@ -631,16 +631,18 @@ function stopTracking() {
   }
 }
 
-
-
 function resetPage() {
+  gpsHistory = [];
+  recordedData = [];
   pathCoords = [];
   pathLine.setLatLngs(pathCoords);
+  dotMarker.setLatLng([0, 0]);
+  map.setView([0, 0], 18);
 
-  if (prevLat && prevLon) {
-    dotMarker.setLatLng([prevLat, prevLon]);
-    map.panTo([prevLat, prevLon], {animate: true, duration: 0.5});
-  }
+  prevLat = null;
+  prevLon = null;
+  locationText.textContent = "Location: Reset...";
+  directionText.textContent = "Direction: Reset...";
 }
 
 
@@ -788,6 +790,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
