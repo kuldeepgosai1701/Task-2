@@ -214,7 +214,9 @@
   <button class="start" onclick="startTracking()">▶ Start</button>
   <button class="stop"  onclick="stopTracking()">⏸ Stop</button>
   <button class="reset" onclick="resetPage()">⟳ Reset</button>
-  <button id="saveBtn">💾 Save</button>
+  <button id="saveBtn" style="flex: 1; padding: 8px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; color: white; background: linear-gradient(135deg, #28a745, #157347);">
+    💾 Save
+  </button>
 
  </div> 
 </div>
@@ -470,25 +472,7 @@ function stopTracking() {
   }
 }
 
-const saveBtn = document.getElementById("saveBtn");
 
-// Store start and stop positions
-let startPoint = null;
-let stopPoint = null;
-let startTime = null;
-let stopTime = null;
-
-function startTracking() {
-  tracking = true;
-  startTime = new Date().toLocaleString();
-  alert("Tracking Started!");
-}
-
-function stopTracking() {
-  tracking = false;
-  stopTime = new Date().toLocaleString();
-  alert("Tracking Stopped!");
-}
 
 saveBtn.addEventListener("click", () => {
   if (!startPoint || !stopPoint) {
@@ -694,4 +678,5 @@ window.onload = function() {
 </body>
 
 </html>
+
 
