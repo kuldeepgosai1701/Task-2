@@ -356,6 +356,7 @@ function showLocation(position) {
       break;
   }
 }
+  
 function getDirectionFromAngle(angle) {
   // Normalize angle (-180 se 180 ko 0–360 me convert)
   angle = (angle + 360) % 360;
@@ -469,6 +470,52 @@ function stopTracking() {
   }
 }
 
+const saveBtn = document.getElementById("saveBtn");
+
+// Store start and stop positions
+let startPoint = null;
+let stopPoint = null;
+let startTime = null;
+let stopTime = null;
+
+function startTracking() {
+  tracking = true;
+  startTime = new Date().toLocaleString();
+  alert("Tracking Started!");
+}
+
+function stopTracking() {
+  tracking = false;
+  stopTime = new Date().toLocaleString();
+  alert("Tracking Stopped!");
+}
+
+saveBtn.addEventListener("click", () => {
+  if (!startPoint || !stopPoint) {
+    alert("Please start and stop tracking first!");
+    return;
+  }
+
+  const data = {
+    startPoint: `${startPoint.lat.toFixed(6)}, ${startPoint.lng.toFixed(6)}`,
+    stopPoint: `${stopPoint.lat.toFixed(6)}, ${stopPoint.lng.toFixed(6)}`,
+    time: `${startTime} - ${stopTime}`
+  };
+
+  // Replace with your Google Script URL
+  const scriptURL = "https://script.google.com/macros/s/AKfycbyIDylP9PN51ScvOZLLO4GghWcoul9rAYXCJFar_q7f4Rz6f_XJ6-_Y-HQUrDctQIbZJw/exec";
+
+  fetch(scriptURL, {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify(data)
+  })
+  .then(() => {
+    alert("Data saved to Google Sheet!");
+    window.open(scriptURL, "_blank"); // open sheet in browser
+  })
+  .catch(err => alert("Error saving data: " + err));
+});
 
 
 function resetPage() {
@@ -647,3 +694,4 @@ window.onload = function() {
 </body>
 
 </html>
+
