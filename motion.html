@@ -244,7 +244,16 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+  
+// ... existing variables
+let watchId = null; 
 
+// 🎯 NEW VARIABLES FOR SAVE BUTTON LOGIC 🎯
+let startPoint = null;
+let stopPoint = null;
+let startTime = null;
+let stopTime = null;
+// ... existing functions
   window.onload = function() {
   localStorage.removeItem("gpsHistory");
   localStorage.removeItem("recordedData");
@@ -678,6 +687,7 @@ window.onload = function() {
 </body>
 
 </html>
+
 
 
 
