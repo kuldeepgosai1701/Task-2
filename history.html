@@ -12,69 +12,82 @@
     th, td { border:1px solid #ccc; padding:8px; text-align:center; }
     th { background:#004080; color:#fff; }
     #map { height:400px; margin-top:20px; border-radius:10px; }
+
+ #sessionTableContainer {
+      max-height: 300px;   /* sirf 10 rows jitni height */
+      overflow-y: auto;    /* scroll enable */
+      display: block;      /* scroll ko work karne ke liye */
+    }
   </style>
 </head>
 <body>
 
 <h2>📌 Motion History</h2>
+<div id="sessionTableContainer">
 <table>
   <thead>
     <tr>
       <th>Start Time</th>
-      <th>End Time</th>
+      <th>Stop Time</th>
       <th>Action</th>
     </tr>
   </thead>
   <tbody id="sessionTable"></tbody>
 </table>
+</div>
 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  let map = L.map('map').setView([0,0], 2);
+
+
+
+  // Initialize map
+  let map = L.map('map').setView([0, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom:19,
-    attribution:'&copy; OpenStreetMap contributors'
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  let pathLine = L.polyline([], {color:'blue'}).addTo(map);
-  let dotMarker = L.circleMarker([0,0], {radius:6, fillColor:'red', color:'darkred', weight:1}).addTo(map);
+  let pathLine = L.polyline([], { color: 'blue' }).addTo(map);
+  let dotMarker = L.circleMarker([0, 0], { radius: 6, fillColor: 'red', color: 'darkred', weight: 1 }).addTo(map);
 
-  // LocalStorage से sessions पढ़ो
-  const gpsHistory = JSON.parse(localStorage.getItem("gpsHistory")) || [];
-  let sessions = [];
+  // Load all sessions from localStorage
+const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+const tbody = document.getElementById("sessionTable");
+tbody.innerHTML = "";
 
-  // Simple grouping: हर बार reset करने पर एक नया session बनाना होगा (future update)
-  if (gpsHistory.length > 0) {
-    sessions.push({ 
-      start: new Date(gpsHistory[0].time), 
-      end: new Date(gpsHistory[gpsHistory.length-1].time),
-      data: gpsHistory
-    });
+// Reverse the session array but keep a reference for the correct index
+const reversedSessions = [...sessions].reverse();
+
+reversedSessions.forEach((session, index) => {
+  const startTime = new Date(session.start);
+  const stopTime = session.end ? new Date(session.end) : null;
+
+  let row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${startTime.toLocaleString()}</td>
+    <td>${stopTime ? stopTime.toLocaleString() : "Ongoing"}</td>
+    <td><button onclick="openSession(${index})">Open</button></td>
+  `;
+  tbody.appendChild(row);
+});
+
+// Fix openSession to use reversedSessions array
+function openSession(index) {
+  const session = reversedSessions[index];
+  if (!session || session.data.length === 0) {
+    alert("No data available for this session.");
+    return;
   }
 
-  // Table में show करो
-  const tbody = document.getElementById("sessionTable");
-  sessions.forEach((s, index) => {
-    let row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${s.start.toLocaleTimeString()}</td>
-      <td>${s.end.toLocaleTimeString()}</td>
-      <td><button onclick="openSession(${index})">Open</button></td>
-    `;
-    tbody.appendChild(row);
-  });
+  const coords = session.data.map(p => [p.lat, p.lon]);
+  pathLine.setLatLngs(coords);
+  dotMarker.setLatLng(coords[coords.length - 1]);
+  map.fitBounds(coords);
+}
 
-  function openSession(index) {
-    const session = sessions[index];
-    if (!session || session.data.length === 0) return;
-    
-    const coords = session.data.map(p => [p.lat, p.lon]);
-    pathLine.setLatLngs(coords);
-    dotMarker.setLatLng(coords[coords.length-1]);
-    map.fitBounds(coords);
-  }
 </script>
 </body>
 </html>
