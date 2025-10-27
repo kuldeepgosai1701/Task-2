@@ -82,7 +82,7 @@
   cursor: pointer;
   color: white;
   font-size: 16px;
-  background: linear-gradient(135deg, #2a9df4, #6c63ff); /* blue-purple gradient */
+  background: linear-gradient(135deg, #2a9df4, #6c63ff);
   transition: 0.2s;
 }
 
@@ -93,9 +93,9 @@
 
   .sensitivity-box {
   position: fixed;
-  top: 50%;               /* vertical center */
-  left: 50%;              /* horizontal center */
-  transform: translate(-50%, -50%); /* exact middle */
+  top: 50%;               
+  left: 50%;              
+  transform: translate(-50%, -50%);
   background: linear-gradient(135deg, #2a3b8f, #001f54);
   color: #fff;
   padding: 14px 18px;
@@ -207,6 +207,13 @@
 
 <script>
   
+
+function toggleSettings() {
+  const box = document.querySelector(".sensitivity-box");
+  box.classList.toggle("open");
+}
+
+
 // ... existing variables
 let watchId = null; 
 
@@ -525,6 +532,15 @@ function toggleHistory() {
     }
 }
 
+function toggleSettings() {
+  const box = document.querySelector(".sensitivity-box");
+  box.classList.toggle("open");
+}
+
+function openHistoryPage() {
+    window.location.href = "history.html"; 
+  }
+
 function closeHistory() {
     document.getElementById("historyModal").style.display = "none";
 }
@@ -546,15 +562,6 @@ function showHistoryPath(startTime, endTime) {
     closeHistory();
 }
 
-
-  function openHistoryPage() {
-    window.location.href = "history.html"; 
-  }
-
-function toggleSettings() {
-  const box = document.querySelector(".sensitivity-box");
-  box.classList.toggle("open");
-}
 
 // Close sensitivity box if clicked outside
 document.addEventListener("click", function(event) {
