@@ -165,8 +165,8 @@
 
 <div class="info">
   <p>📍 Tracker Info
-   <button class="settings-btn" onclick="toggleSettings()">⚙ Setting</button>
-   <button class="history-btn" onclick="openHistoryPage()">📜 History</button>
+   <button onclick="toggleSettings()">⚙ Setting</button>
+    <button class="history-btn" onclick="openHistoryPage()">📜 History</button>
   </p>
   <p id="location">Location: Fetching...</p>
   <p id="direction">Direction: Calculating...</p>
@@ -379,24 +379,7 @@ recentData.forEach(entry => {
   document.body.removeChild(a);
 }
 
-  let watchId = null;
-
- function startTracking() {
-  if ("geolocation" in navigator) {
-    // ✅ continuous GPS tracking
-    trackingInterval = navigator.geolocation.watchPosition(
-      showLocation,
-      showError,
-      {
-        enableHighAccuracy: true,   
-        timeout: 10000,             // max wait 10 sec
-        maximumAge: 0               
-      }
-    );
-  } else {
-    alert("Geolocation not supported in this browser.");
-  }
-}
+  
 function startTracking() {
   if ("geolocation" in navigator) {
     // Check if sessions already exist
@@ -425,12 +408,6 @@ function startTracking() {
   }
 }
 
-function stopTracking() {
-  if (trackingInterval) {
-    navigator.geolocation.clearWatch(trackingInterval);
-    trackingInterval = null;
-  }
-}
 function stopTracking() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
@@ -486,7 +463,7 @@ function resetPage() {
   }
 }
 
-function toggleHistory() {
+/*function toggleHistory() {
     const modal = document.getElementById("historyModal");
     const list = document.getElementById("historyList");
     list.innerHTML = "";
@@ -529,12 +506,9 @@ function toggleHistory() {
     } else {
         modal.style.display = "none";
     }
-}
+}*/
 
-function toggleSettings() {
-  const box = document.querySelector(".sensitivity-box");
-  box.classList.toggle("open");
-}
+
 
 function openHistoryPage() {
     window.location.href = "history.html"; 
