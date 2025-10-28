@@ -221,6 +221,7 @@ let startPoint = null;
 let stopPoint = null;
 let startTime = null;
 let stopTime = null;
+
 // ... existing functions
   window.onload = function() {
   localStorage.removeItem("gpsHistory");
@@ -332,7 +333,7 @@ function showLocation(position) {
       break;
   }
 }
-  
+
 function getDirectionFromAngle(angle) {
   // Normalize angle (-180 se 180 ko 0–360 me convert)
   angle = (angle + 360) % 360;
