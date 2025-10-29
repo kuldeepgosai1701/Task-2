@@ -1,196 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GPS Motion Tracker with Leaflet</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPS Motion Tracker with Leaflet</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-     body, html {
-     height: 100%;
-     font-family: "Inter", sans-serif;
-     display: flex;
-     flex-direction: column;
-     background: #f7f9fc;
-    }
+  <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+     body, html {
+     height: 100%;
+     font-family: "Inter", sans-serif;
+     display: flex;
+     flex-direction: column;
+     background: #f7f9fc;
+    }
 
-    header {
-  display: none;
+    header {
+  display: none;
 }
 
 .info {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #fff;
-  padding: 14px 16px;
-  border-radius: 16px;
-  z-index: 1001;
-  width: 260px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-  font-size: 25px;
-  line-height: 1.4;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fff;
+  padding: 14px 16px;
+  border-radius: 16px;
+  z-index: 1001;
+  width: 260px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  font-size: 25px;
+  line-height: 1.4;
 }
 .info p:first-child {
-  font-weight: 600;
-  margin-bottom: 6px;
-  font-size: 25px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 25px;
 }
 
 
 /* ✅ Buttons Group */
 .button-group {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .button-group button {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  color: white;
-  transition: 0.2s;
-  font-size: 18px;
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+  font-size: 18px;
 }
 
 .button-group .start {
-  background: linear-gradient(135deg, #2a9df4, #00b300);
+  background: linear-gradient(135deg, #2a9df4, #00b300);
 }
 .button-group .stop {
-  background: linear-gradient(135deg, #444, #b31515);
+  background: linear-gradient(135deg, #444, #b31515);
 }
 .button-group .reset {
-  background: linear-gradient(135deg, #6c757d, #000000);
+  background: linear-gradient(135deg, #6c757d, #000000);
 }
 .button-group button:hover {
-  opacity: 0.9;
+  opacity: 0.9;
 }
- 
-.settings-btn {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  color: white;
-  font-size: 16px;
-  background: linear-gradient(135deg, #2a9df4, #6c63ff); /* blue-purple gradient */
-  transition: 0.2s;
+
+
+/*.settings-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: 8px;
 }
 
 .settings-btn:hover {
-  opacity: 0.9;
-  transform: scale(1.05);
+  color: #2a9df4;
 }
 
-  .sensitivity-box {
-  position: fixed;
-  top: 50%;               /* vertical center */
-  left: 50%;              /* horizontal center */
-  transform: translate(-50%, -50%); /* exact middle */
-  background: linear-gradient(135deg, #2a3b8f, #001f54);
-  color: #fff;
-  padding: 14px 18px;
-  border-radius: 16px;
-  z-index: 1001;
-  width: 250px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-  font-size: 14px;
-  display: none;          /* by default hidden */
+    /*.sensitivity-box {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #2a3b8f, #001f54);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 16px;
+  z-index: 1001;
+  width: 200px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  font-size: 14px;
 }
 
 .sensitivity-box.open {
-  display: block;         /* show box in center */
+  right: 20px;   /* slides in */
+
+
+  .settings-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  font-size: 16px;
+  background: linear-gradient(135deg, #2a9df4, #6c63ff); /* blue-purple gradient */
+  transition: 0.2s;
+}
+
+.settings-btn:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+  .sensitivity-box {
+  position: fixed;
+  top: 50%;               /* vertical center */
+  left: 50%;              /* horizontal center */
+  transform: translate(-50%, -50%); /* exact middle */
+  background: linear-gradient(135deg, #2a3b8f, #001f54);
+  color: #fff;
+  padding: 25px 30px;
+  border-radius: 16px;
+  z-index: 1001;
+  width: 400px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  font-size: 18px;
+  display: none;          /* by default hidden */
+}
+
+.sensitivity-box.open {
+  display: block;         /* show box in center */
 }
 
 
 .sensitivity-box h3 {
-  margin-bottom: 6px;
-  font-size: 15px;
-  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .sensitivity-box input[type="range"] {
-  width: 100%;
-  margin: 8px 0;
+  width: 100%;
+  margin: 8px 0;
 }
 
 .history-btn {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  color: white;
-  font-size: 16px;
-  background: linear-gradient(135deg, #ff7f50, #ff4500); /* orange gradient */
-  transition: 0.2s;
-  margin-left: 8px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  font-size: 16px;
+  background: linear-gradient(135deg, #ff7f50, #ff4500); /* orange gradient */
+  transition: 0.2s;
+  margin-left: 8px;
 }
 
 .history-btn:hover {
-  opacity: 0.9;
-  transform: scale(1.05);
+  opacity: 0.9;
+  transform: scale(1.05);
 }
+    #map {
+     flex: 1;
+     width: 100%;
+     position: relative; /* remove absolute positioning */
+    }
 
-  #map {
-  flex: 1;
-  width: 100%;
-}
-  </style>
+   /* footer {
+      background: linear-gradient(90deg, #004080, #0066cc);
+       color: white;
+  text-align: center;
+  padding: 14px;
+  font-size: 1rem;
+    }*/
+  </style>
 </head>
+
 <body>
 <header>
-
+</h1>Motion Tracker</h1>
 <button onclick="openHistoryPage()" style="float: right; margin-right: 10px;">History</button>
 </header>
 
 <div class="sensitivity-box">
-  <h3>Sensitivity</h3>
-  <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="5">
-    <div>Value: <span id="sensVal">5</span></div>
-      <button id="saveSensitivity" style="margin-top:8px; padding:6px 10px; border:none;
-          border-radius:8px; background:#28a745; color:#fff; font-weight:600; cursor:pointer;">
-    💾 Save
-  </button>
+  <h3>Sensitivity</h3>
+  <input type="range" id="sensitivityRange" min="0" max="10" step="1" value="5">
+  <div>Value: <span id="sensVal">5</span></div>
+<button id="saveSensitivity" style="margin-top:8px; padding:6px 10px; border:none;
+          border-radius:8px; background:#28a745; color:#fff; font-weight:600; cursor:pointer;">
+    💾 Save
+  </button>
 </div>
 
 <div class="info">
-  <p>📍 Tracker Info
-   <button class="settings-btn" onclick="toggleSettings()">⚙ Setting</button>
-   <button class="history-btn" onclick="openHistoryPage()">📜 History</button>
-  </p>
-  <p id="location">Location: Fetching...</p>
-  <p id="direction">Direction: Calculating...</p>
-
-  <div class="button-group">
-  <button class="start" onclick="startTracking()">▶ Start</button>
-  <button class="stop"  onclick="stopTracking()">⏸ Stop</button>
-  <button class="reset" onclick="resetPage()">⟳ Reset</button>
-  <button id="saveBtn" style="flex: 1; padding: 8px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; color: white; background: linear-gradient(135deg, #28a745, #157347);">
- 💾 Save
- </button>
-
- </div> 
+  <p>📍 Tracker Info
+  <button class="settings-btn" onclick="toggleSettings()">⚙ Setting</button>
+   <button class="history-btn" onclick="openHistoryPage()">📜 History</button></p>
+  <p id="location">Location: Fetching...</p>
+  <p id="direction">Direction: Calculating...</p>
+  <div class="button-group">
+  <button class="start" onclick="startTracking()">▶ Start</button>
+  <button class="stop"  onclick="stopTracking()">⏸ Stop</button>
+  <button class="reset" onclick="resetPage()">⟳ Reset</button></div>
 </div>
 
+<!-- Map container -->
 <div id="map"></div>
 
+<!-- History Modal -->
 <div id="historyModal" 
-     style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-            background:#fff; padding:20px; border-radius:12px; box-shadow:0px 4px 15px rgba(0,0,0,0.3);
-            z-index:2000; width:300px; max-height:400px; overflow:auto;">
-  <h3>📌 History</h3>
-  <ul id="historyList" style="list-style:none; padding-left:0;"></ul>
-  <button onclick="closeHistory()" 
-          style="margin-top:10px; background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:6px;">Close</button>
+     style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+            background:#fff; padding:20px; border-radius:12px; box-shadow:0px 4px 15px rgba(0,0,0,0.3);
+            z-index:2000; width:300px; max-height:400px; overflow:auto;">
+  <h3>📌 History</h3>
+  <ul id="historyList" style="list-style:none; padding-left:0;"></ul>
+  <button onclick="closeHistory()" 
+          style="margin-top:10px; background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:6px;">Close</button>
 </div>
 
 <footer>
@@ -198,315 +234,568 @@
 </footer>
 </body>
 
+<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// =================================================================
-// 1. GLOBAL VARIABLES AND INITIALIZATION
-// =================================================================
 
-let isVibrating = false; // Tracks if device motion/vibration exceeds threshold
-let initialMotionSetup = false; // Tracks if DeviceMotionEvent listener has been set up
-let watchId = null; 
-let prevLat = null, prevLon = null;
-let gpsHistory = [];
-let sessionStartTime = null;
-let recordedData = [];
-let sensitivityFactor = 5; // Default sensitivity
-let trackingInterval = null;
+  window.onload = function() {
+  localStorage.removeItem("gpsHistory");
+  localStorage.removeItem("recordedData");
+  localStorage.removeItem("sessions");
+};
 
-// Variables for Google Sheet Save Button (currently unused/simplified)
-let startPoint = null;
-let stopPoint = null;
-let startTime = null;
-let stopTime = null;
+  let prevLat = null, prevLon = null;
+  let gpsHistory = [];
+  let sessionStartTime = null;
+  let recordedData = [];
+  let sensitivityFactor = 5;
+  
 
-const locationText = document.getElementById("location");
-const directionText = document.getElementById("direction");
-const sensitivityRange = document.getElementById("sensitivityRange");
-const sensVal = document.getElementById("sensVal");
-const saveSensitivityBtn = document.getElementById("saveSensitivity"); // Renamed for clarity
+  // Gyroscope values track karne ke liye
+window.addEventListener("deviceorientation", function(event) {
+    let alpha = event.alpha; // rotation around z-axis
+    let beta = event.beta;   // rotation around x-axis
+    let gamma = event.gamma; // rotation around y-axis
 
-// =================================================================
-// 2. LEAFLET MAP SETUP
-// =================================================================
+    recordedData.push({ alpha, beta, gamma, time: Date.now() });
+     // Keep only the last 10 entries in memory
+    if (recordedData.length > 10) {
+     recordedData.shift();
+     }
 
-let map = L.map('map').setView([0, 0], 18);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+    // Save automatically in localStorage (hidden background saving)
+    localStorage.setItem("recordedData", JSON.stringify(recordedData));
 
-// The current location marker (defaults to blue)
-let dotMarker = L.circleMarker([0, 0], {
-  radius: 10,
-  fillColor: "#007bff", // Default Blue
-  color: "#003366",
-  weight: 2,
-  opacity: 1,
-  fillOpacity: 0.9
-}).addTo(map);
+    
+    // Sudden change detection (pothole condition)
+    if (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5) {
+        vibratedRecently = true;
+        if (navigator.vibrate) navigator.vibrate(300); // vibrate for 0.3s
+    } else {
+        vibratedRecently = false;
+    }
+}, true);
+  /*window.addEventListener("deviceorientation", function(event) {
+    let alpha = event.alpha;
+    let beta = event.beta;
+    let gamma = event.gamma;
 
-let pathCoords = [];
-let pathLine = L.polyline(pathCoords, { color: 'blue' }).addTo(map);
+    let vibration = (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5);
 
-// =================================================================
-// 3. CORE GPS AND MOTION TRACKING LOGIC
-// =================================================================
+    recordedData.push({ alpha, beta, gamma, time: Date.now(), vibration, direction: null });
 
-/**
- * Handles device motion data to check for "vibration" or significant movement.
- */
-function handleDeviceMotion(event) {
-    if (!event.accelerationIncludingGravity) return; 
+     // 🔹 Prevent unlimited growth (memory crash fix)
+    if (recordedData.length > 1000) {
+        recordedData.shift(); // purana data hatao
+    }
 
-    const acc = event.accelerationIncludingGravity;
-    
-    // Calculate the total magnitude of movement (Pythagorean theorem in 3D)
-    // This measures the total force/shake on the device.
-    const motionMagnitude = Math.sqrt(
-        acc.x * acc.x + 
-        acc.y * acc.y + 
-        acc.z * acc.z
-    );
+    localStorage.setItem("recordedData", JSON.stringify(recordedData));
 
-    // Dynamic Threshold: Sensitivity 1 (most sensitive) -> threshold 1.0, Sensitivity 10 (least sensitive) -> threshold 10.0
-    // The sensitivity factor is used to set the tolerance for movement.
-    const threshold = (sensitivityFactor * 0.9) + 1.0; 
+    if (vibration) {
+        vibratedRecently = true;
+        if (navigator.vibrate) navigator.vibrate(300);
+    } else {
+        vibratedRecently = false;
+    }
+}, true);*/
+  
+  let vibratedRecently = false;
+  let trackingInterval = null;
 
-    if (motionMagnitude > threshold) {
-        isVibrating = true;
-    } else {
-        isVibrating = false;
-    }
+  const locationText = document.getElementById("location");
+  const directionText = document.getElementById("direction");
+  const sensitivityRange = document.getElementById("sensitivityRange");
+  const sensVal = document.getElementById("sensVal");
+
+  // ✅ Save button event
+document.getElementById("saveSensitivity").addEventListener("click", function () {
+  sensitivityFactor = parseInt(sensitivityRange.value); // slider value ko logic me save karo
+  sensVal.textContent = sensitivityFactor;              // UI me update karo
+  alert("Sensitivity saved: " + sensitivityFactor);
+});
+
+  // Leaflet map setup
+  let map = L.map('map').setView([0, 0], 18);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  let dotMarker = L.circleMarker([0, 0], {
+    radius: 10,
+    fillColor: "#007bff",
+    color: "#003366",
+    weight: 2,
+    opacity: 1,
+    fillOpacity: 0.9
+  }).addTo(map);
+
+  let pathCoords = [];
+  let pathLine = L.polyline(pathCoords, { color: 'blue' }).addTo(map);
+
+  function analyzeVibrations() {
+  const sliderValue = parseInt(sensitivityRange.value);
+
+  // Select last N entries based on slider
+  const entriesToAnalyze = recordedData.slice(-sliderValue);
+
+  // Perform vibration check only on these entries
+  entriesToAnalyze.forEach(entry => {
+    if (entry.vibration === "Yes") {
+      console.log("Vibration detected in last", sliderValue, "entries");
+    }
+  });
 }
 
-/**
- * Requests device motion permission (required by iOS 13+) and starts the listener.
- */
-function startMotionListener() {
-    if (initialMotionSetup) return;
+function calculateDirection(lat1, lon1, lat2, lon2) {
+  // degrees → radians
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  lat1 = toRad(lat1);
+  lon1 = toRad(lon1);
+  lat2 = toRad(lat2);
+  lon2 = toRad(lon2);
 
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        DeviceMotionEvent.requestPermission()
-            .then(permissionState => {
-                if (permissionState === 'granted') {
-                    window.addEventListener('devicemotion', handleDeviceMotion);
-                    initialMotionSetup = true;
-                } else {
-                    console.warn("Device Motion permission denied.");
-                }
-            })
-            .catch(console.error);
-    } else {
-        window.addEventListener('devicemotion', handleDeviceMotion);
-        initialMotionSetup = true;
-    }
+  // formula for bearing
+  const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+  const x =
+    Math.cos(lat1) * Math.sin(lat2) -
+    Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+
+  let brng = Math.atan2(y, x) * (180 / Math.PI);
+  brng = (brng + 360) % 360; // normalize to 0–360
+  return brng;
 }
 
+function getDirectionName(angle) {
+  if (angle >= 337.5 || angle < 22.5) return "North";
+  if (angle >= 22.5 && angle < 67.5) return "North-East";
+  if (angle >= 67.5 && angle < 112.5) return "East";
+  if (angle >= 112.5 && angle < 157.5) return "South-East";
+  if (angle >= 157.5 && angle < 202.5) return "South";
+  if (angle >= 202.5 && angle < 247.5) return "South-West";
+  if (angle >= 247.5 && angle < 292.5) return "West";
+  if (angle >= 292.5 && angle < 337.5) return "North-West";
+  return "Unknown";
+}
 
-/**
- * Callback function for continuous GPS updates.
- */
+// --- Direction calculation and permission setup ---
+function handleOrientation(event) {
+  if (event.alpha !== null) {
+    let heading = 360 - event.alpha; // Normalize to make 0° = North
+    if (heading < 0) heading += 360;
+
+    const direction = getDirectionName(heading);
+    document.getElementById("direction").textContent =
+      `Direction: ${direction} (${Math.round(heading)}°)`;
+  } else {
+    document.getElementById("direction").textContent =
+      "Direction: Unavailable";
+  }
+}
+
+// iOS Safari Permission Handling
+if (typeof DeviceOrientationEvent !== "undefined" &&
+    typeof DeviceOrientationEvent.requestPermission === "function") {
+  document.body.addEventListener("click", () => {
+    DeviceOrientationEvent.requestPermission()
+      .then(permissionState => {
+        if (permissionState === "granted") {
+          window.addEventListener("deviceorientation", handleOrientation);
+        } else {
+          alert("Direction sensor permission denied!");
+        }
+      })
+      .catch(console.error);
+  });
+} else {
+  // For Android and non-iOS browsers
+  window.addEventListener("deviceorientation", handleOrientation);
+}
+
+function checkVibration(data) {
+    return data.some(entry => entry.vibration === true);
+}
+
 function showLocation(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    const timestamp = new Date();  
-    
-   // VIBRATION/COLOR LOGIC: Change marker color based on motion state
-    const dotColor = isVibrating ? "#dc3545" : "#007bff"; // Red for vibration, Blue otherwise
-    
-    dotMarker.setStyle({ fillColor: dotColor, color: dotColor });
-    
-    // Store GPS and vibration data
-    gpsHistory.push({lat, lon, time: timestamp, isVibration: isVibrating});
-    localStorage.setItem("gpsHistory", JSON.stringify(gpsHistory));
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    const timestamp = new Date().toISOString(); // store in ISO format
 
-    // UI update and Map manipulation
-    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-    pathCoords.push([lat, lon]);
-    pathLine.setLatLngs(pathCoords);
-    dotMarker.setLatLng([lat, lon]);
-    map.setView([lat, lon]);
+    // Get sessions array from localStorage
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
-    // Calculate direction
-    if (prevLat !== null && prevLon !== null) {
-      const dx = lon - prevLon;
-      const dy = lat - prevLat;
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      directionText.textContent = `Direction: ${getDirectionFromAngle(angle)}`;
-    }
+    // If no session exists, create one
+    if (sessions.length === 0) {
+        sessions.push({
+            start: timestamp,
+            end: null,
+            data: []
+        });
+    }
 
-    prevLat = lat;
-    prevLon = lon;
-}
+    // Reference current session
+    let currentSession = sessions[sessions.length - 1];
 
-/**
- * Starts continuous GPS and Motion tracking.
- */
-function startTracking() {
-    if ("geolocation" in navigator) {
-        startMotionListener(); // Start listening for device motion
-
-        // Check if sessions already exist and start a new one
-        let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
-        sessionStartTime = new Date();
-        gpsHistory = []; // reset for new session
-        localStorage.setItem("currentSession", JSON.stringify(gpsHistory));
-
-        sessions.push({
-          start: sessionStartTime.toISOString(),
-          end: null,
-          data: []
-        });
-        localStorage.setItem("sessions", JSON.stringify(sessions));
-
-        // Start continuous GPS tracking
-        watchId = navigator.geolocation.watchPosition(showLocation, showError, {
-          enableHighAccuracy: true,
-          maximumAge: 0,
-          timeout: 5000
-        });
-    } else {
-        alert("GPS not supported on this device/browser.");
-    }
-}
-
-/**
- * Stops GPS tracking and finalizes the current session data.
- */
-function stopTracking() {
-    if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-
-        // Finalize session data
-        let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
-        let current = sessions[sessions.length - 1];
-        if (current && !current.end) {
-          current.end = new Date().toISOString();
-          current.data = [...gpsHistory]; 
-          localStorage.setItem("sessions", JSON.stringify(sessions));
-        }
-    }
+    // ✅ Always keep only the last 10 entries in current session
+    currentSession.data.push({
+    lat, 
+    lon, 
+    time: timestamp,
+    vibration: vibratedRecently // <-- store vibration state here
+});
+if (currentSession.data.length > 10) {
+    currentSession.data.shift();
 }
 
 
-// =================================================================
-// 4. UTILITY AND UI FUNCTIONS
-// =================================================================
+    // Save back to localStorage
+    localStorage.setItem("sessions", JSON.stringify(sessions));
 
-function showError(error) {
-  console.error("GPS Error:", error);
-  switch(error.code) {
-    case error.PERMISSION_DENIED:
-      locationText.textContent = "Location: Permission denied";
-      break;
-    case error.POSITION_UNAVAILABLE:
-      locationText.textContent = "Location: Position unavailable";
-      break;
-    case error.TIMEOUT:
-      locationText.textContent = "Location: Timeout";
-      break;
-    default:
-      locationText.textContent = "Location: Unknown error";
-      break;
-  }
+    // UI update
+    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    pathCoords.push([lat, lon]);
+    pathLine.setLatLngs(pathCoords);
+    dotMarker.setLatLng([lat, lon]);
+    map.setView([lat, lon]);
+
+    // Calculate direction based on previous position
+    if (prevLat !== null && prevLon !== null) {
+       /* const dx = lon - prevLon;
+        const dy = lat - prevLat;
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        directionText.textContent = `Direction: ${getDirectionFromAngle(angle)} (${Math.round(angle)}°)`;*/
+if (prevLat !== null && prevLon !== null) {
+    const bearing = calculateDirection(prevLat, prevLon, lat, lon);
+    directionText.textContent = `Direction: ${getDirectionName(bearing)} (${Math.round(bearing)}°)`;
+} else {
+    directionText.textContent = "Direction: Calculating...";
 }
 
+    }
+
+    // 🔴 Vibration detection logic
+    const sliderVal = parseInt(sensitivityRange.value);
+    const analyzeCount = Math.max(10 - sliderVal, 1);  // Always analyze 1 to 10 points
+    const analyzeData = currentSession.data.slice(-analyzeCount);
+
+
+
+    // Extract recent entries for analysis
+    const analyzeDataGPS = currentSession.data.slice(-analyzeCount);
+
+    // If vibration is detected in analyzed data → mark red dot
+   // If vibration detected in any of those entries → mark red dot on map
+if (checkVibration(analyzeData)) {
+    L.circleMarker([lat, lon], {
+        radius: 6,
+        fillColor: "red",
+        color: "darkred",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.9
+    }).addTo(map);
+}
+
+    prevLat = lat;
+    prevLon = lon;
+}
+
+ function showError(error) {
+  console.error("GPS Error:", error);
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      locationText.textContent = "Location: Permission denied";
+      break;
+    case error.POSITION_UNAVAILABLE:
+      locationText.textContent = "Location: Position unavailable";
+      break;
+    case error.TIMEOUT:
+      locationText.textContent = "Location: Timeout";
+      break;
+    default:
+      locationText.textContent = "Location: Unknown error";
+      break;
+  }
+}
 function getDirectionFromAngle(angle) {
-  // Normalize angle (0–360 degrees)
-  angle = (angle + 360) % 360;
+  // Normalize angle (-180 se 180 ko 0–360 me convert)
+  angle = (angle + 360) % 360;
 
-  if (angle >= 337.5 || angle < 22.5) return "East →";
-  if (angle >= 22.5 && angle < 67.5) return "North-East ↗️";
-  if (angle >= 67.5 && angle < 112.5) return "North ↑";
-  if (angle >= 112.5 && angle < 157.5) return "North-West ↖️";
-  if (angle >= 157.5 && angle < 202.5) return "West ←";
-  if (angle >= 202.5 && angle < 247.5) return "South-West ↙️";
-  if (angle >= 247.5 && angle < 292.5) return "South ↓";
-  if (angle >= 292.5 && angle < 337.5) return "South-East ↘️";
-  
-  return "Unknown";
+  if (angle >= 337.5 || angle < 22.5) return "East";
+  if (angle >= 22.5 && angle < 67.5) return "North-East";
+  if (angle >= 67.5 && angle < 112.5) return "North";
+  if (angle >= 112.5 && angle < 157.5) return "North-West";
+  if (angle >= 157.5 && angle < 202.5) return "West";
+  if (angle >= 202.5 && angle < 247.5) return "South-West";
+  if (angle >= 247.5 && angle < 292.5) return "South";
+  if (angle >= 292.5 && angle < 337.5) return "South-East";
+  
+  return "Unknown";
+}
+
+function saveDataToFile() {
+
+  const numberOfEntries = parseInt(sensitivityRange.value);
+
+  // last N entries select 
+  const recentData = recordedData.slice(-numberOfEntries);
+
+  if (recentData.length === 0) {
+    alert("No data to save.");
+    return;
+  }
+
+let fileContent = "Alpha\tBeta\tGamma\tVibration\tDirection\n";
+recentData.forEach(entry => {
+  fileContent += `${entry.alpha.toFixed(2)}\t${entry.beta.toFixed(2)}\t${entry.gamma.toFixed(2)}\t${entry.vibration}\t${entry.direction}\n`;
+});
+
+
+
+  // download trigger 
+  const blob = new Blob([fileContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `motion_data_last_${numberOfEntries}.txt`; 
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+  let watchId = null;
+
+ function startTracking() {
+  if ("geolocation" in navigator) {
+    // ✅ continuous GPS tracking
+    trackingInterval = navigator.geolocation.watchPosition(
+      showLocation,
+      showError,
+      {
+        enableHighAccuracy: true,   // GPS chip use karega
+        timeout: 10000,             // max wait 10 sec
+        maximumAge: 0               // purana cache use na kare
+      }
+    );
+  } else {
+    alert("Geolocation not supported in this browser.");
+  }
+}
+function startTracking() {
+  if ("geolocation" in navigator) {
+    // Check if sessions already exist
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+
+    // Start a new session
+    sessionStartTime = new Date();
+    gpsHistory = []; // reset for new session
+    localStorage.setItem("currentSession", JSON.stringify(gpsHistory));
+
+    // Save to main sessions array with placeholder for end
+    sessions.push({
+      start: sessionStartTime.toISOString(),
+      end: null,
+      data: []
+    });
+    localStorage.setItem("sessions", JSON.stringify(sessions));
+
+    watchId = navigator.geolocation.watchPosition(showLocation, showError, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 5000
+    });
+  } else {
+    alert("GPS not supported on this device/browser.");
+  }
+}
+
+function stopTracking() {
+  if (trackingInterval) {
+    navigator.geolocation.clearWatch(trackingInterval);
+    trackingInterval = null;
+  }
+}
+function stopTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+    let current = sessions[sessions.length - 1];
+    if (current && !current.end) {
+      current.end = new Date().toISOString();
+      current.data = gpsHistory;
+      localStorage.setItem("sessions", JSON.stringify(sessions));
+    }
+  }
 }
 
 function resetPage() {
-  pathCoords = [];
-  pathLine.setLatLngs(pathCoords);
+  gpsHistory = [];
+  recordedData = [];
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+  dotMarker.setLatLng([0, 0]);
+  map.setView([0, 0], 18);
 
-  if (prevLat && prevLon) {
-    dotMarker.setLatLng([prevLat, prevLon]);
-    map.panTo([prevLat, prevLon], {animate: true, duration: 0.5});
-  }
+  prevLat = null;
+  prevLon = null;
+  locationText.textContent = "Location: Reset...";
+  directionText.textContent = "Direction: Reset...";
 }
 
+
+/*function toggleHistory() {
+    const modal = document.getElementById("historyModal");
+    const list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    if (modal.style.display === "none") {
+        if (gpsHistory.length === 0) {
+            alert("No history available yet.");
+            return;
+        }
+
+       
+        const startTime = gpsHistory[0].time;
+        const endTime = gpsHistory[gpsHistory.length - 1].time;
+
+        const li = document.createElement("li");
+        li.style.cursor = "pointer";
+        li.textContent = `${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString()} – ${endTime.toLocaleTimeString()}`;
+        li.onclick = () => showHistoryPath(startTime, endTime);
+        list.appendChild(li);
+
+        modal.style.display = "block";
+    } else {
+        modal.style.display = "none";
+    }
+}*/
+
+function toggleHistory() {
+    const modal = document.getElementById("historyModal");
+    const list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    if (modal.style.display === "none") {
+        const sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+
+        if (sessions.length === 0) {
+            alert("No history available yet.");
+            return;
+        }
+
+        
+        sessions.forEach((session, index) => {
+            const startTime = new Date(session.start);
+            const endTime = session.end ? new Date(session.end) : null;
+
+            const li = document.createElement("li");
+            li.style.cursor = "pointer";
+            li.textContent = endTime
+                ? `Session ${index + 1}: ${startTime.toLocaleString()} - ${endTime.toLocaleString()}`
+                : `Session ${index + 1}: ${startTime.toLocaleString()} - Ongoing`;
+
+            li.onclick = () => {
+                const path = session.data.map(p => [p.lat, p.lon]);
+                if (path.length > 0) {
+                    pathLine.setLatLngs(path);
+                    dotMarker.setLatLng(path[path.length - 1]);
+                    map.fitBounds(path);
+                } else {
+                    alert("No data in this session.");
+                }
+                closeHistory();
+            };
+
+            list.appendChild(li);
+        });
+
+        modal.style.display = "block";
+    } else {
+        modal.style.display = "none";
+    }
+}
+
+function closeHistory() {
+    document.getElementById("historyModal").style.display = "none";
+}
+
+function showHistoryPath(startTime, endTime) {
+    // filter gpsHistory for selected time range
+    const filteredPath = gpsHistory.filter(p => p.time >= startTime && p.time <= endTime)
+                                   .map(p => [p.lat, p.lon]);
+
+    if (filteredPath.length === 0) {
+        alert("No movement in this interval.");
+        return;
+    }
+
+    // clear existing path
+    pathLine.setLatLngs(filteredPath);
+    dotMarker.setLatLng(filteredPath[filteredPath.length - 1]);
+    map.fitBounds(filteredPath);
+    closeHistory();
+}
+
+
+  function openHistoryPage() {
+    window.location.href = "history.html"; 
+  }
 
 function toggleSettings() {
-  const box = document.querySelector(".sensitivity-box");
-  box.classList.toggle("open");
+  const box = document.querySelector(".sensitivity-box");
+  box.classList.toggle("open");
 }
-
-function openHistoryPage() {
-    // Original code tries to open a separate page, keeping it as is.
-    window.location.href = "history.html"; 
-}
-
-
-// Sensitivity Slider Listeners
-let tempSensitivity = sensitivityFactor; 
-sensitivityRange.addEventListener("input", () => {
-  tempSensitivity = parseFloat(sensitivityRange.value);
-  sensVal.textContent = sensitivityRange.value;
-});
-
-saveSensitivityBtn.addEventListener("click", () => {
-  sensitivityFactor = tempSensitivity;
-  alert("✅ Sensitivity saved: " + sensitivityFactor);
-  toggleSettings(); // Close box after saving
-});
-
 
 // Close sensitivity box if clicked outside
 document.addEventListener("click", function(event) {
-  const box = document.querySelector(".sensitivity-box");
-  const settingsBtn = document.querySelector(".settings-btn");
+  const box = document.querySelector(".sensitivity-box");
+  const settingsBtn = document.querySelector(".settings-btn");
 
-  if (box.classList.contains("open") && !box.contains(event.target) && !settingsBtn.contains(event.target)) {
-    box.classList.remove("open");
-  }
+  if (!box.contains(event.target) && !settingsBtn.contains(event.target)) {
+    box.classList.remove("open");
+  }
 });
 
-// Original History Modal (simplified for display)
-function toggleHistory() {
-    alert("History functionality not fully implemented on this page. Check history.html.");
-}
-function closeHistory() {
-    document.getElementById("historyModal").style.display = "none";
-}
-
-// Google Sheet Save Button - Note: The scriptURL will need to be valid for this to work.
-document.getElementById("saveBtn").addEventListener("click", () => {
-  alert("Save to Google Sheet functionality initiated.");
-  // Actual fetch logic removed for safety and simplification, as it requires a valid URL setup.
-});
-
-
-// Final window.onload: Clear local storage (as per original code) and initialize map view.
 window.onload = function() {
-    // Clear old data on load, as per the original intention
-    localStorage.removeItem("gpsHistory");
-    localStorage.removeItem("recordedData");
-    localStorage.removeItem("sessions");
-    localStorage.removeItem("currentSession");
+  const savedHistory = localStorage.getItem("gpsHistory");
+  const savedRecorded = localStorage.getItem("recordedData");
 
-    gpsHistory = [];
-    recordedData = [];
-    pathCoords = [];
-    pathLine.setLatLngs(pathCoords);
-    dotMarker.setLatLng([0, 0]);
-    map.setView([0, 0], 18);
+  if (savedHistory) {
+    gpsHistory = JSON.parse(savedHistory);
+    // Map pe purana path show karo
+    pathCoords = gpsHistory.map(p => [p.lat, p.lon]);
+    pathLine.setLatLngs(pathCoords);
+    if (pathCoords.length > 0) {
+      dotMarker.setLatLng(pathCoords[pathCoords.length - 1]);
+      map.fitBounds(pathCoords);
+    }
+  }
+
+  if (savedRecorded) {
+    recordedData = JSON.parse(savedRecorded);
+  }
+
+     localStorage.removeItem("currentSession");
+
+  gpsHistory = [];
+  recordedData = [];
+  pathCoords = [];
+  pathLine.setLatLngs(pathCoords);
+  dotMarker.setLatLng([0, 0]);
+  map.setView([0, 0], 18);
 };
 </script>
 </body>
-
 </html>
+
+
+
+
+
+
+
+
+

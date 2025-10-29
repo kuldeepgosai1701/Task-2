@@ -12,18 +12,11 @@
     th, td { border:1px solid #ccc; padding:8px; text-align:center; }
     th { background:#004080; color:#fff; }
     #map { height:400px; margin-top:20px; border-radius:10px; }
-
- #sessionTableContainer {
-      max-height: 300px;   /* sirf 10 rows jitni height */
-      overflow-y: auto;    /* scroll enable */
-      display: block;      /* scroll ko work karne ke liye */
-    }
   </style>
 </head>
 <body>
 
 <h2>📌 Motion History</h2>
-<div id="sessionTableContainer">
 <table>
   <thead>
     <tr>
@@ -34,7 +27,6 @@
   </thead>
   <tbody id="sessionTable"></tbody>
 </table>
-</div>
 
 <div id="map"></div>
 
