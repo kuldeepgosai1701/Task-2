@@ -513,13 +513,16 @@ if (checkVibration(analyzeData)) {
 }
 */
 
-// 🔴 New Vibration detection and Google Sheets logging logic
-    const sliderVal = parseInt(sensitivityRange.value);
-    const analyzeCount = Math.max(10 - sliderVal, 1);  
-    const analyzeData = currentSession.data.slice(-analyzeCount);
-    const vibrationDetected = checkVibration(analyzeData);
+// ... inside function showLocation(position) { ...
 
-    if (vibrationDetected) {
+    prevLat = lat;
+    prevLon = lon;
+
+    // 🔴 CORRECTED Vibration detection and Google Sheets logging logic
+    // We rely on the LATEST state of vibratedRecently set by the deviceorientation event.
+    const isCurrentlyVibrating = vibratedRecently;
+
+    if (isCurrentlyVibrating) {
         // Red dot visual feedback
         L.circleMarker([lat, lon], {
             radius: 6,
@@ -530,13 +533,14 @@ if (checkVibration(analyzeData)) {
             fillOpacity: 0.9
         }).addTo(map);
 
-        // --- Logging Logic ---
+        // --- START Logging Event ---
         if (!vibrationEventActive) {
             // New vibration event started
             vibrationEventActive = true;
             vibrationStartTime = timestamp;
             vibrationStartLat = lat;
             vibrationStartLon = lon;
+            console.log("Vibration Event Started at:", timestamp);
         }
 
     } else {
@@ -546,6 +550,8 @@ if (checkVibration(analyzeData)) {
             const endTime = timestamp;
             const endLat = lat;
             const endLon = lon;
+            
+            console.log("Vibration Event Ended, Sending Data...");
 
             // **SEND DATA TO GOOGLE SHEETS**
             sendVibrationData(
@@ -560,9 +566,11 @@ if (checkVibration(analyzeData)) {
             // Reset event state
             vibrationEventActive = false;
             vibrationStartTime = null;
+            vibrationStartLat = null; // Important: Clear all start data
+            vibrationStartLon = null; // Important: Clear all start data
         }
     }
-    
+  }
  function showError(error) {
   console.error("GPS Error:", error);
   switch(error.code) {
