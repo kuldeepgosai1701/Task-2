@@ -251,6 +251,12 @@
   let recordedData = [];
   let sensitivityFactor = 5;
   
+let vibrationEventActive = false;
+let vibrationStartTime = null;
+let vibrationStartLat = null;
+let vibrationStartLon = null;
+const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz76HHRqGRQXqs1_tgdIdY6rQQ5tA0OmZD5aLs8EU3KqUd5ZFP98uPuGYh32MvLhS0X/exec';
+
 
   // Gyroscope values track karne ke liye
 window.addEventListener("deviceorientation", function(event) {
@@ -276,29 +282,6 @@ window.addEventListener("deviceorientation", function(event) {
         vibratedRecently = false;
     }
 }, true);
-  /*window.addEventListener("deviceorientation", function(event) {
-    let alpha = event.alpha;
-    let beta = event.beta;
-    let gamma = event.gamma;
-
-    let vibration = (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5);
-
-    recordedData.push({ alpha, beta, gamma, time: Date.now(), vibration, direction: null });
-
-     // 🔹 Prevent unlimited growth (memory crash fix)
-    if (recordedData.length > 1000) {
-        recordedData.shift(); // purana data hatao
-    }
-
-    localStorage.setItem("recordedData", JSON.stringify(recordedData));
-
-    if (vibration) {
-        vibratedRecently = true;
-        if (navigator.vibrate) navigator.vibrate(300);
-    } else {
-        vibratedRecently = false;
-    }
-}, true);*/
   
   let vibratedRecently = false;
   let trackingInterval = null;
@@ -417,6 +400,35 @@ function checkVibration(data) {
     return data.some(entry => entry.vibration === true);
 }
 
+
+async function sendVibrationData(startLat, startLon, endLat, endLon, startTime, endTime) {
+    const data = {
+        startPoint: `${startLat}, ${startLon}`,
+        endPoint: `${endLat}, ${endLon}`,
+        startTime: startTime,
+        endTime: endTime
+    };
+
+    try {
+        const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Important for cross-origin Apps Script calls
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        // Note: With 'no-cors', you won't be able to read the response status, 
+        // but the data will still be sent. The network tab will show status 204.
+        console.log("Data send initiated (check Sheets for status).");
+
+    } catch (error) {
+        console.error("Error sending data to Google Sheets:", error);
+    }
+}
+
 function showLocation(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
@@ -475,7 +487,7 @@ if (prevLat !== null && prevLon !== null) {
     }
 
     // 🔴 Vibration detection logic
-    const sliderVal = parseInt(sensitivityRange.value);
+    /*const sliderVal = parseInt(sensitivityRange.value);
     const analyzeCount = Math.max(10 - sliderVal, 1);  // Always analyze 1 to 10 points
     const analyzeData = currentSession.data.slice(-analyzeCount);
 
@@ -500,7 +512,58 @@ if (checkVibration(analyzeData)) {
     prevLat = lat;
     prevLon = lon;
 }
+*/
 
+// 🔴 New Vibration detection and Google Sheets logging logic
+    const sliderVal = parseInt(sensitivityRange.value);
+    const analyzeCount = Math.max(10 - sliderVal, 1);  
+    const analyzeData = currentSession.data.slice(-analyzeCount);
+    const vibrationDetected = checkVibration(analyzeData);
+
+    if (vibrationDetected) {
+        // Red dot visual feedback
+        L.circleMarker([lat, lon], {
+            radius: 6,
+            fillColor: "red",
+            color: "darkred",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).addTo(map);
+
+        // --- Logging Logic ---
+        if (!vibrationEventActive) {
+            // New vibration event started
+            vibrationEventActive = true;
+            vibrationStartTime = timestamp;
+            vibrationStartLat = lat;
+            vibrationStartLon = lon;
+        }
+
+    } else {
+        // Vibration *stopped* and we have an active event to log
+        if (vibrationEventActive) {
+            // Log the completed event
+            const endTime = timestamp;
+            const endLat = lat;
+            const endLon = lon;
+
+            // **SEND DATA TO GOOGLE SHEETS**
+            sendVibrationData(
+                vibrationStartLat, 
+                vibrationStartLon, 
+                endLat, 
+                endLon, 
+                vibrationStartTime, 
+                endTime
+            );
+
+            // Reset event state
+            vibrationEventActive = false;
+            vibrationStartTime = null;
+        }
+    }
+    
  function showError(error) {
   console.error("GPS Error:", error);
   switch(error.code) {
