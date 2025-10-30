@@ -3,7 +3,7 @@
 
 function sendToGoogleSheet(sessionData) {
     
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyZRU-5GxKFEgYuLVV86OBXbyO76QJ3uXtn1sMWKJ0x5lleKXUKYfny_1XymizS9zVJ/exec'; 
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxTxP2RoGssC7ZUT184G-dNYTShSY-T9sXEiOEsczlCOEbM14-nYdqLlO6SFCsTmkRO/exec'; 
 
     fetch(WEB_APP_URL, {
         method: 'POST',
