@@ -255,7 +255,7 @@ let vibrationEventActive = false;
 let vibrationStartTime = null;
 let vibrationStartLat = null;
 let vibrationStartLon = null;
-const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzGm2P4DZsDfGlPF13YcbYcMJfU7otQqj3psFuvEO_nvAi8is2VMpORjySwo0vds7B9/exec';
+const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzJAlgY04Kbz2fj6sZ-wqR6bHJaJaDLhm73Qh4XKI_ayTq2TPwL2w-Hd3h2MMsyj8_Z/exec';
 
   // Gyroscope values track karne ke liye
 window.addEventListener("deviceorientation", function(event) {
@@ -472,10 +472,7 @@ if (currentSession.data.length > 10) {
 
     // Calculate direction based on previous position
     if (prevLat !== null && prevLon !== null) {
-       /* const dx = lon - prevLon;
-        const dy = lat - prevLat;
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-        directionText.textContent = `Direction: ${getDirectionFromAngle(angle)} (${Math.round(angle)}°)`;*/
+      
 if (prevLat !== null && prevLon !== null) {
     const bearing = calculateDirection(prevLat, prevLon, lat, lon);
     directionText.textContent = `Direction: ${getDirectionName(bearing)} (${Math.round(bearing)}°)`;
@@ -484,36 +481,6 @@ if (prevLat !== null && prevLon !== null) {
 }
 
     }
-
-    // 🔴 Vibration detection logic
-    /*const sliderVal = parseInt(sensitivityRange.value);
-    const analyzeCount = Math.max(10 - sliderVal, 1);  // Always analyze 1 to 10 points
-    const analyzeData = currentSession.data.slice(-analyzeCount);
-
-
-
-    // Extract recent entries for analysis
-    const analyzeDataGPS = currentSession.data.slice(-analyzeCount);
-
-    // If vibration is detected in analyzed data → mark red dot
-   // If vibration detected in any of those entries → mark red dot on map
-if (checkVibration(analyzeData)) {
-    L.circleMarker([lat, lon], {
-        radius: 6,
-        fillColor: "red",
-        color: "darkred",
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 0.9
-    }).addTo(map);
-}
-
-    prevLat = lat;
-    prevLon = lon;
-}
-*/
-
-// ... inside function showLocation(position) { ...
 
     prevLat = lat;
     prevLon = lon;
@@ -568,10 +535,34 @@ if (checkVibration(analyzeData)) {
             vibrationStartTime = null;
             vibrationStartLat = null; // Important: Clear all start data
             vibrationStartLon = null; // Important: Clear all start data
+
+// ... when a vibration is first detected ...
+let vibrationStartTime = new Date();
+// Get current position from geolocation or device motion listener
+let vibrationStartLat = currentLat; 
+let vibrationStartLon = currentLon;
+
+
+// ... when the vibration stops ...
+let vibrationEndTime = new Date();
+// Get current position from geolocation or device motion listener
+let vibrationEndLat = currentLat; 
+let vibrationEndLon = currentLon;
+
+// ➡️ CALL THE NEW FUNCTION HERE
+sendToGoogleSheet({
+    startLat: vibrationStartLat,
+    startLon: vibrationStartLon,
+    endLat: vibrationEndLat,
+    endLon: vibrationEndLon,
+    startTime: vibrationStartTime,
+    endTime: vibrationEndTime
+});
         }
+      }
     }
-  }
- function showError(error) {
+  
+  function showError(error) {
   console.error("GPS Error:", error);
   switch(error.code) {
     case error.PERMISSION_DENIED:
