@@ -623,7 +623,7 @@ recentData.forEach(entry => {
   document.body.removeChild(a);
 }
 
-  /*let watchId = null;
+let watchId = null;
 
  function startTracking() {
   if ("geolocation" in navigator) {
@@ -641,7 +641,7 @@ recentData.forEach(entry => {
     alert("Geolocation not supported in this browser.");
   }
 }
-function startTracking() {
+/*function startTracking() {
   if ("geolocation" in navigator) {
     // Check if sessions already exist
     let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
@@ -669,49 +669,13 @@ function startTracking() {
   }
 }*/
 
-// --- motion.html: Combined and Cleaned startTracking function ---
-
-let watchId = null; // Use watchId, as it's the one cleared by stopTracking()
-
-function startTracking() {
-  if ("geolocation" in navigator) {
-    // 1. Session Management
-    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
-    let sessionStartTime = new Date();
-    // Clear history/data for the new session start
-    gpsHistory = []; 
-    pathCoords = [];
-    
-    // Save new session placeholder
-    sessions.push({
-      start: sessionStartTime.toISOString(),
-      end: null,
-      data: []
-    });
-    localStorage.setItem("sessions", JSON.stringify(sessions));
-
-    // 2. Start GPS Watch
-    watchId = navigator.geolocation.watchPosition(
-      showLocation, 
-      showError, 
-      {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 5000 // A shorter timeout is better for real-time tracking
-      }
-    );
-  } else {
-    alert("GPS not supported on this device/browser.");
-  }
-}
-
-/*function stopTracking() {
+function stopTracking() {
   if (trackingInterval) {
     navigator.geolocation.clearWatch(trackingInterval);
     trackingInterval = null;
   }
 }
-function stopTracking() {
+/*function stopTracking() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
@@ -725,39 +689,6 @@ function stopTracking() {
     }
   }
 }*/
-
-// --- Combined and Corrected stopTracking Function ---
-function stopTracking() {
-  // Check if the correct tracking ID (watchId) exists.
-  // watchId is defined in the global scope of your motion.html file.
-  if (watchId !== null) { 
-    // 1. Stop GPS tracking
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-
-    // 2. End the current session and save data to localStorage
-    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
-    let current = sessions[sessions.length - 1];
-    
-    // Check if the current session is open (no end time set)
-    if (current && !current.end) {
-      current.end = new Date().toISOString();
-      
-      // 💡 Note: Your startTracking function resets gpsHistory,
-      // but the data is actually logged to currentSession.data in showLocation.
-      // This line is often necessary depending on how data is handled.
-      // current.data = gpsHistory; 
-      
-      // We will assume the session data is already updated in showLocation,
-      // but we save the sessions array back to storage.
-      localStorage.setItem("sessions", JSON.stringify(sessions));
-    }
-  } else if (trackingInterval) { 
-    // Fallback check for trackingInterval if that variable was accidentally used
-    navigator.geolocation.clearWatch(trackingInterval);
-    trackingInterval = null;
-  }
-}
 
 function resetPage() {
   gpsHistory = [];
