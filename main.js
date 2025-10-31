@@ -1,9 +1,8 @@
-
-  @param {object} sessionData 
+@param {object} sessionData 
 
 function sendToGoogleSheet(sessionData) {
     
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxTxP2RoGssC7ZUT184G-dNYTShSY-T9sXEiOEsczlCOEbM14-nYdqLlO6SFCsTmkRO/exec'; 
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztf5HZbAncOt0ahkLHEFYbNHlpmeMVzHKjyWXuihgyO7armVMTH9XMUXQ-OKwRtOcL/exec';
 
     fetch(WEB_APP_URL, {
         method: 'POST',

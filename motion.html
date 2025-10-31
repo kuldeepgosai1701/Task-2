@@ -124,8 +124,8 @@
 
   .sensitivity-box {
   position: fixed;
-  top: 50%;               /* vertical center */
-  left: 50%;              /* horizontal center */
+  top: 50%;               
+  left: 50%;              
   transform: translate(-50%, -50%); /* exact middle */
   background: linear-gradient(135deg, #2a3b8f, #001f54);
   color: #fff;
@@ -177,14 +177,7 @@
      position: relative; /* remove absolute positioning */
     }
 
-   /* footer {
-      background: linear-gradient(90deg, #004080, #0066cc);
-       color: white;
-  text-align: center;
-  padding: 14px;
-  font-size: 1rem;
-    }*/
-  </style>
+   </style>
 </head>
 
 <body>
@@ -255,7 +248,7 @@ let vibrationEventActive = false;
 let vibrationStartTime = null;
 let vibrationStartLat = null;
 let vibrationStartLon = null;
-const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxTxP2RoGssC7ZUT184G-dNYTShSY-T9sXEiOEsczlCOEbM14-nYdqLlO6SFCsTmkRO/exec';
+const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztf5HZbAncOt0ahkLHEFYbNHlpmeMVzHKjyWXuihgyO7armVMTH9XMUXQ-OKwRtOcL/exec';
 
   // Gyroscope values track karne ke liye
 window.addEventListener("deviceorientation", function(event) {
