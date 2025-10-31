@@ -2,7 +2,7 @@
 
 function sendToGoogleSheet(sessionData) {
     
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztf5HZbAncOt0ahkLHEFYbNHlpmeMVzHKjyWXuihgyO7armVMTH9XMUXQ-OKwRtOcL/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzo-0DlvihF3MYJoTZsPxXs22IOGlpe2zSAUflnZqxrBV_VQTF5X0RpZBXxb1YEvi0V/exec';
 
     fetch(WEB_APP_URL, {
         method: 'POST',
