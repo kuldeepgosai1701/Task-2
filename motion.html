@@ -232,12 +232,6 @@
 
 <script>
 
-  window.onload = function() {
-  localStorage.removeItem("gpsHistory");
-  localStorage.removeItem("recordedData");
-  localStorage.removeItem("sessions");
-};
-
   let prevLat = null, prevLon = null;
   let gpsHistory = [];
   let sessionStartTime = null;
@@ -498,15 +492,17 @@ if (prevLat !== null && prevLon !== null) {
             fillOpacity: 0.9
         }).addTo(map);
 
-        // --- START Logging Event ---
+
         if (!vibrationEventActive) {
-            // New vibration event started
-            vibrationEventActive = true;
-            vibrationStartTime = timestamp;
-            vibrationStartLat = lat;
-            vibrationStartLon = lon;
-            console.log("Vibration Event Started at:", timestamp);
-        }
+    vibrationEventActive = true;
+    vibrationStartTime = timestamp;
+    if (prevLat !== null && prevLon !== null) {
+        vibrationStartLat = prevLat;
+        vibrationStartLon = prevLon;
+    }
+    console.log("Vibration Event Started at:", timestamp);
+}
+
 
     } else {
         // Vibration *stopped* and we have an active event to log

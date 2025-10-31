@@ -7,7 +7,7 @@ function sendToGoogleSheet(sessionData) {
     fetch(WEB_APP_URL, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            'Content-Type': 'applicationn/json'
         },
         
         body: JSON.stringify({
