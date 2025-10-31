@@ -5,7 +5,7 @@ function sendToGoogleSheet(sessionData) {
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztf5HZbAncOt0ahkLHEFYbNHlpmeMVzHKjyWXuihgyO7armVMTH9XMUXQ-OKwRtOcL/exec';
 
     fetch(WEB_APP_URL, {
-        method: 'GET',
+        method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
         },
