@@ -404,7 +404,7 @@ async function sendVibrationData(startLat, startLon, endLat, endLon, startTime, 
     try {
         const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
             method: 'POST',
-            mode: 'no-cors', // Important for cross-origin Apps Script calls
+            //mode: 'no-cors', // Important for cross-origin Apps Script calls
             cache: 'no-cache',
             headers: {
                 'Content-Type': 'application/json'
@@ -412,9 +412,14 @@ async function sendVibrationData(startLat, startLon, endLat, endLon, startTime, 
             body: JSON.stringify(data)
         });
         
-        // Note: With 'no-cors', you won't be able to read the response status, 
-        // but the data will still be sent. The network tab will show status 204.
-        console.log("Data send initiated (check Sheets for status).");
+        const result = await response.json();
+        if (result.result === 'success') {
+             console.log("Data logged successfully:", result.message);
+        } else {
+             console.error("Apps Script Error:", result.message);
+        }
+
+        //console.log("Data send initiated (check Sheets for status).");
 
     } catch (error) {
         console.error("Error sending data to Google Sheets:", error);
@@ -618,7 +623,7 @@ recentData.forEach(entry => {
   document.body.removeChild(a);
 }
 
-  let watchId = null;
+  /*let watchId = null;
 
  function startTracking() {
   if ("geolocation" in navigator) {
@@ -659,6 +664,42 @@ function startTracking() {
       maximumAge: 0,
       timeout: 5000
     });
+  } else {
+    alert("GPS not supported on this device/browser.");
+  }
+}*/
+
+// --- motion.html: Combined and Cleaned startTracking function ---
+
+let watchId = null; // Use watchId, as it's the one cleared by stopTracking()
+
+function startTracking() {
+  if ("geolocation" in navigator) {
+    // 1. Session Management
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+    let sessionStartTime = new Date();
+    // Clear history/data for the new session start
+    gpsHistory = []; 
+    pathCoords = [];
+    
+    // Save new session placeholder
+    sessions.push({
+      start: sessionStartTime.toISOString(),
+      end: null,
+      data: []
+    });
+    localStorage.setItem("sessions", JSON.stringify(sessions));
+
+    // 2. Start GPS Watch
+    watchId = navigator.geolocation.watchPosition(
+      showLocation, 
+      showError, 
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 5000 // A shorter timeout is better for real-time tracking
+      }
+    );
   } else {
     alert("GPS not supported on this device/browser.");
   }
