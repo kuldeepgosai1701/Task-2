@@ -1,4 +1,4 @@
-@param {object} sessionData 
+/*@param {object} sessionData 
 
 function sendToGoogleSheet(sessionData) {
     
@@ -32,4 +32,4 @@ function sendToGoogleSheet(sessionData) {
     .catch((error) => {
         console.error('Error sending data to Google Sheet:', error);
     });
-}
+}*/

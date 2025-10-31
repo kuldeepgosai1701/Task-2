@@ -705,7 +705,7 @@ function startTracking() {
   }
 }
 
-function stopTracking() {
+/*function stopTracking() {
   if (trackingInterval) {
     navigator.geolocation.clearWatch(trackingInterval);
     trackingInterval = null;
@@ -724,6 +724,39 @@ function stopTracking() {
       localStorage.setItem("sessions", JSON.stringify(sessions));
     }
   }
+}*/
+
+// --- Combined and Corrected stopTracking Function ---
+function stopTracking() {
+  // Check if the correct tracking ID (watchId) exists.
+  // watchId is defined in the global scope of your motion.html file.
+  if (watchId !== null) { 
+    // 1. Stop GPS tracking
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+
+    // 2. End the current session and save data to localStorage
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+    let current = sessions[sessions.length - 1];
+    
+    // Check if the current session is open (no end time set)
+    if (current && !current.end) {
+      current.end = new Date().toISOString();
+      
+      // 💡 Note: Your startTracking function resets gpsHistory,
+      // but the data is actually logged to currentSession.data in showLocation.
+      // This line is often necessary depending on how data is handled.
+      // current.data = gpsHistory; 
+      
+      // We will assume the session data is already updated in showLocation,
+      // but we save the sessions array back to storage.
+      localStorage.setItem("sessions", JSON.stringify(sessions));
+    }
+  } else if (trackingInterval) { 
+    // Fallback check for trackingInterval if that variable was accidentally used
+    navigator.geolocation.clearWatch(trackingInterval);
+    trackingInterval = null;
+  }
 }
 
 function resetPage() {
