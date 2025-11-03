@@ -22,8 +22,7 @@ function sendToGoogleSheet(sessionData) {
     })
     .then(data => {
         console.log('Success sending data:', data);
-        // Add a check to confirm the 'result' is 'success'
-        if (data.result === 'success') {
+       if (data.result === 'success') {
              console.log('Data successfully logged to Google Sheet.');
         } else {
              console.error('Apps Script reported an error:', data.message);
