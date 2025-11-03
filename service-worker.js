@@ -1,4 +1,4 @@
-const CACHE_NAME = "motion-app-v1";
+const CACHE_NAME = "motion-app-v2";
 const FILES_TO_CACHE = [
   "index.html",
   "style.css",
@@ -9,8 +9,10 @@ const FILES_TO_CACHE = [
   "history.html"
 ];
 
+
 // Install event
 self.addEventListener("install", event => {
+  self.skipWaiting(); // <-- Add this line
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
   );
@@ -23,7 +25,9 @@ self.addEventListener("activate", event => {
       Promise.all(keys.map(key => key !== CACHE_NAME && caches.delete(key)))
     )
   );
+  self.clients.claim(); // <-- Add this line
 });
+
 
 // Fetch event (serve cache first)
 self.addEventListener("fetch", event => {
