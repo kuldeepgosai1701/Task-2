@@ -4,14 +4,14 @@
  
 function sendToGoogleSheet(sessionData) {
     
-    const WEB_APP_URL = 'https://script.google.com/a/macros/raoinformationtechnology.com/s/AKfycbwdTBCyfs74-GDoj6usilM-aiaT5BPiuHqD5q4WFd2jgawBYex2hTT3-QV8ZBjH4bUN/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxo8G5scDhom0t90O3ebQQygU0G0dTNCSKktw7CQ-NjqWlLYs2L_xTupiB53VsK_U74/exec';
 
     
     return fetch(WEB_APP_URL, {
         method: 'POST',
         headers: {
           
-            'Content-Type': 'application/json'
+            'Content-Type': 'text/plain'
         },
         
         body: JSON.stringify({

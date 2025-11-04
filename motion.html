@@ -96,7 +96,7 @@
   top: 50%;               
   left: 50%;              
   transform: translate(-50%, -50%); /* exact middle */
-  background: linear-gradient(135deg, #2a3b8f, #540000);
+  background: linear-gradient(135deg, #2a3b8f, #160054);
   color: #fff;
   padding: 25px 30px;
   border-radius: 16px;
@@ -206,7 +206,7 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<script src="mains.js"></script>
+<script src="main.js"></script>
 
 <script>
 
@@ -425,26 +425,35 @@ if (prevLat !== null && prevLon !== null) {
  const isCurrentlyVibrating = vibratedRecently;
 
  if (isCurrentlyVibrating) {
- // Red dot visual feedback
- L.circleMarker([lat, lon], {
- radius: 6,
- fillColor: "red",
- color: "darkred",
- weight: 2,
- opacity: 1,
- fillOpacity: 0.9
- }).addTo(map);
 
+  L.circleMarker([lat, lon], {
+    radius: 6,
+    fillColor: "red",
+    color: "darkred",
+    weight: 2,
+    opacity: 1,
+    fillOpacity: 0.9
+  }).addTo(map);
 
- if (!vibrationEventActive) {
- vibrationEventActive = true;
- vibrationStartTime = timestamp;
- if (prevLat !== null && prevLon !== null) {
- vibrationStartLat = prevLat;
- vibrationStartLon = prevLon;
- }
- console.log("Vibration Event Started at:", timestamp);
- }
+  if (!vibrationEventActive) {
+    vibrationEventActive = true;
+    vibrationStartTime = timestamp;
+
+    // ✅ Ensure start coordinates exist
+    if (prevLat !== null && prevLon !== null) {
+      vibrationStartLat = prevLat;
+      vibrationStartLon = prevLon;
+    }
+
+    // ✅ Extra guard (in case prevLat/prevLon were null)
+    if (!vibrationStartLat || !vibrationStartLon) {
+      vibrationStartLat = lat;
+      vibrationStartLon = lon;
+    }
+
+    console.log("Vibration Event Started at:", timestamp);
+  }
+}
 
 
  } else {
@@ -697,10 +706,10 @@ window.onload = function() {
   map.setView([0, 0], 18);
 };
 
-/**
- * Pushes all locally stored, unsaved vibration data to the Google Sheet.
- */
 async function saveVibrationDataToSheet() {
+
+    console.log("Unsaved vibration events:", unsavedVibrationEvents);
+
     if (unsavedVibrationEvents.length === 0) {
         alert("No new pothole data to save to Google Sheet.");
         return;
@@ -709,25 +718,34 @@ async function saveVibrationDataToSheet() {
     const totalEvents = unsavedVibrationEvents.length;
     let successfulSaves = 0;
 
-    // Use the function from main.js to send each event
     for (const event of unsavedVibrationEvents) {
         try {
-            await sendToGoogleSheet(event);
-            successfulSaves++;
+            console.log("Sending event →", event);
+
+            const res = await sendToGoogleSheet(event);
+
+            console.log("Server response →", res);
+
+            // Optional: verify success flag
+            if (res && res.result === 'success') {
+                successfulSaves++;
+            } else {
+                console.warn("Server returned unexpected response:", res);
+            }
+
         } catch (error) {
-            console.error('Failed to send event to Google Sheet:', event, error);
+            console.error("❌ Failed to send event:", event, error);
         }
     }
 
-    // Once all attempts are made, update the UI and local storage
+    // 🚦Final result & cleanup
     if (successfulSaves === totalEvents) {
         alert(`✅ Successfully saved ${successfulSaves} pothole events to Google Sheet.`);
-        unsavedVibrationEvents = []; // Clear the array
-        localStorage.removeItem('unsavedVibrationEvents'); // Clear local storage
+        unsavedVibrationEvents = [];
+        localStorage.removeItem("unsavedVibrationEvents");
     } else {
-        // If some failed, only remove the ones that succeeded (this is complex, 
-        // so for simplicity, we alert and keep the remaining data for the next try)
-        alert(`⚠️ Saved ${successfulSaves} out of ${totalEvents} events. Please try saving again for the remaining data.`);
+        alert(`⚠️ Saved ${successfulSaves} out of ${totalEvents} events. Some failed — try again.`);
+        // keep remaining ones so they can be retried later
     }
 }
 

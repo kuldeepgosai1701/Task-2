@@ -1,4 +1,4 @@
-const CACHE_NAME = "motion-app-v10";
+const CACHE_NAME = "motion-app-v11";
 const FILES_TO_CACHE = [
   "index.html",
   "style.css",
@@ -6,7 +6,8 @@ const FILES_TO_CACHE = [
   "icon-192.png",
   "icon-512.png",
   "motion.html",
-  "history.html"
+  "history.html",
+  "main.js"
 ];
 
 
