@@ -454,9 +454,8 @@ if (prevLat !== null && prevLon !== null) {
     console.log("Vibration Event Started at:", timestamp);
   }
 }
-
-
- } else {
+ 
+ else {
  // Vibration has stopped
 if (vibrationEventActive) {
  // Log the completed Red Dot event to the UNSAVED list
@@ -486,7 +485,7 @@ const endTime = timestamp;
  vibrationStartLon = null; // Important: Clear all start data
  }
  }
- }
+ 
 
 
   function showError(error) {
