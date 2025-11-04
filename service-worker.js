@@ -28,12 +28,24 @@ self.addEventListener("activate", event => {
   self.clients.claim(); // <-- Add this line
 });
 
-
-// Fetch event (serve cache first)
+// Fetch event (serve cache first, with error handling)
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
+    caches.match(event.request).then(response => {
+      // Serve cached file if available
+      if (response) return response;
+
+      // Otherwise try fetching from network
+      return fetch(event.request).catch(error => {
+        console.error("❌ Fetch failed:", error);
+        return new Response("Network error or resource not found", {
+          status: 503,
+          statusText: "Service Unavailable"
+        });
+      });
+    })
   );
 });
+
 
 
