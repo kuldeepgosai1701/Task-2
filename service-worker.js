@@ -1,4 +1,4 @@
-const CACHE_NAME = "motion-app-v9";
+const CACHE_NAME = "motion-app-v10";
 const FILES_TO_CACHE = [
   "index.html",
   "style.css",
