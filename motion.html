@@ -146,6 +146,12 @@
      position: relative; /* remove absolute positioning */
     }
 
+    .button-group .save {
+ background: linear-gradient(135deg, #ff8c00, #ff4500); /* Orange/Red Gradient for Save */
+}
+.button-group button:hover {
+ opacity: 0.9;
+}
    </style>
 </head>
 
@@ -173,6 +179,7 @@
   <p id="direction">Direction: Calculating...</p>
   <div class="button-group">
   <button class="start" onclick="startTracking()">▶ Start</button>
+  <button class="save" onclick="saveVibrationDataToSheet()">📤 Save to Sheet</button>
   <button class="stop"  onclick="stopTracking()">⏸ Stop</button>
   <button class="reset" onclick="resetPage()">⟳ Reset</button></div>
 </div>
@@ -212,6 +219,8 @@ let vibrationStartTime = null;
 let vibrationStartLat = null;
 let vibrationStartLon = null;
 //const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzo-0DlvihF3MYJoTZsPxXs22IOGlpe2zSAUflnZqxrBV_VQTF5X0RpZBXxb1YEvi0V/exec';
+
+let unsavedVibrationEvents = JSON.parse(localStorage.getItem('unsavedVibrationEvents')) || [];
 
   // Gyroscope values track karne ke liye
 window.addEventListener("deviceorientation", function(event) {
@@ -355,171 +364,120 @@ function checkVibration(data) {
     return data.some(entry => entry.vibration === true);
 }
 
+ function showLocation(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    const timestamp = new Date().toISOString(); // store in ISO format
 
-/*async function sendVibrationData(startLat, startLon, endLat, endLon, startTime, endTime) {
-    const data = {
-        startPoint: `${startLat}, ${startLon}`,
-        endPoint: `${endLat}, ${endLon}`,
-        startTime: startTime,
-        endTime: endTime
-    };
+    // Get sessions array from localStorage (stores ALL data: red and blue dot points)
+    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
 
-    try {
-        const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
-            method: 'POST',
-            cache: 'no-cache',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        
-        const result = await response.json();
-        if (result.result === 'success') {
-             console.log("Data logged successfully:", result.message);
-        } else {
-             console.error("Apps Script Error:", result.message);
-        }
+    // If no session exists, create one
+    if (sessions.length === 0) {
+        sessions.push({
+            start: timestamp,
+            end: null,
+            data: []
+        });
+    }
 
-    } catch (error) {
-        console.error("Error sending data to Google Sheets:", error);
-    }
-}*/
+    // Reference current session
+    let currentSession = sessions[sessions.length - 1];
 
-function showLocation(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    const timestamp = new Date().toISOString(); // store in ISO format
-
-    // Get sessions array from localStorage
-    let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
-
-    // If no session exists, create one
-    if (sessions.length === 0) {
-        sessions.push({
-            start: timestamp,
-            end: null,
-            data: []
-        });
-    }
-
-    // Reference current session
-    let currentSession = sessions[sessions.length - 1];
-
-    currentSession.data.push({
-    lat, 
-    lon, 
-    time: timestamp,
-    vibration: vibratedRecently // <-- store vibration state here
+    currentSession.data.push({
+    lat, 
+    lon, 
+    time: timestamp,
+    vibration: vibratedRecently // <-- store vibration state here for all points
 });
 if (currentSession.data.length > 10) {
-    currentSession.data.shift();
+    currentSession.data.shift();
 }
 
+    // Save back to localStorage
+    localStorage.setItem("sessions", JSON.stringify(sessions));
 
-    // Save back to localStorage
-    localStorage.setItem("sessions", JSON.stringify(sessions));
+    // UI update
+    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    pathCoords.push([lat, lon]);
+    pathLine.setLatLngs(pathCoords);
+    dotMarker.setLatLng([lat, lon]);
+    map.setView([lat, lon]);
 
-    // UI update
-    locationText.textContent = `Location: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-    pathCoords.push([lat, lon]);
-    pathLine.setLatLngs(pathCoords);
-    dotMarker.setLatLng([lat, lon]);
-    map.setView([lat, lon]);
-
-    // Calculate direction based on previous position
-    if (prevLat !== null && prevLon !== null) {
-      
+    // Calculate direction based on previous position
+    if (prevLat !== null && prevLon !== null) {
+      
 if (prevLat !== null && prevLon !== null) {
-    const bearing = calculateDirection(prevLat, prevLon, lat, lon);
-    directionText.textContent = `Direction: ${getDirectionName(bearing)} (${Math.round(bearing)}°)`;
+    const bearing = calculateDirection(prevLat, prevLon, lat, lon);
+    directionText.textContent = `Direction: ${getDirectionName(bearing)} (${Math.round(bearing)}°)`;
 } else {
-    directionText.textContent = "Direction: Calculating...";
+    directionText.textContent = "Direction: Calculating...";
 }
 
-    }
+    }
 
-    prevLat = lat;
-    prevLon = lon;
+    prevLat = lat;
+    prevLon = lon;
 
-    // 🔴 CORRECTED Vibration detection and Google Sheets logging logic
-     const isCurrentlyVibrating = vibratedRecently;
+    // 🔴 Vibration detection logic
+    const isCurrentlyVibrating = vibratedRecently;
 
-    if (isCurrentlyVibrating) {
-        // Red dot visual feedback
-        L.circleMarker([lat, lon], {
-            radius: 6,
-            fillColor: "red",
-            color: "darkred",
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.9
-        }).addTo(map);
-
-
-        if (!vibrationEventActive) {
-    vibrationEventActive = true;
-    vibrationStartTime = timestamp;
-    if (prevLat !== null && prevLon !== null) {
-        vibrationStartLat = prevLat;
-        vibrationStartLon = prevLon;
-    }
-    console.log("Vibration Event Started at:", timestamp);
-}
+    if (isCurrentlyVibrating) {
+        // Red dot visual feedback
+        L.circleMarker([lat, lon], {
+            radius: 6,
+            fillColor: "red",
+            color: "darkred",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).addTo(map);
 
 
-    } else {
-        
-        if (vibrationEventActive) {
-            // Log the completed event
-            const endTime = timestamp;
-            const endLat = lat;
-            const endLon = lon;
-            
-            console.log("Vibration Event Ended, Sending Data...");
-
-            // **SEND DATA TO GOOGLE SHEETS**
-           /* sendVibrationData(
-                vibrationStartLat, 
-                vibrationStartLon, 
-                endLat, 
-                endLon, 
-                vibrationStartTime, 
-                endTime
-            );*/
-
-            // Reset event state
-            vibrationEventActive = false;
-            vibrationStartTime = null;
-            vibrationStartLat = null; // Important: Clear all start data
-            vibrationStartLon = null; // Important: Clear all start data
-
-// ... when a vibration is first detected ...
-let vibrationStartTime = new Date();
-// Get current position from geolocation or device motion listener
-let vibrationStartLat = currentLat; 
-let vibrationStartLon = currentLon;
+        if (!vibrationEventActive) {
+            vibrationEventActive = true;
+            vibrationStartTime = timestamp;
+            if (prevLat !== null && prevLon !== null) {
+                vibrationStartLat = prevLat;
+                vibrationStartLon = prevLon;
+            }
+            console.log("Vibration Event Started at:", timestamp);
+        }
 
 
-// ... when the vibration stops ...
-let vibrationEndTime = new Date();
-// Get current position from geolocation or device motion listener
-let vibrationEndLat = currentLat; 
-let vibrationEndLon = currentLon;
+    } else {
+        // Vibration has stopped
+        if (vibrationEventActive) {
+            // Log the completed Red Dot event to the UNSAVED list
+            const endTime = timestamp;
+            const endLat = lat;
+            const endLon = lon;
+            
+            console.log("Vibration Event Ended, Storing for Save to Sheet...");
 
-// ➡️ CALL THE NEW FUNCTION HERE
-sendToGoogleSheet({
-    startLat: vibrationStartLat,
-    startLon: vibrationStartLon,
-    endLat: vibrationEndLat,
-    endLon: vibrationEndLon,
-    startTime: vibrationStartTime,
-    endTime: vibrationEndTime
-});
-        }
-      }
-    }
-  
+            const newVibrationEvent = {
+                startLat: vibrationStartLat,
+                startLon: vibrationStartLon,
+                endLat: endLat,
+                endLon: endLon,
+                startTime: vibrationStartTime,
+                endTime: endTime
+            };
+
+            // ✅ Pushes only Red Dot events to the dedicated array for later sheet export
+            unsavedVibrationEvents.push(newVibrationEvent);
+            localStorage.setItem('unsavedVibrationEvents', JSON.stringify(unsavedVibrationEvents));
+
+            // Reset event state
+            vibrationEventActive = false;
+            vibrationStartTime = null;
+            vibrationStartLat = null; // Important: Clear all start data
+            vibrationStartLon = null; // Important: Clear all start data
+        }
+      }
+    }
+
+
   function showError(error) {
   console.error("GPS Error:", error);
   switch(error.code) {
@@ -736,6 +694,41 @@ window.onload = function() {
   dotMarker.setLatLng([0, 0]);
   map.setView([0, 0], 18);
 };
+
+/**
+ * Pushes all locally stored, unsaved vibration data to the Google Sheet.
+ */
+async function saveVibrationDataToSheet() {
+    if (unsavedVibrationEvents.length === 0) {
+        alert("No new pothole data to save to Google Sheet.");
+        return;
+    }
+
+    const totalEvents = unsavedVibrationEvents.length;
+    let successfulSaves = 0;
+
+    // Use the function from main.js to send each event
+    for (const event of unsavedVibrationEvents) {
+        try {
+            await sendToGoogleSheet(event);
+            successfulSaves++;
+        } catch (error) {
+            console.error('Failed to send event to Google Sheet:', event, error);
+        }
+    }
+
+    // Once all attempts are made, update the UI and local storage
+    if (successfulSaves === totalEvents) {
+        alert(`✅ Successfully saved ${successfulSaves} pothole events to Google Sheet.`);
+        unsavedVibrationEvents = []; // Clear the array
+        localStorage.removeItem('unsavedVibrationEvents'); // Clear local storage
+    } else {
+        // If some failed, only remove the ones that succeeded (this is complex, 
+        // so for simplicity, we alert and keep the remaining data for the next try)
+        alert(`⚠️ Saved ${successfulSaves} out of ${totalEvents} events. Please try saving again for the remaining data.`);
+    }
+}
+
 </script>
 </body>
 </html>
