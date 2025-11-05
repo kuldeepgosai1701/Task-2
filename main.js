@@ -4,7 +4,7 @@
  
 function sendToGoogleSheet(sessionData) {
     
-    const WEB_APP_URL = 'https://script.google.com/a/macros/raoinformationtechnology.com/s/AKfycbzA7MqwX3MvAzkDYvjHeFzO0kzrQD5W2R-EKxq6o7ACQAqilmFt9h7VPHCHT0nZA8ZD/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyLZ0bmDNDo351y6jpFsqAeA4mqkREbIRCLB2hLTgWk_ID23J9lQathe-Z4jwyVpFUC/exec';
 
     
     return fetch(WEB_APP_URL, {
@@ -20,24 +20,13 @@ function sendToGoogleSheet(sessionData) {
             
             startTime: sessionData.startTime,
             endTime: sessionData.endTime
-        })
+            })
     })
-    .then(response => {
-        
-        if (!response.ok) {
-            throw new Error(`HTTP Error: Status ${response.status}`);
-        }
-        return response.json(); 
+    .then(r => r.json())
+    .then(d => {
+        console.log("Response", d);
+        return d;
     })
-    .then(data => {
-        console.log('Apps Script Response:', data);
-        if (data.result === 'success') {
-            console.log('Data successfully logged to Google Sheet.');
-        } else {
-           
-            throw new Error(`Apps Script Error: ${data.message}`);
-        }
-        return data;
-    });
-    
+    .catch(err => console.error("Fetch error:", err));
 }
+    
