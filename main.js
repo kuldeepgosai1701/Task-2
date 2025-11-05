@@ -5,7 +5,7 @@
 
 function sendToGoogleSheet(sessionData) {
     
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyLZ0bmDNDo351y6jpFsqAeA4mqkREbIRCLB2hLTgWk_ID23J9lQathe-Z4jwyVpFUC/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyst_oHoEhK-_YLv9GhhABQNGI3TxNprc0ndVh0tMGwiD-MQcjUNKPTF_ZQ-9ehZ1rO/exec';
 
     
     return fetch(WEB_APP_URL, {
