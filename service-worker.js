@@ -1,4 +1,4 @@
-const CACHE_NAME = "motion-app-v12";
+const CACHE_NAME = "motion-app-v13";
 const FILES_TO_CACHE = [
   "index.html",
   "style.css",
@@ -47,6 +47,5 @@ self.addEventListener("fetch", event => {
     })
   );
 });
-
 
 
