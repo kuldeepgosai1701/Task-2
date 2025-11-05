@@ -1,7 +1,8 @@
+/** 
+  *@param {object} sessionData - Object containing start/end coordinates and times.
+* @returns {Promise<object>} - A Promise that resolves with the JSON response from the Apps Script.
+ */
 
-  @param {object} sessionData - Object containing start/end coordinates and times.
- @returns {Promise<object>} - A Promise that resolves with the JSON response from the Apps Script.
- 
 function sendToGoogleSheet(sessionData) {
     
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyLZ0bmDNDo351y6jpFsqAeA4mqkREbIRCLB2hLTgWk_ID23J9lQathe-Z4jwyVpFUC/exec';
