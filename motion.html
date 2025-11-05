@@ -96,7 +96,7 @@
   top: 50%;               
   left: 50%;              
   transform: translate(-50%, -50%); /* exact middle */
-  background: linear-gradient(135deg, #2a3b8f, #2a5400);
+  background: linear-gradient(135deg, #2a3b8f, #001454);
   color: #fff;
   padding: 25px 30px;
   border-radius: 16px;
@@ -241,7 +241,7 @@ window.addEventListener("deviceorientation", function(event) {
 
     
     // Sudden change detection (pothole condition)
-    if (Math.abs(beta) > sensitivityFactor * 2 || Math.abs(gamma) > sensitivityFactor * 2) {
+    if (Math.abs(beta) > sensitivityFactor * 5 || Math.abs(gamma) > sensitivityFactor * 5) {
         vibratedRecently = true;
         if (navigator.vibrate) navigator.vibrate(300); // vibrate for 0.3s
     } else {
@@ -388,7 +388,7 @@ function checkVibration(data) {
 
     currentSession.data.push({
     lat, 
-    lon, 
+   lon, 
     time: timestamp,
     vibration: vibratedRecently // <-- store vibration state here for all points
 });
@@ -439,59 +439,46 @@ if (prevLat !== null && prevLon !== null) {
  if (!vibrationEventActive) {
  vibrationEventActive = true;
  vibrationStartTime = timestamp;
-
- 
+ if (prevLat !== null && prevLon !== null) {
  vibrationStartLat = prevLat;
  vibrationStartLon = prevLon;
+ }
+ console.log("Vibration Event Started at:", timestamp);
+ }
+
+
+ } else {
+ // Vibration has stopped
+if (vibrationEventActive) {
+ // Log the completed Red Dot event to the UNSAVED list
+const endTime = timestamp;
+ const endLat = lat;
+ const endLon = lon;
  
- console.log("✅ Vibration Started:", {
-            time: vibrationStartTime,
-            lat: vibrationStartLat,
-            lon: vibrationStartLon
-        });
-    }
+ console.log("Vibration Event Ended, Storing for Save to Sheet...");
 
-} else {
+ const newVibrationEvent = {
+ startLat: vibrationStartLat,
+ startLon: vibrationStartLon,
+ endLat: endLat,
+ endLon: endLon,
+ startTime: vibrationStartTime,
+ endTime: endTime
+ };
 
-    // ✅ Vibration stopped → Save event
-    if (vibrationEventActive) {
+ // ✅ Pushes only Red Dot events to the dedicated array for later sheet export
+ unsavedVibrationEvents.push(newVibrationEvent);
+ localStorage.setItem('unsavedVibrationEvents', JSON.stringify(unsavedVibrationEvents));
 
-        const endTime = timestamp;
-        const endLat = lat;
-        const endLon = lon;
+ // Reset event state
+ vibrationEventActive = false;
+ vibrationStartTime = null;
+ vibrationStartLat = null; // Important: Clear all start data
+ vibrationStartLon = null; // Important: Clear all start data
+ }
+ }
+ }
 
-        console.log("✅ Vibration Ended → Saving Event:", {
-            startLat: vibrationStartLat,
-            startLon: vibrationStartLon,
-            endLat,
-            endLon,
-            startTime: vibrationStartTime,
-            endTime
-        });
-
-        const newVibrationEvent = {
-            startLat: vibrationStartLat,
-            startLon: vibrationStartLon,
-            endLat: endLat,
-            endLon: endLon,
-            startTime: vibrationStartTime,
-            endTime: endTime
-        };
-
-        // ✅ Save event in memory
-        unsavedVibrationEvents.push(newVibrationEvent);
-        localStorage.setItem(
-            'unsavedVibrationEvents',
-            JSON.stringify(unsavedVibrationEvents)
-        );
-
-        // ✅ Reset event state
-        vibrationEventActive = false;
-        vibrationStartTime = null;
-        vibrationStartLat = null;
-        vibrationStartLon = null;
-    }
-}
 
   function showError(error) {
   console.error("GPS Error:", error);
@@ -747,7 +734,6 @@ async function saveVibrationDataToSheet() {
 </script>
 </body>
 </html>
-
 
 
 
