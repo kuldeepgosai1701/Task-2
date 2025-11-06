@@ -180,7 +180,7 @@
   <div class="button-group">
   <button class="start" onclick="startTracking()">▶ Start</button>
   <button class="save" onclick="saveVibrationDataToSheet()">📤 Save to Sheet</button>
-  <button class="stop"  onclick="stopTracking()">⏸ Stop</button>
+  <button class="stop"  onclick="stopTracking()" disabled>⏸ Stop</button>
   <button class="reset" onclick="resetPage()">⟳ Reset</button></div>
 </div>
 
@@ -221,10 +221,14 @@ let vibrationStartTime = null;
 let vibrationStartLat = null;
 let vibrationStartLon = null;
 
-
+let watchId = null;
 let unsavedVibrationEvents = JSON.parse(localStorage.getItem('unsavedVibrationEvents')) || [];
-
 let vibratedRecently = false;
+
+
+let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+const startBtn = document.querySelector(".start");
+const stopBtn  = document.querySelector(".stop");
 
 window.addEventListener("deviceorientation", function(event) {
   const { beta, gamma } = event;
@@ -359,28 +363,21 @@ function checkVibration(data) {
     return data.some(entry => entry.vibration === true);
 }
 
-    function showLocation(position) {
-   const lat = position.coords.latitude;
+  function showLocation(position) {
+    const lat = position.coords.latitude;
     const lon = position.coords.longitude;
     const timestamp = new Date().toISOString(); // store in ISO format
 
-   
-     let sessions = JSON.parse(localStorage.getItem("sessions")) || [];
+  
+if (sessions.length === 0 || sessions[sessions.length - 1].end) {
+  sessions.push({ start: timestamp, end: null, data: [] });
+}
+const currentSession = sessions[sessions.length - 1];
 
-    
-       if (sessions.length === 0) {
-       sessions.push({
-       start: timestamp,
-       end: null,
-       data: []
-       });
-       }
-
-    let currentSession = sessions[sessions.length - 1];
 
     currentSession.data.push({
     lat, 
-   lon, 
+    lon, 
     time: timestamp,
     vibration: vibratedRecently 
 });
@@ -536,31 +533,69 @@ recentData.forEach(entry => {
   document.body.removeChild(a);
 }
 
-let watchId = null;
-
- function startTracking() {
-  if ("geolocation" in navigator) {
-    // ✅ continuous GPS tracking
-    trackingInterval = navigator.geolocation.watchPosition(
-      showLocation,
-      showError,
-      {
-        enableHighAccuracy: true,   // GPS chip use karega
-        timeout: 10000,             // max wait 10 sec
-        maximumAge: 0               // purana cache use na kare
-      }
-    );
-  } else {
+function startTracking() {
+  if (!("geolocation" in navigator)) {
     alert("Geolocation not supported in this browser.");
+    return;
   }
+  if (watchId !== null) {
+    return;
+  }
+
+  const startTs = new Date().toISOString();
+  sessions.push({ start: startTs, end: null, data: [] });
+  localStorage.setItem("sessions", JSON.stringify(sessions));
+
+  watchId = navigator.geolocation.watchPosition(
+    showLocation,
+    showError,
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
+
+  startBtn.disabled = true;
+  stopBtn.disabled  = false;
+}
+function stopTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+
+  if (vibrationEventActive && prevLat !== null && prevLon !== null) {
+    const nowIso = new Date().toISOString();
+    unsavedVibrationEvents.push({
+      startLat: vibrationStartLat,
+      startLon: vibrationStartLon,
+      endLat: prevLat,
+      endLon: prevLon,
+      startTime: vibrationStartTime,
+      endTime: nowIso
+    });
+    localStorage.setItem('unsavedVibrationEvents', JSON.stringify(unsavedVibrationEvents));
+
+    vibrationEventActive = false;
+    vibrationStartTime = null;
+    vibrationStartLat = null;
+    vibrationStartLon = null;
+  }
+
+  if (sessions.length > 0) {
+    const last = sessions[sessions.length - 1];
+    if (!last.end) {
+      last.end = new Date().toISOString();
+      localStorage.setItem("sessions", JSON.stringify(sessions));
+    }
+  }
+
+  locationText.textContent  = "Location: Stopped.";
+  startBtn.disabled = false;
+  stopBtn.disabled  = true;
 }
 
-function stopTracking() {
-  if (trackingInterval) {
-    navigator.geolocation.clearWatch(trackingInterval);
-    trackingInterval = null;
-  }
-}
 
 function resetPage() {
   gpsHistory = [];
@@ -735,7 +770,7 @@ async function saveVibrationDataToSheet() {
     localStorage.removeItem('unsavedVibrationEvents');
   } else {
     alert(`⚠️ Saved ${successfulSaves} out of ${totalEvents} events. Try again for remaining.`);
-    // (Optionally: filter out only the ones that succeeded)
+    
   }
 }
 
