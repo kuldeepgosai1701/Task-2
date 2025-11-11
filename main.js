@@ -31,3 +31,5 @@ function sendToGoogleSheet(sessionData) {
     .catch(err => console.error("Fetch error:", err));
 }
     
+
+

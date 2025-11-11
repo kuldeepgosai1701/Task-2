@@ -727,7 +727,7 @@ window.onload = function() {
 
 
 async function saveVibrationDataToSheet() {
-  // ✅ If a vibration is currently open, close it first
+  //  If a vibration is currently open, close it first
   if (vibrationEventActive && prevLat !== null && prevLon !== null) {
     const nowIso = new Date().toISOString();
     unsavedVibrationEvents.push({

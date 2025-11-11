@@ -13,7 +13,7 @@ const FILES_TO_CACHE = [
 
 // Install event
 self.addEventListener("install", event => {
-  self.skipWaiting(); // <-- Add this line
+  self.skipWaiting(); 
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
   );
@@ -26,7 +26,7 @@ self.addEventListener("activate", event => {
       Promise.all(keys.map(key => key !== CACHE_NAME && caches.delete(key)))
     )
   );
-  self.clients.claim(); // <-- Add this line
+  self.clients.claim(); 
 });
 
 // Fetch event (serve cache first, with error handling)
